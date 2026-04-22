@@ -10,6 +10,25 @@ Bu dosya her Claude oturumunun başında okunur. **Değişmez kurallar + kimlik.
 
 ---
 
+## 0. OTURUM BAŞI RİTÜELİ — İLK YANITTAN ÖNCE ZORUNLU
+
+**Bu blok her oturumun ilk işidir. Atlamak yasak. Varsayım yasak.**
+
+**Koşulsuz kural:** Context'te hook çıktısı görünse bile, her oturumun başında şu 4 adımı **elle** ve **sessizce** yap (kullanıcıya raporlamadan). Hook çıktısının context'te olması `bash` çalıştırmayı atlama gerekçesi **DEĞİLDİR** — fresh çıktı farklı olabilir, context stale olabilir, varsayım yapma.
+
+1. `bash .claude/hooks/session-start.sh` çalıştır — git log + uncommitted + TODO özeti + son journal. **HER oturumda, istisnasız.**
+2. `docs/journal/` altındaki **son 2 dosyayı** oku (özellikle yarım kalan işler bölümü).
+3. `TODO.md` → "BIRLESIK ONCELIK SIRASI" → Faz 0 + aktif bug'ları gözden geçir.
+4. **Uncommitted durumunu bil** (`git status --porcelain | wc -l`, 15 eşiği aşılmışsa yeni iş yasak — önce commit-split).
+
+Ritüel sonrasında kullanıcının sorusuna cevap ver. "Nerede kaldık?" / "devam" / "günaydın" tetiklerinde cevap **bu okumalara dayanır**, hafıza tahminine değil, context'teki hook çıktısına değil.
+
+**Ritüeli atladıysan:** kullanıcı fark ettiği anda yanlışı kabul et, eksiği anında kapat, önlemini `.claude/rules/session-protocol.md`'ye ekle. Tekrarı kabul edilmez.
+
+Detay: [`.claude/rules/session-protocol.md`](.claude/rules/session-protocol.md).
+
+---
+
 ## 1. Proje Kimliği
 
 **{{PROJECT_NAME}}** — {{PROJECT_DESCRIPTION}}
@@ -29,7 +48,7 @@ Detay: `.claude/rules/` altında, konuya göre bölünmüş.
 1. **Sistematik çalış.** Her karar + kural + talimat dosyaya yazılır (CLAUDE.md, TODO.md, `.claude/rules/`, `docs/ADR/`, `docs/journal/`). Konuşma hafızasında kalmaz. Detay: `docs/CONTEXT_MANAGEMENT.md`.
 
 2. **Skill + agent + MCP aktif kullan.**
-   - Multi-agent: `Explore` (keşif/audit), `Plan` (tasarım), `general-purpose` (araştırma).
+   - Multi-agent: `Explore` (keşif/audit), `Plan` (tasarım), `general-purpose` (araştırma), `commit-splitter` (uncommitted böl).
    - Hazır skill'ler: `security-review`, `review`, `simplify`, `init`, `consolidate-memory`, `schedule`, `loop`.
    - Gereken skill yoksa: `WebFetch`/`WebSearch` araştır, `.claude/skills/` altına yarat.
 
@@ -37,9 +56,7 @@ Detay: `.claude/rules/` altında, konuya göre bölünmüş.
 
 4. **Commit disiplini.** Kullanıcı açıkça istemeden commit etme. Uncommitted > 15 dosya → **yeni iş yasak**, önce commit-split. Detay: `.claude/rules/commit-discipline.md`.
 
-5. **200 satır eşiği.** CLAUDE.md ve her `.claude/rules/*.md` dosyası 200 satır altında. Aşarsa konu bölünür.
-
-{{ADDITIONAL_PRINCIPLES}}
+5. **200 satır eşiği.** CLAUDE.md ve her `.claude/rules/*.md` dosyası 200 satır altında. Aşarsa konu bölünür.{{ADDITIONAL_PRINCIPLES}}
 
 ---
 

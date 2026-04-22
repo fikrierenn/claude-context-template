@@ -12,8 +12,10 @@ PROJECT_PATH=""
 PROJECT_NAME=""
 STACK="none"
 INCLUDE_TURKISH="true"
+ENABLE_PRECOMMIT_HOOK="false"   # greenfield projede kod yok, antipattern taraması gürültü yapar
 UPDATE_MODE="false"
 FORCE="false"
+MERGE_GITIGNORE="true"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -21,14 +23,37 @@ while [[ $# -gt 0 ]]; do
         --name)    PROJECT_NAME="$2"; shift 2 ;;
         --stack)   STACK="$2"; shift 2 ;;
         --no-turkish) INCLUDE_TURKISH="false"; shift ;;
+        --enable-precommit-hook) ENABLE_PRECOMMIT_HOOK="true"; shift ;;
+        --no-gitignore-merge) MERGE_GITIGNORE="false"; shift ;;
         --update)  UPDATE_MODE="true"; shift ;;
         --force)   FORCE="true"; shift ;;
         -h|--help)
             cat <<EOF
 Kullanım:
-  bash bootstrap.sh --path <proje-yolu> [--name <ad>] [--stack <stack>] [--no-turkish] [--update] [--force]
+  bash bootstrap.sh --path <proje-yolu> [--name <ad>] [--stack <stack>] [seçenekler]
 
-Stack: dotnet-mvc | nodejs-typescript | python-generic | none
+Stack:
+  dotnet-mvc | nodejs-typescript | python-generic | none
+
+Seçenekler:
+  --no-turkish               Türkçe UI kuralını ekleme (default: ekler)
+  --enable-precommit-hook    settings.json'da pre-commit antipattern hook'u AKTİF et
+                             (default: pasif — greenfield'de gürültü yapar)
+  --no-gitignore-merge       .gitignore'ı otomatik merge etme (default: merge eder)
+  --update                   Proje-özel dosyaları (CLAUDE.md, TODO.md, project/*, journal)
+                             ASLA ezme. Universal rules + stack + hook + skill güncellensin.
+  --force                    Mevcut dosyaların üzerine yaz (tehlikeli — yedek al)
+
+Örnekler:
+  # Yeni .NET projesi, Türkçe UI
+  bash bootstrap.sh --path /d/Dev/my-api --name MyApi --stack dotnet-mvc
+
+  # Node/TS, İngilizce UI, pre-commit hook aktif
+  bash bootstrap.sh --path /d/Dev/my-app --name MyApp --stack nodejs-typescript \\
+    --no-turkish --enable-precommit-hook
+
+  # Sadece template'i güncelle (mevcut projede)
+  bash bootstrap.sh --path /d/Dev/existing-proj --update
 EOF
             exit 0 ;;
         *) echo "Bilinmeyen arg: $1" >&2; exit 1 ;;
@@ -45,6 +70,7 @@ echo "Hedef: $PROJECT_PATH"
 echo "Ad:    $PROJECT_NAME"
 echo "Stack: $STACK"
 echo "Türkçe UI: $INCLUDE_TURKISH"
+echo "Pre-commit hook: $([[ "$ENABLE_PRECOMMIT_HOOK" == "true" ]] && echo "AKTİF" || echo "pasif (settings.json'dan ileride aktifleştir)")"
 echo "Mod:   $([[ "$UPDATE_MODE" == "true" ]] && echo "GÜNCELLEME (project-özel dokunulmaz)" || echo "YENİ KURULUM")"
 echo ""
 
@@ -56,7 +82,6 @@ render_template() {
     content=$(<"$src")
     while [[ $# -gt 0 ]]; do
         local key="$1" val="$2"
-        # Bash parameter expansion — multi-line ve ozel karakterleri tolere eder
         content=${content//"{{$key}}"/"$val"}
         shift 2
     done
@@ -64,10 +89,11 @@ render_template() {
 }
 
 # --- 1. rules/ ---
-echo "[1/7] .claude/rules/"
+echo "[1/8] .claude/rules/"
 mkdir -p "$PROJECT_PATH/.claude/rules"
 
-UNIVERSAL_FILES=(commit-discipline.md session-memory.md security-principles.md)
+# session-protocol + commit-discipline + session-memory + security-principles her zaman
+UNIVERSAL_FILES=(session-protocol.md commit-discipline.md session-memory.md security-principles.md)
 [[ "$INCLUDE_TURKISH" == "true" ]] && UNIVERSAL_FILES+=(turkish-ui.md)
 
 for f in "${UNIVERSAL_FILES[@]}"; do
@@ -97,32 +123,74 @@ if [[ "$UPDATE_MODE" != "true" ]]; then
 fi
 
 # --- 2. hooks/ ---
-echo "[2/7] .claude/hooks/"
+echo "[2/8] .claude/hooks/"
 mkdir -p "$PROJECT_PATH/.claude/hooks"
-cp "$TEMPLATES/.claude/hooks/session-start.sh" "$PROJECT_PATH/.claude/hooks/session-start.sh"
-chmod +x "$PROJECT_PATH/.claude/hooks/session-start.sh"
-echo "  + hooks/session-start.sh (executable)"
+for h in session-start.sh pre-commit-antipattern.sh post-commit-journal.sh; do
+    cp "$TEMPLATES/.claude/hooks/$h" "$PROJECT_PATH/.claude/hooks/$h"
+    chmod +x "$PROJECT_PATH/.claude/hooks/$h"
+    echo "  + hooks/$h (executable)"
+done
 
-# --- 3. skills/ ---
-echo "[3/7] .claude/skills/session-handoff/"
+# --- 3. agents/ ---
+echo "[3/8] .claude/agents/"
+mkdir -p "$PROJECT_PATH/.claude/agents"
+cp "$TEMPLATES/.claude/agents/commit-splitter.md" "$PROJECT_PATH/.claude/agents/commit-splitter.md"
+echo "  + agents/commit-splitter.md"
+
+# --- 4. skills/ ---
+echo "[4/8] .claude/skills/session-handoff/"
 mkdir -p "$PROJECT_PATH/.claude/skills/session-handoff"
 cp "$TEMPLATES/.claude/skills/session-handoff/SKILL.md" "$PROJECT_PATH/.claude/skills/session-handoff/SKILL.md"
 echo "  + skills/session-handoff/SKILL.md"
 
-# --- 4. settings.json ---
-echo "[4/7] .claude/settings.json"
+# --- 5. settings.json ---
+echo "[5/8] .claude/settings.json"
 SETTINGS_DST="$PROJECT_PATH/.claude/settings.json"
 FWD_PATH="${PROJECT_PATH//\\/\/}"
 if [[ ! -f "$SETTINGS_DST" || "$FORCE" == "true" ]]; then
     render_template "$TEMPLATES/.claude/settings.json.tmpl" "$SETTINGS_DST" \
         "PROJECT_PATH_FWD" "$FWD_PATH"
-    echo "  + settings.json"
+    # Pre-commit hook pasif ise ilgili bloğu kaldır (greenfield default)
+    if [[ "$ENABLE_PRECOMMIT_HOOK" != "true" ]]; then
+        # Basit sed: PreToolUse bloğunu komple kaldır
+        python3 -c "
+import json, sys
+with open('$SETTINGS_DST') as f: d = json.load(f)
+d.get('hooks', {}).pop('PreToolUse', None)
+with open('$SETTINGS_DST', 'w') as f: json.dump(d, f, indent=2)
+" 2>/dev/null || echo "  ! python3 yok, settings.json elle düzenle (PreToolUse bloğunu çıkar)"
+        echo "  + settings.json (PreToolUse pasif)"
+    else
+        echo "  + settings.json (3 hook aktif)"
+    fi
 else
-    echo "  = settings.json (mevcut — elle merge et, SessionStart hook kaydını ekle)"
+    echo "  = settings.json (mevcut — elle merge et, yeni hook kayıtlarını ekle)"
 fi
 
-# --- 5. docs/ ---
-echo "[5/7] docs/"
+# --- 6. .gitignore merge ---
+echo "[6/8] .gitignore"
+GI_DST="$PROJECT_PATH/.gitignore"
+if [[ ! -f "$GI_DST" ]]; then
+    cp "$TEMPLATES/.gitignore.tmpl" "$GI_DST"
+    echo "  + .gitignore (yeni, template kopyalandı)"
+elif [[ "$MERGE_GITIGNORE" == "true" ]]; then
+    # Claude Code entry'leri zaten var mı kontrol et
+    if ! grep -q "^\.claude/worktrees/" "$GI_DST"; then
+        {
+            echo ""
+            echo "# --- Claude Code (template bootstrap) ---"
+            grep -v '^#' "$TEMPLATES/.gitignore.tmpl" | grep -v '^$' | head -10
+        } >> "$GI_DST"
+        echo "  ~ .gitignore (Claude Code girdileri append edildi)"
+    else
+        echo "  = .gitignore (Claude Code girdileri zaten var)"
+    fi
+else
+    echo "  = .gitignore (merge atlandı, --no-gitignore-merge)"
+fi
+
+# --- 7. docs/ ---
+echo "[7/8] docs/"
 mkdir -p "$PROJECT_PATH/docs/journal" "$PROJECT_PATH/docs/ADR"
 cp "$TEMPLATES/docs/CONTEXT_MANAGEMENT.md" "$PROJECT_PATH/docs/CONTEXT_MANAGEMENT.md"
 echo "  + docs/CONTEXT_MANAGEMENT.md"
@@ -134,9 +202,9 @@ if [[ "$UPDATE_MODE" != "true" ]]; then
     echo "  + docs/ADR/000-template.md"
 fi
 
-# --- 6. CLAUDE.md + TODO.md ---
+# --- 8. CLAUDE.md + TODO.md ---
 if [[ "$UPDATE_MODE" != "true" ]]; then
-    echo "[6/7] CLAUDE.md + TODO.md"
+    echo "[8/8] CLAUDE.md + TODO.md"
 
     case "$STACK" in
         dotnet-mvc)
@@ -195,7 +263,7 @@ uv run <entry>
     esac
 
     ADDITIONAL=""
-    [[ "$INCLUDE_TURKISH" == "true" ]] && ADDITIONAL=$'\n6. **Türkçe UI.** Detay: `.claude/rules/turkish-ui.md`.'
+    [[ "$INCLUDE_TURKISH" == "true" ]] && ADDITIONAL=$'\n\n6. **Türkçe UI.** Detay: `.claude/rules/turkish-ui.md`.'
 
     CLAUDE_DST="$PROJECT_PATH/CLAUDE.md"
     if [[ ! -f "$CLAUDE_DST" || "$FORCE" == "true" ]]; then
@@ -223,23 +291,27 @@ uv run <entry>
     fi
 fi
 
-# --- 7. Özet ---
+# --- Özet ---
 echo ""
-echo "[7/7] Tamam."
+echo "=== Tamam ==="
 echo ""
 echo "Kurulan yapı:"
 echo "  $PROJECT_PATH/CLAUDE.md"
 echo "  $PROJECT_PATH/TODO.md"
+echo "  $PROJECT_PATH/.gitignore (merged)"
 echo "  $PROJECT_PATH/.claude/settings.json"
 echo "  $PROJECT_PATH/.claude/rules/*.md (${#UNIVERSAL_FILES[@]} universal$([[ "$STACK" != "none" ]] && echo " + stack: $STACK"))"
-echo "  $PROJECT_PATH/.claude/hooks/session-start.sh"
+echo "  $PROJECT_PATH/.claude/hooks/{session-start,pre-commit-antipattern,post-commit-journal}.sh"
+echo "  $PROJECT_PATH/.claude/agents/commit-splitter.md"
 echo "  $PROJECT_PATH/.claude/skills/session-handoff/SKILL.md"
 echo "  $PROJECT_PATH/docs/CONTEXT_MANAGEMENT.md"
 echo "  $PROJECT_PATH/docs/{journal,ADR}/"
 echo ""
 echo "Sonraki adım:"
 echo "  1. cd \"$PROJECT_PATH\""
-echo "  2. claude  # SessionStart hook devreye girer"
+echo "  2. claude  # SessionStart hook devreye girer (ilk yanıttan önce 4-adım ritüel)"
 echo "  3. CLAUDE.md'yi gözden geçir, placeholder'ları doldur"
 echo "  4. .claude/rules/project/*.md'yi projenin ihtiyacına göre doldur"
+echo "  5. Kod yazmaya başlayınca --enable-precommit-hook ile hook'u aktif et"
+echo "     (veya .claude/settings.json'a PreToolUse bloğunu elle ekle)"
 echo ""
