@@ -1,0 +1,18 @@
+# Güvenlik — {{PROJECT_NAME}} (proje-özel)
+
+_Evrensel güvenlik kuralları: `.claude/rules/security-principles.md` (universal). Burada sadece bu projeye özgü kurallar._
+
+## Sır Yönetimi
+(ör. "Connection string env var `APP__DB__CONN`. Local dev için User Secrets. Production Azure Key Vault.")
+
+## Özel Güvenlik Katmanları
+(ör. "Multi-tenant data filter `InjectUserDataFilters` her SP execution'da zorunlu — bypass yasak.")
+
+## Yetki Matrisi
+| Rol | Yetki |
+|---|---|
+| admin | ... |
+| user | ... |
+
+## Bilinen Riskler
+(yok — proje başı)

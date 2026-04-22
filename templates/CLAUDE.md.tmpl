@@ -1,0 +1,79 @@
+# CLAUDE.md — {{PROJECT_NAME}}
+
+Bu dosya her Claude oturumunun başında okunur. **Değişmez kurallar + kimlik.** Tarihli notlar, geçmiş kararlar ve detay kurallar ayrı dosyalarda:
+
+- `.claude/rules/*.md` — davranış kuralları (konuya göre)
+- `docs/ADR/*.md` — mimari karar kayıtları
+- `docs/journal/YYYY-MM-DD.md` — oturum günlükleri
+- `TODO.md` — aktif sprint + backlog
+- `docs/CONTEXT_MANAGEMENT.md` — bağlam yönetimi anayasası (ilkeler)
+
+---
+
+## 1. Proje Kimliği
+
+**{{PROJECT_NAME}}** — {{PROJECT_DESCRIPTION}}
+
+### Tech Stack
+{{TECH_STACK_BLOCK}}
+
+### Ana Klasörler
+{{MAIN_FOLDERS_BLOCK}}
+
+---
+
+## 2. Çalışma Prensipleri (değişmez)
+
+Detay: `.claude/rules/` altında, konuya göre bölünmüş.
+
+1. **Sistematik çalış.** Her karar + kural + talimat dosyaya yazılır (CLAUDE.md, TODO.md, `.claude/rules/`, `docs/ADR/`, `docs/journal/`). Konuşma hafızasında kalmaz. Detay: `docs/CONTEXT_MANAGEMENT.md`.
+
+2. **Skill + agent + MCP aktif kullan.**
+   - Multi-agent: `Explore` (keşif/audit), `Plan` (tasarım), `general-purpose` (araştırma).
+   - Hazır skill'ler: `security-review`, `review`, `simplify`, `init`, `consolidate-memory`, `schedule`, `loop`.
+   - Gereken skill yoksa: `WebFetch`/`WebSearch` araştır, `.claude/skills/` altına yarat.
+
+3. **Güvenlik öncelikli.** Büyük değişiklik öncesi/sonrası `security-review` skill'i çalıştır. Detay: `.claude/rules/security-principles.md`.
+
+4. **Commit disiplini.** Kullanıcı açıkça istemeden commit etme. Uncommitted > 15 dosya → **yeni iş yasak**, önce commit-split. Detay: `.claude/rules/commit-discipline.md`.
+
+5. **200 satır eşiği.** CLAUDE.md ve her `.claude/rules/*.md` dosyası 200 satır altında. Aşarsa konu bölünür.
+
+{{ADDITIONAL_PRINCIPLES}}
+
+---
+
+## 3. Mimari Durumu
+
+Detay: `.claude/rules/architecture.md`.
+
+Aktif yol haritası: `TODO.md`.
+
+Karar kayıtları: `docs/ADR/`.
+
+---
+
+## 4. Geliştirme Workflow
+
+### Build + Test
+{{BUILD_COMMANDS_BLOCK}}
+
+### Smoke Test
+{{SMOKE_TEST_BLOCK}}
+
+### Dosya Konvansiyonları (özet — detay `.claude/rules/`)
+{{CONVENTIONS_LINKS_BLOCK}}
+
+---
+
+## 5. Bilinen Sorunlar
+
+Detay: `.claude/rules/known-issues.md`.
+
+---
+
+## 6. Hızlı Referans
+
+| Amaç | Dosya |
+|---|---|
+| (Yeni proje — ilk oturumda doldurulacak) | |
