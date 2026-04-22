@@ -144,11 +144,13 @@ Ensure-Dir "$ProjectPath/.claude/agents"
 Copy-Item -Path "$TemplatesDir/.claude/agents/commit-splitter.md" -Destination "$ProjectPath/.claude/agents/commit-splitter.md" -Force
 Write-Host "  + agents/commit-splitter.md"
 
-# --- 4. .claude/skills/session-handoff/ ---
-Write-Host "[4/8] .claude/skills/session-handoff/" -ForegroundColor Green
-Ensure-Dir "$ProjectPath/.claude/skills/session-handoff"
-Copy-Item -Path "$TemplatesDir/.claude/skills/session-handoff/SKILL.md" -Destination "$ProjectPath/.claude/skills/session-handoff/SKILL.md" -Force
-Write-Host "  + skills/session-handoff/SKILL.md"
+# --- 4. .claude/skills/ ---
+Write-Host "[4/8] .claude/skills/" -ForegroundColor Green
+foreach ($s in @('session-handoff','plan-tracker')) {
+    Ensure-Dir "$ProjectPath/.claude/skills/$s"
+    Copy-Item -Path "$TemplatesDir/.claude/skills/$s/SKILL.md" -Destination "$ProjectPath/.claude/skills/$s/SKILL.md" -Force
+    Write-Host "  + skills/$s/SKILL.md"
+}
 
 # --- 5. .claude/settings.json ---
 Write-Host "[5/8] .claude/settings.json" -ForegroundColor Green

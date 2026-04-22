@@ -138,10 +138,12 @@ cp "$TEMPLATES/.claude/agents/commit-splitter.md" "$PROJECT_PATH/.claude/agents/
 echo "  + agents/commit-splitter.md"
 
 # --- 4. skills/ ---
-echo "[4/8] .claude/skills/session-handoff/"
-mkdir -p "$PROJECT_PATH/.claude/skills/session-handoff"
-cp "$TEMPLATES/.claude/skills/session-handoff/SKILL.md" "$PROJECT_PATH/.claude/skills/session-handoff/SKILL.md"
-echo "  + skills/session-handoff/SKILL.md"
+echo "[4/8] .claude/skills/"
+for s in session-handoff plan-tracker; do
+    mkdir -p "$PROJECT_PATH/.claude/skills/$s"
+    cp "$TEMPLATES/.claude/skills/$s/SKILL.md" "$PROJECT_PATH/.claude/skills/$s/SKILL.md"
+    echo "  + skills/$s/SKILL.md"
+done
 
 # --- 5. settings.json ---
 echo "[5/8] .claude/settings.json"
