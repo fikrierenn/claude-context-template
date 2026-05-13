@@ -336,11 +336,66 @@ Sohbette `/security-check` yazınca bu talimatlar çalışır.
 
 | Komut | Dosya | Ne yapar |
 |-------|-------|---------|
+| `/code-check` | `commands/code-check.md` | Kod kalitesi: tip güvenliği, hata yönetimi, temizlik |
+| `/css-check` | `commands/css-check.md` | CSS/Tailwind: tutarlılık, responsive, dark mode, a11y |
 | `/security-check` | `commands/security-check.md` | Auth + güvenlik taraması |
-| `/cost-check` | `commands/cost-check.md` | Son N AI çağrısının maliyeti |
+| `/cost-check` | `commands/cost-check.md` | Son AI çağrılarının maliyet analizi |
 | `/release-check` | `commands/release-check.md` | Deploy öncesi checklist |
 | `/db-review` | `commands/db-review.md` | Sorgu ve şema denetimi |
 | `/onboard` | `commands/onboard.md` | Yeni geliştirici için proje turu |
+| `/feature-dev` | `commands/feature-dev.md` | Guided feature geliştirme (keşif → mimari → impl. → review) |
+| `/review-pr` | `commands/review-pr.md` | PR inceleme |
+
+---
+
+### `/code-check` — Kod Kalitesi Denetimi
+
+Unstaged değişiklikleri alır (`git diff`) ve şunları kontrol eder:
+
+```
+/code-check                    # Tüm unstaged değişiklikler
+/code-check src/api/           # Sadece API klasörü
+/code-check auth değişiklikleri # Odak ipucuyla
+```
+
+**Kontrol ettiği şeyler:**
+- CLAUDE.md kural ihlalleri (`any` tip, `console.log`, yasaklı pattern)
+- Tip güvenliği — null/undefined guard, return tipi
+- Hata yönetimi — boş catch, sessiz hata yutma
+- Güvenlik — hardcoded secret, eksik auth kontrolü
+- Temizlik — kullanılmayan import, temp dosya cleanup
+
+**Çıktı:**
+```
+CRITICAL (hemen fix):
+  - src/api/order.ts:42  Auth kontrolü eksik
+
+IMPORTANT:
+  - src/utils/calc.ts:17  Return tipi belirtilmemiş
+
+PASSED: Tip güvenliği ✓, Hata yönetimi ✓, Temizlik ✓
+```
+
+---
+
+### `/css-check` — CSS/Tailwind Tasarım Denetimi
+
+```
+/css-check                         # Tüm unstaged CSS değişiklikleri
+/css-check src/components/Card     # Belirli component
+```
+
+**Kontrol ettiği şeyler:**
+- **Tutarlılık:** Token dışı arbitrary değer (`text-[#ff0000]` → neden `text-red-500` değil?)
+- **Responsive:** Mobile-first mi? Breakpoint atlıyor mu? Fixed genişlik overflow yaratıyor mu?
+- **Dark mode:** `dark:` prefix eksik mi? Hardcoded renk dark mode'u bozuyor mu?
+- **Erişilebilirlik:** `focus:` state var mı? Kontrast sorunu?
+- **Gereksiz karmaşıklık:** `!important`, inline `style=`, aşırı uzun class zinciri
+
+**Ne zaman çalıştırılır:**
+- Yeni component yazınca
+- Tasarım değişikliği commit'inden önce
+- "Mobilde bozuk görünüyor" şikayeti gelince
 
 ---
 
