@@ -8,6 +8,7 @@ Kaynak: `D:/Dev/reporthub` (ReportHub) pilot projesinde canlı kurulup test edil
 
 - **Detaylı kullanım:** [`docs/USAGE.md`](docs/USAGE.md)
 - **Real-world örüntüler:** [`docs/PATTERNS.md`](docs/PATTERNS.md)
+- **Ekibe anlatma rehberi:** [`docs/WORKFLOW_GUIDE.md`](docs/WORKFLOW_GUIDE.md) — sistemi meslektaşlara açıklamak için
 
 ---
 
