@@ -165,6 +165,224 @@ Bu dosya git'e commit edilir. Geçmiş korunur.
 
 ---
 
+## Model Seçimi — Hangi İş İçin Hangi Claude?
+
+Tüm Claude modelleri aynı değil. Doğru modeli doğru iş için kullanmak hem kaliteyi artırır hem de maliyeti ciddi düşürür.
+
+### Model Karşılaştırması
+
+| Model | Güçlü Yönü | Zayıf Yönü | Yaklaşık Maliyet |
+|-------|-----------|------------|-----------------|
+| **Claude Opus** | Derin analiz, zor kararlar, plan yazma | Yavaş, pahalı | ~15× Haiku |
+| **Claude Sonnet** | Kod yazma, refactoring, feature impl. | Orta maliyet | ~3× Haiku |
+| **Claude Haiku** | Hızlı yanıt, format çevirme, basit soru | Karmaşık mantıkta zorlanır | En ucuz |
+
+### Ne Zaman Hangi Model?
+
+**Opus için:**
+- Tier 3 plan yazımı (mimari kararlar, entegrasyon planları)
+- Büyük refactoring'in _planlaması_ (uygulaması değil)
+- Güvenlik açığı analizi
+- "Bu kod neden çalışmıyor, köküne in" tarzı hata ayıklama
+- `plans/*.md` dosyası oluşturma
+
+**Sonnet için (default):**
+- Günlük kod yazma
+- Bug fix uygulaması
+- Yeni feature implementasyonu
+- Test yazma
+- CLAUDE.md ve kurallar güncelleme
+
+**Haiku için:**
+- "Şu değişkeni yeniden adlandır"
+- "Bu JSON'u formatlı yaz"
+- Commit mesajı önerisi
+- Kısa açıklama soruları
+- Agent içinde tekrarlayan basit kontroller
+
+---
+
+### Model Seçimini Otomatikleştirmek
+
+**Yöntem 1 — Claude Code CLI'da oturum açarken:**
+```bash
+claude --model claude-opus-4-7   # Opus ile başlat (planlama oturumu)
+claude --model claude-sonnet-4-6 # Sonnet ile başlat (default, kod oturumu)
+claude --model claude-haiku-4-5-20251001 # Haiku ile başlat (hızlı işler)
+```
+
+**Yöntem 2 — CLAUDE.md'de varsayılan model:**
+
+CLAUDE.md'nin en üstüne eklenebilir:
+```markdown
+<!-- model: claude-sonnet-4-6 -->
+```
+Bu satır Claude Code tarafından varsayılan model ipucu olarak okunur.
+
+**Yöntem 3 — Agent tanımında model belirtmek:**
+
+`.claude/agents/` dosyalarına `model:` frontmatter eklenir:
+```yaml
+---
+name: tier3-plan-writer
+description: Tier 3 iş planı yazar
+model: claude-opus-4-7
+---
+Bu agent mimari kararlar için Opus kullanır...
+```
+
+Farklı agent farklı model kullanır — örneğin:
+- `api-auth-auditor.md` → `model: claude-haiku-4-5-20251001` (tekrar eden tarama)
+- `code-reviewer.md` → `model: claude-sonnet-4-6` (kod analizi)
+- `plan-writer.md` → `model: claude-opus-4-7` (derin analiz)
+
+**Yöntem 4 — /fast komutu (Opus 4.7 Fast Mode):**
+
+Claude Code'da `/fast` komutu ile hızlı mod açılır/kapanır. Bu mod Claude Opus 4.7'yi kullanır ama çıktı üretimi daha hızlıdır. Büyük miktarda kod yazarken veya uzun planlarda kullanışlıdır.
+
+**Yöntem 5 — Skill'de model öneri:**
+
+Skill dosyasına yorum eklenebilir:
+```yaml
+---
+name: mimari-danisman
+description: Sistem mimarisi ve tasarım kararları
+triggers:
+  - "mimari"
+  - "tasarım"
+  - "nasıl yapılandıralım"
+recommended_model: opus  # Bu skill görünce Opus düşün
+---
+```
+
+---
+
+### Pratik Kural Seti
+
+```
+Plan mı yazıyorum?        → Opus
+Kod mı yazıyorum?         → Sonnet (default)
+Tek satır düzeltme mi?    → Haiku
+Agent tekrar eden iş mi?  → Haiku
+"Emin değilim" mi?        → Sonnet (güvenli seçim)
+```
+
+> **Not:** Proje başlangıcında Sonnet'ten başlayın. Planlamada sıkışınca Opus'a geçin. Haiku'yu rutin otomasyon ve agent'lar için kullanın. Maliyetin büyük kısmı uzun planlama sohbetlerinden gelir — bunları Opus'a taşımak paradoksal görünse de genellikle ilk seferde doğru plan çıkardığı için toplam maliyet azalır.
+
+---
+
+## Slash Komutları — Hızlı Aksiyon Tuşları
+
+Claude Code'da `/` ile başlayan komutlar hem yerleşik (built-in) hem de projeye özel olabilir. İkisi de sohbet kutusuna yazılır.
+
+### Yerleşik (Built-in) Komutlar
+
+| Komut | Ne yapar |
+|-------|---------|
+| `/help` | Kullanılabilir tüm komutları listeler |
+| `/compact` | Sohbeti özetleyerek bağlamı küçültür, yer açar |
+| `/clear` | Sohbeti tamamen temizler, sıfırdan başlar |
+| `/fast` | Opus 4.7 Fast Mode'u açar/kapar (daha hızlı çıktı) |
+| `/ultrareview` | Mevcut branch'i çok-agent ile inceler (bkz. aşağıda) |
+| `/vim` | Vim tuş bağlamalarını etkinleştirir |
+
+**Ne zaman `/compact` vs `/clear`?**
+
+```
+/compact → Aynı görev devam ediyor ama bağlam doluysa
+           "şu özelliği bitiriyorum ama context %80 dolu"
+           Özet + devam — iş sürekliliği korunur
+
+/clear   → Görev tamamen değişti
+           "Şimdi bambaşka bir konuya geçeceğiz"
+           Temiz sayfa — önceki bilgi taşınmaz
+```
+
+> **Dikkat:** `/compact` sonrası `.claude/rules/*.md` dosyaları otomatik yeniden yüklenir ama sohbet geçmişi özetlenir. Kritik kararları `docs/journal/` veya `memory/` içinde tutun.
+
+---
+
+### `/ultrareview` — Çok-Agent İnceleme
+
+```
+/ultrareview            # Mevcut branch'i inceler
+/ultrareview 42         # GitHub PR #42'yi inceler
+```
+
+Birden fazla Claude instance paralel çalışır: güvenlik, test coverage, kod kalitesi, mimari uyum ayrı ayrı incelenir ve tek rapor çıkar. Büyük PR'lar için commit öncesi veya review sürecinde kullanılır.
+
+---
+
+### Proje Özel Komutlar (`.claude/commands/`)
+
+Her `.md` dosyası bir slash komutudur. `security-check.md` → `/security-check`.
+
+**Komut dosyası yapısı:**
+
+```markdown
+<!-- .claude/commands/security-check.md -->
+# /security-check
+
+Bu projede güvenlik taraması yap:
+1. api-auth-auditor agent'ı çalıştır
+2. code-reviewer agent'ı çalıştır
+3. .env dosyaları git'e eklenmiş mi kontrol et
+4. Bulgular: CRITICAL → hemen fix, MEDIUM → journal'a not
+```
+
+Sohbette `/security-check` yazınca bu talimatlar çalışır.
+
+**Örnek komutlar ve amacı:**
+
+| Komut | Dosya | Ne yapar |
+|-------|-------|---------|
+| `/security-check` | `commands/security-check.md` | Auth + güvenlik taraması |
+| `/cost-check` | `commands/cost-check.md` | Son N AI çağrısının maliyeti |
+| `/release-check` | `commands/release-check.md` | Deploy öncesi checklist |
+| `/db-review` | `commands/db-review.md` | Sorgu ve şema denetimi |
+| `/onboard` | `commands/onboard.md` | Yeni geliştirici için proje turu |
+
+---
+
+### Komut Yaratmak — Adım Adım
+
+**1. Dosyayı oluştur:**
+```bash
+touch .claude/commands/cost-check.md
+```
+
+**2. İçeriği yaz:**
+```markdown
+# /cost-check
+
+Son 24 saatte yapılan AI çağrılarını analiz et:
+1. lib/utils/costTracking.ts ve log dosyalarına bak
+2. En pahalı 3 çağrıyı listele
+3. Toplam maliyet tahmini ver
+4. Daha ucuz alternatif öneri sunabiliyorsan sun
+```
+
+**3. Kullan:**
+```
+/cost-check
+```
+
+> İpucu: Komutlar ne kadar spesifik olursa o kadar iyi çalışır. "Güvenlik kontrol et" yerine "şu dosyalarda şu kuralları kontrol et" yazın.
+
+---
+
+### Klavye Kısayolları (Claude Code Desktop/IDE)
+
+| Kısayol | İşlev |
+|---------|-------|
+| `Escape` | Aktif yanıtı durdur |
+| `↑` | Önceki mesajı getir |
+| `Ctrl+C` | İşlemi iptal et |
+| `Ctrl+L` | `/clear` kısayolu |
+| `Tab` | Komut tamamlama (/ yazınca) |
+
+---
+
 ## Tier Sistemi — Ne Zaman Plan Yazılır?
 
 | Tier | Kural | Örnek |
