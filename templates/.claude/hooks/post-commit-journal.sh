@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 # Post-commit journal auto-update — Claude Code PostToolUse hook.
 #
-# Tetikleyici: settings.json PostToolUse, matcher = "Bash".
 # Stdin'den JSON okur. Sadece basarili `git commit` komutlarinda
 # docs/journal/YYYY-MM-DD.md'ye son commit'in ozetini append eder.
-#
-# Journal dosyasi yoksa header ile olusturur. "## Commit'ler" bolumu
-# yoksa ekler. Her commit icin hash, subject ve dosya listesi yazilir.
 
 set -e
 cd "$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
@@ -33,8 +29,9 @@ files=$(git log -1 --name-only --format='' 2>/dev/null | grep -v '^$' | head -10
 file_count=$(echo "$files" | grep -c '.' || echo 0)
 
 today=$(date +%Y-%m-%d)
-journal="docs/journal/$today.md"
-mkdir -p docs/journal
+journal_dir="docs/journal"
+journal="$journal_dir/$today.md"
+mkdir -p "$journal_dir"
 
 if [ ! -f "$journal" ]; then
   echo "# Oturum Gunlugu — $today" > "$journal"

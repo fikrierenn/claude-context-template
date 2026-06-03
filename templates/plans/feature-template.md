@@ -3,8 +3,7 @@
 > Bu şablon Tier 3 işler içindir. Tier 1 (yok) ve Tier 2 (TODO satırı) için kullanma.
 
 **Tarih:** YYYY-MM-DD
-**Proje:** `bkm` | `belinza` | `yonetiq` | `mcp` | `crossproject`
-**Yazan:** Fikri / Claude (oturum ID: `<id>`)
+**Yazan:** <ad> / Claude (oturum ID: `<id>`)
 **Durum:** `Taslak` | `Onaylandı` | `Uygulamada` | `Tamamlandı` | `İptal`
 
 ---
@@ -81,7 +80,7 @@ Eğer bu değişiklik production'da sorun yaratırsa nasıl geri alınır?
 - ADR: `docs/ADR/<NN>-<konu>.md` (varsa)
 - Önceki plan: `plans/<NN-1>-<konu>.md` (varsa)
 - TODO ID'leri: ...
-- Konuşma referans: `docs/journal/<proje>/YYYY-MM-DD.md`
+- Konuşma referans: `docs/journal/YYYY-MM-DD.md`
 
 ## 9. Onay
 

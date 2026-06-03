@@ -41,7 +41,7 @@ Kullanıcıya göster, "tamam" / "şu değişiklik" / "iptal" geri bildirim al.
 
 ### 3. Implementation
 
-- Her commit message'da plan referansı: `feat(bkm): X (plan: 01)`
+- Her commit message'da plan referansı: `feat: X (plan: 01)`
 - TODO.md'de plan adımları (Faz 0/1 altında)
 
 ### 4. Tamamlanma

@@ -8,10 +8,6 @@
 
 2026-04-27
 
-## Proje
-
-`crossproject`
-
 ## Bağlam
 
 Kullanıcı geri dönüşü (Oturum 4):
@@ -102,6 +98,6 @@ Tier 3 commit'lerde plan referansı zorunlu (`(plan: NN)` mesajda).
 
 ## Referanslar
 
-- Konuşma: `docs/journal/_crossproject/2026-04-27.md` (Oturum 4)
+- Konuşma: `docs/journal/2026-04-27.md` (Oturum 4)
 - TODO ID: `C-16` (kurulum), `C-17` (pre-commit hook), `C-18` (handoff plan check)
 - Kullanıcı verbatim: "kod yazmak yasak — önce plan üretilecek" + "en küçük şeye plan yapmakta mantıksız olabilir ama?"
