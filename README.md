@@ -6,6 +6,11 @@ Amaç: CLAUDE.md şişkinliği, session log karmaşası, uncommitted birikmesi, 
 
 Kaynak: `D:/Dev/reporthub` (ReportHub) pilot projesinde canlı kurulup test edildi, proje-bağımsız hale getirildi.
 
+- **Deploy / devir:** [`docs/DEPLOY.md`](docs/DEPLOY.md) — template'i temiz paketleyip ekibe verme (`python bin/package.py`)
+- **Geliştirici kataloğu:** [`docs/GELISTIRICI_REHBERI.md`](docs/GELISTIRICI_REHBERI.md) — neyi nasıl tetiklerim (skill/agent/komut/hook/kural)
+- **Somut senaryo:** [`docs/PROJE_OZEL_ORNEK_SENARYO.md`](docs/PROJE_OZEL_ORNEK_SENARYO.md) — ERP/fatura skill örneği: ne sağlar, sana ne yazdırırım (kopyala-yapıştır prompt)
+- **Proje-özel kavram:** [`docs/PROJE_OZEL_KAVRAM.md`](docs/PROJE_OZEL_KAVRAM.md) — skill/agent/hook neden/niçin var, ne zaman doğar (zihinsel model)
+- **Proje-özel oluşturma:** [`docs/PROJE_OZEL_OLUSTURMA.md`](docs/PROJE_OZEL_OLUSTURMA.md) — kendi domain'ine özel skill/agent/komut yazma (örnekli)
 - **Detaylı kullanım:** [`docs/USAGE.md`](docs/USAGE.md)
 - **Real-world örüntüler:** [`docs/PATTERNS.md`](docs/PATTERNS.md)
 - **Ekibe anlatma rehberi:** [`docs/WORKFLOW_GUIDE.md`](docs/WORKFLOW_GUIDE.md) — sistemi meslektaşlara açıklamak için
@@ -91,12 +96,21 @@ Bağlam yönetimi anayasasının **3 katman ayrımı** ilkesine göre:
 
 ## Evrensel Kurallar
 
-Her stack'te aktif (`_universal/`):
+Her stack'te aktif (`_universal/`), bootstrap hepsini kopyalar:
 
-- `session-protocol.md` — **koşulsuz hook kuralı**, oturum başı/ortası/sonu ritüelleri. (v1.1 YENİ)
+- `session-protocol.md` — **koşulsuz hook kuralı**, oturum başı/ortası/sonu ritüelleri
+- `session-memory.md` — bağlam disiplin kuralları, 3 katman ayrımı
 - `commit-discipline.md` — git/commit/branch-per-ask, 15 dosya eşiği
-- `session-memory.md` — bağlam disiplin kuralları
 - `security-principles.md` — temel güvenlik (XSS, SQL, secrets)
+- `coding-discipline.md` — Karpathy: spekülatif kod yasak, surgical changes
+- `response-style.md` — özlülük, iltifat/adım-duyurusu yok
+- `before-major-change.md` — silme/rename/refactor öncesi grep + cascade + onay
+- `file-size-discipline.md` — yeni dosya < 300 satır, 500 = kırmızı çizgi
+- `plan-first.md` — Tier 3 işte plan zorunlu
+- `error-handling.md` — beklenen sonuç vs gerçek exception, sessiz yutma yasak
+- `test-discipline.md` — "bitti" demeden önce test çalıştır (build ≠ test)
+- `todo-verification.md` — TODO iddiasını canlı kodla doğrula, sonra fix
+- `agent-usage.md` — subagent delegasyonu + model katmanlama (haiku/sonnet/opus)
 - `turkish-ui.md` — opsiyonel Türkçe UI kuralları (`--no-turkish` kapatır)
 
 ---
