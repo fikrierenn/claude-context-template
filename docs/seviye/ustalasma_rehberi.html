@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  @page :first { margin: 0; }
+  * { box-sizing: border-box; }
+  body { font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif; color:#1c2430; line-height:1.55; font-size:11pt; margin:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  h1,h2,h3{ color:#0b2a4a; line-height:1.2; }
+  h2{ font-size:19pt; border-bottom:3px solid #2c7be5; padding-bottom:5px; margin-top:0; }
+  h3{ font-size:13pt; margin:16px 0 5px; color:#145; }
+  p{ margin:7px 0; }
+  code{ background:#eef2f7; padding:1.5px 5px; border-radius:4px; font-family:"Consolas",monospace; font-size:9.3pt; color:#b5326e; }
+  pre{ background:#0d1b2a; color:#e6edf3; padding:12px 15px; border-radius:8px; font-family:"Consolas",monospace; font-size:8.6pt; line-height:1.5; white-space:pre-wrap; }
+  pre .c{color:#7d8fa3;} pre .g{color:#7ee787;} pre .y{color:#ffd479;} pre .k{color:#79c0ff;}
+  table{ border-collapse:collapse; width:100%; margin:9px 0; font-size:9.4pt; }
+  th{ background:#2c7be5; color:#fff; text-align:left; padding:6px 8px; }
+  td{ border:1px solid #d4dce6; padding:5px 8px; vertical-align:top; }
+  tr:nth-child(even) td{ background:#f5f8fc; }
+  .page{ page-break-after:always; padding:3mm 1mm; }
+  .page:last-child{ page-break-after:auto; }
+  .cover{ height:297mm; width:210mm; margin:0; background:linear-gradient(140deg,#0b2a4a 0%,#11487f 55%,#2c7be5 100%); color:#fff; display:flex; flex-direction:column; justify-content:center; page-break-after:always; position:relative; }
+  .cover-inner{ padding:0 26mm; }
+  .cover .kicker{ font-size:13pt; letter-spacing:3px; text-transform:uppercase; opacity:.8; }
+  .cover h1{ color:#fff; font-size:38pt; margin:14px 0 6px; line-height:1.05; }
+  .cover .sub{ font-size:15pt; opacity:.92; font-weight:300; max-width:150mm; }
+  .cover .ladder{ margin-top:30px; }
+  .cover .foot{ position:absolute; bottom:24mm; left:26mm; right:26mm; font-size:10pt; opacity:.75; border-top:1px solid rgba(255,255,255,.3); padding-top:10px; }
+  .box{ border-radius:8px; padding:10px 14px; margin:10px 0; font-size:9.8pt; }
+  .tip{ background:#e9f7ef; border-left:5px solid #2bb673; }
+  .warn{ background:#fdecea; border-left:5px solid #e74c3c; }
+  .note{ background:#fff6e5; border-left:5px solid #f5a623; }
+  .key{ background:#eaf1fb; border-left:5px solid #2c7be5; }
+  .box b{ color:#0b2a4a; }
+  .lead{ font-size:12pt; color:#37485c; margin-bottom:12px; }
+  ul,ol{ margin:6px 0; padding-left:20px; } li{ margin:3px 0; }
+  .small{ font-size:8.6pt; color:#667; }
+  .center{ text-align:center; }
+  svg{ display:block; margin:12px auto; }
+  .lvltag{ display:inline-block; color:#fff; border-radius:6px; padding:3px 12px; font-size:11pt; font-weight:700; letter-spacing:1px; }
+  .l0{background:#8a94a6;} .l1{background:#2bb673;} .l2{background:#2c7be5;} .l3{background:#7d4ce0;} .l4{background:#e0792c;}
+  .lvlhead{ display:flex; align-items:center; gap:12px; border-bottom:3px solid #2c7be5; padding-bottom:6px; margin-bottom:4px;}
+  .lvlhead h2{ border:none; padding:0; margin:0; font-size:18pt; }
+  .twocol{ display:flex; gap:14px; } .twocol>div{ flex:1; }
+  .chip{ display:inline-block; background:#eef2f7; border:1px solid #d4dce6; border-radius:6px; padding:2px 8px; font-size:8.8pt; margin:2px; font-family:Consolas,monospace; }
+  .check li{ list-style:none; margin-left:-12px; } .check li:before{ content:"✓ "; color:#2bb673; font-weight:bold; }
+  .gate{ background:#0b2a4a; color:#fff; border-radius:8px; padding:8px 14px; margin:10px 0; font-size:9.6pt; }
+  .gate b{ color:#ffd479; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="kicker">Seviye Seviye Ustalaşma</div>
+    <h1>Claude Code<br>Ustalık Yolu</h1>
+    <div class="sub">Acemi'den Plus'a: her seviyede ne yaparsın, hangi araçları kullanırsın, skill / agent / hook'u nasıl oluşturursun.</div>
+    <svg class="ladder" width="540" height="150" viewBox="0 0 540 150">
+      <defs><marker id="aw" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#fff"/></marker></defs>
+      <line x1="20" y1="135" x2="520" y2="20" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#aw)"/>
+      <g font-size="11" font-weight="bold" text-anchor="middle">
+        <circle cx="50" cy="128" r="20" fill="#8a94a6"/><text x="50" y="132" fill="#fff">L0</text><text x="50" y="160" fill="#cfe0f5" font-weight="400">Acemi</text>
+        <circle cx="170" cy="100" r="20" fill="#2bb673"/><text x="170" y="104" fill="#fff">L1</text><text x="170" y="160" fill="#cfe0f5" font-weight="400">Junior</text>
+        <circle cx="285" cy="74" r="20" fill="#2c7be5"/><text x="285" y="78" fill="#fff">L2</text><text x="285" y="160" fill="#cfe0f5" font-weight="400">Senior</text>
+        <circle cx="400" cy="48" r="20" fill="#7d4ce0"/><text x="400" y="52" fill="#fff">L3</text><text x="400" y="160" fill="#cfe0f5" font-weight="400">Leader</text>
+        <circle cx="500" cy="24" r="20" fill="#e0792c"/><text x="500" y="28" fill="#fff">L4</text><text x="500" y="160" fill="#cfe0f5" font-weight="400">Plus</text>
+      </g>
+    </svg>
+  </div>
+  <div class="foot">claude-context-template · Ustalık Yolu · Sürüm 1.0 · © Fikri Eren 2026</div>
+</div>
+
+<!-- HARITA / MATRIS -->
+<div class="page">
+  <h2>Yetkinlik Haritası — bir bakışta</h2>
+  <p class="lead">Her seviye bir öncekini kapsar. "Geçiş kapısı"nı geçmeden üst seviyeye atlama.</p>
+  <table>
+    <tr><th>Yetkinlik</th><th>L0 Acemi</th><th>L1 Junior</th><th>L2 Senior</th><th>L3 Leader</th><th>L4 Plus</th></tr>
+    <tr><td>Oturum aç/kapat, onayla</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Komut + skill kullan (/code-check…)</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Kural/journal/TODO yönet</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Skill / agent / hook <b>oluştur</b></td><td>—</td><td>kısmi</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Plan-first (Tier 3), agent çağır</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Template kur/güncelle, ekip standardı</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Workflow orkestrasyon, MCP, meta</td><td>—</td><td>—</td><td>—</td><td>kısmi</td><td>✓</td></tr>
+  </table>
+
+  <h3>Skill / Agent / Hook oluşturma karmaşıklığı seviyeye göre</h3>
+  <svg width="500" height="120" viewBox="0 0 500 120">
+    <rect x="10" y="70" width="150" height="34" rx="6" fill="#e9f7ef" stroke="#2bb673"/>
+    <text x="85" y="58" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e7a4d">L1 Junior</text>
+    <text x="85" y="91" text-anchor="middle" font-size="9" fill="#234">"kurala yaz" dedirt</text>
+    <rect x="175" y="55" width="150" height="49" rx="6" fill="#eaf1fb" stroke="#2c7be5"/>
+    <text x="250" y="43" text-anchor="middle" font-size="10" font-weight="bold" fill="#16518f">L2 Senior</text>
+    <text x="250" y="76" text-anchor="middle" font-size="9" fill="#234">skill+agent+basit hook</text>
+    <text x="250" y="91" text-anchor="middle" font-size="9" fill="#234">kendin yazar/yazdırır</text>
+    <rect x="340" y="35" width="150" height="69" rx="6" fill="#f3edfc" stroke="#7d4ce0"/>
+    <text x="415" y="23" text-anchor="middle" font-size="10" font-weight="bold" fill="#5b32b0">L3+ Leader/Plus</text>
+    <text x="415" y="58" text-anchor="middle" font-size="9" fill="#234">hook ekosistemi,</text>
+    <text x="415" y="73" text-anchor="middle" font-size="9" fill="#234">workflow, MCP,</text>
+    <text x="415" y="88" text-anchor="middle" font-size="9" fill="#234">ekip standardı</text>
+  </svg>
+  <div class="box key"><b>Felsefe:</b> Aşağı seviye = aracı <i>kullanır</i>. Yukarı seviye = aracı <i>üretir</i> ve ekip için <i>standartlaştırır</i>. Ustalık, tekrar eden acıyı kalıcı yapıya çevirmektir.</div>
+
+  <div class="box warn"><b>Baştan netleşsin:</b> Bu sistemdeki otomatik kolaylıkların (oturum özeti, plan-onay, otomatik günlük, güvenlik bloğu, commit disiplini) hiçbiri Claude'un hazır sihri değil. Her biri <b>birinin yazdığı/yazdırdığı skill, agent ve hook sayesinde</b> çalışıyor — L0-L1'de hazır bulursun, L2'den sonra <b>kendin üretirsin</b>. Yukarı tırmanmak = bu yapının daha çoğunu sen yazmak.</div>
+
+  <h3>Hangi söz → hangi yapı → ne yapar</h3>
+  <table>
+    <tr><th>Sen dersin</th><th>Hangi yapı sayesinde</th><th>Ne yapar</th></tr>
+    <tr><td><code>günaydın</code></td><td>session-start hook + session-handoff</td><td>git/TODO/journal okur, "nerede kaldık" özetler</td></tr>
+    <tr><td><code>iyi geceler</code> / <code>/handoff</code></td><td>session-handoff skill</td><td>bugünü journale yazar, TODO işaretler, journal+TODO commit'ler</td></tr>
+    <tr><td>"bunu commit'le"</td><td>commit-discipline kuralı</td><td>tek-konu, doğru formatlı commit</td></tr>
+    <tr><td>"dosyaları böl"</td><td>commit-splitter agent</td><td>15+ dosyayı anlamlı commit bucket'larına ayırır</td></tr>
+    <tr><td>"hangi seçenek?"</td><td>llm-council skill</td><td>5 danışman + sentez ile karar analizi</td></tr>
+    <tr><td><code>/verify</code></td><td>verify skill + test-discipline</td><td>uygulamayı çalıştırır, davranışı doğrular</td></tr>
+    <tr><td>(commit'te şifre)</td><td>pre-commit-antipattern hook</td><td>sızıntıyı yakalar, commit'i bloklar</td></tr>
+    <tr><td>(plan gerektiren iş)</td><td>plan-first kuralı</td><td>kod yazmadan önce plan + onay ister</td></tr>
+  </table>
+  <div class="box key center"><b>Kalıp:</b> her kolaylık = <b>tetik söz</b> + <b>senin kurduğun yapı</b>. Yapıyı sil → kolaylık kaybolur. Yeni yapı yaz → yeni kolaylık.</div>
+</div>
+
+<!-- L0 ACEMI -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l0">L0</span><h2>Acemi — "Konuşabiliyorum"</h2></div>
+  <p class="lead">Hedef: Korkmadan oturum açıp iş yaptırabilmek. Kod bilmek şart değil.</p>
+
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li><code>cd proje</code> → <code>claude</code> ile aç</li>
+    <li><code>günaydın</code> / <code>iyi geceler</code> ritüeli</li>
+    <li>Hedefi net Türkçe söyle, planı onayla</li>
+    <li>"bunu commit'le" ile kayıt noktası</li>
+    <li>Gösterileni oku, körü körüne onaylama</li>
+  </ul>
+
+  <h3>Kullandığın araçlar</h3>
+  <p><span class="chip">günaydın</span><span class="chip">iyi geceler</span><span class="chip">/handoff</span><span class="chip">"commit'le"</span></p>
+
+  <h3>Skill / agent / hook oluşturma — bu seviyede</h3>
+  <div class="box note"><b>Henüz oluşturmuyorsun.</b> Hook/skill/kural zaten kurulu (bootstrap ile geldi) — sen sadece tetikliyorsun. Yaratma L1'de "kurala yaz" ile başlar.</div>
+
+  <h3>Sorumluluk</h3>
+  <p>Onayladığın şeyden sorumlusun. Anlamadıysan sor: "bu ne yapıyor?"</p>
+
+  <div class="gate"><b>Geçiş kapısı → L1:</b> Bir haftalık iş akışını yardımsız tamamladıysan, cheat-sheet'teki komutları merak etmeye başladıysan Junior'sın.</div>
+</div>
+
+<!-- L1 JUNIOR -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l1">L1</span><h2>Junior — "Araçları kullanıyorum"</h2></div>
+  <p class="lead">Hedef: Hazır komut/skill/kuralları bilinçli kullanmak; hafıza katmanını yönetmek.</p>
+
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Komutlar: <code>/code-check</code>, <code>/verify</code>, <code>/security-check</code>, <code>/feature-dev</code></li>
+    <li><code>/compact</code> (devam) vs <code>/clear</code> (yeni iş) farkı</li>
+    <li>Kuralları okur, neden var anlar; TODO/journal takip eder</li>
+    <li>Commit disiplini: 1 commit = 1 konu, 15 dosya eşiği</li>
+    <li>Tier farkı: trivial mi, plan gerektirir mi (sezgi)</li>
+  </ul>
+
+  <h3>3 katman hafıza — nereye ne yazılır</h3>
+  <table>
+    <tr><th>Bilgi</th><th>Yer</th></tr>
+    <tr><td>Proje kimliği (değişmez)</td><td><code>CLAUDE.md</code></td></tr>
+    <tr><td>Kalıcı davranış kuralı</td><td><code>.claude/rules/&lt;konu&gt;.md</code></td></tr>
+    <tr><td>Plan / öncelik</td><td><code>TODO.md</code></td></tr>
+    <tr><td>Günlük notu</td><td><code>docs/journal/YYYY-MM-DD.md</code></td></tr>
+  </table>
+
+  <h3>Skill / agent / hook oluşturma — bu seviyede</h3>
+  <p>Sıfırdan yazmıyorsun ama <b>kural ürettiriyorsun</b>. Tekrarlanan bir talimatı kalıcı yap:</p>
+  <pre><span class="c"># Sen:</span>
+bunu kalıcı kurala yaz: e-posta metinleri her zaman Türkçe olacak
+
+<span class="c"># Claude → .claude/rules/&lt;konu&gt;.md dosyasına işler, onayını alır</span></pre>
+  <div class="box tip"><b>Junior refleksi:</b> Aynı şeyi 2. kez söylüyorsan → "kurala yaz" de. Hafıza dosyada yaşar, konuşmada değil.</div>
+
+  <div class="gate"><b>Geçiş kapısı → L2:</b> Kuralları rahat yönetiyor, "keşke buna özel bir skill olsa" diyorsan; agent/skill mantığını merak ediyorsan Senior'sın.</div>
+</div>
+
+<!-- L2 SENIOR -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l2">L2</span><h2>Senior — "Araç üretiyorum"</h2></div>
+  <p class="lead">Hedef: Proje-özel skill / agent / hook yazmak. Domain bilgisini kalıcı yapıya gömmek.</p>
+
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Skill / agent / hook <b>oluşturur</b> (frontmatter, tetik, kısıt)</li>
+    <li>Model katmanı seçer: haiku (mekanik) / sonnet (analiz) / opus (yüksek-risk)</li>
+    <li>Salt-okuma vs yazma ayrımı uygular (denetçi agent yazamaz)</li>
+    <li>Tier 3 işte plan yazar, agent'ları çağırır (code-review, security)</li>
+    <li>Proje-özel kural dosyaları yazar</li>
+  </ul>
+
+  <h3>Skill oluşturma — anatomi</h3>
+  <pre><span class="c"># .claude/skills/&lt;ad&gt;/SKILL.md</span>
+<span class="k">---</span>
+name: migration-writer
+description: Idempotent SQL migration yazar. "migration yaz",
+  "şema değiştir" denildiğinde tetiklenir. Yedek almadan silme YASAK.
+allowed-tools: Read, Write, Edit, Grep   <span class="c"># yetkiyi KISITLA</span>
+user-invocable: true
+model: inherit
+<span class="k">---</span>
+<span class="c"># Gövde: amaç, adımlar, kısıtlar, çıktı formatı</span></pre>
+  <div class="box key"><b>description = router.</b> Tetik ifadelerini buraya gerçek cümlelerle göm — Claude ne zaman çağıracağını buradan anlar.</div>
+
+  <h3>Agent oluşturma — model + salt-okuma</h3>
+  <pre><span class="k">---</span>
+name: sql-sp-reviewer
+description: SQL'in İŞ DOĞRULUĞUNU denetler (transaction, ledger).
+  SP yazıldıktan sonra proaktif çağır. security-reviewer ayrı bakar.
+tools: Read, Grep, Glob, Bash        <span class="c"># Edit/Write YOK = salt-okuma</span>
+model: opus                          <span class="c"># sessiz-bozulma riski → en güçlü</span>
+<span class="k">---</span></pre>
+
+  <h3>Hook oluşturma — otomatik koruma</h3>
+  <pre><span class="c"># .claude/hooks/delete-guard.sh — PreToolUse</span>
+cmd=$(echo "$input" | jq -r '.tool_input.command // ""')
+if echo "$cmd" | grep -qiE 'DELETE FROM (ledger|transactions)'; then
+  echo "BLOKLANDI: finansal kayit silme yasak." >&2
+  exit 2          <span class="c"># exit 2 = tool'u durdur</span>
+fi
+exit 0</pre>
+  <p class="small">Kayıt: <code>.claude/settings.json</code> → <code>PreToolUse</code> bloğuna ekle (matcher: Bash).</p>
+
+  <div class="box tip"><b>Pratik:</b> Çoğu zaman kendin yazmazsın — Claude'a "şu skill'i oluştur, şunları bilsin, şu ifadelerle tetiklensin" dersin, o dosyayı yazar, sen onaylarsın.</div>
+
+  <div class="gate"><b>Geçiş kapısı → L3:</b> Kendi projende rahat araç üretiyor, başka devler "senin kuralların" diye soruyorsa; ekip standardını düşünmeye başladıysan Leader'sın.</div>
+</div>
+
+<!-- L3 LEADER -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l3">L3</span><h2>Leader — "Ekip standardı kuruyorum"</h2></div>
+  <p class="lead">Hedef: Template'i ekibe yaymak, yönetmek; karar ve onboarding'i sistematik kılmak.</p>
+
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Yeni projeye template kurar: <code>bootstrap.ps1/.sh</code></li>
+    <li>Template iyileşince projelere yayar: <code>--update</code> (proje-özel'e dokunmaz)</li>
+    <li>Evrensel vs stack vs proje kural ayrımını yönetir</li>
+    <li>Mimari karar → ADR yazar; kararsızlıkta <code>council this</code></li>
+    <li>Agent fleet + hook ekosistemi stratejisi (faz-kapanış kapısı vb.)</li>
+    <li>Yeni dev onboarding: hangi doc kime (acemi rehberi → bu rehber)</li>
+  </ul>
+
+  <h3>Template kurulum / güncelleme</h3>
+  <pre><span class="c"># Yeni proje</span>
+pwsh bootstrap.ps1 -ProjectPath "D:\Dev\proje" -ProjectName "Proje" -Stack dotnet-mvc
+
+<span class="c"># Template iyileşti → tüm projelere yay (proje-özel korunur)</span>
+for p in api web cli; do bash bootstrap.sh --path /d/Dev/$p --update; done</pre>
+
+  <h3>Stack seçimi</h3>
+  <table>
+    <tr><th>Stack</th><th>Ne zaman</th></tr>
+    <tr><td><code>dotnet-mvc</code></td><td>ASP.NET Core MVC + EF + SQL Server, Razor</td></tr>
+    <tr><td><code>nodejs-typescript</code></td><td>Node + TS (Express/Fastify/Next)</td></tr>
+    <tr><td><code>python-generic</code></td><td>Python (Django/FastAPI/Flask)</td></tr>
+    <tr><td><code>none</code></td><td>Stack-bağımsız, sadece universal + proje</td></tr>
+  </table>
+
+  <h3>Skill / agent / hook oluşturma — bu seviyede</h3>
+  <p>Tekil değil <b>ekosistem</b>: birbirine atıf yapan skill çiftleri, faz-kapanış kapısı (build→review→security zinciri), takım çapında kural seti. Template'e generic katkı (PR).</p>
+  <div class="box note"><b>Governance:</b> Stale skill/kural = aktif zarar. Periyodik gözden geçir: "son 2 ayda tetiklendi mi, hâlâ doğru mu?" Hayır → emekli et/sil.</div>
+
+  <div class="gate"><b>Geçiş kapısı → L4:</b> Çok-ajanlı orkestrasyon, MCP entegrasyonu, ölçüm/otomasyon ihtiyacı doğduysa Plus'tasın.</div>
+</div>
+
+<!-- L4 PLUS -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l4">L4</span><h2>Plus — "Sistemi otomatikleştiriyorum"</h2></div>
+  <p class="lead">Hedef: Tek bağlama sığmayan işleri orkestre etmek; kendi araçlarını sisteme bağlamak.</p>
+
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Workflow orkestrasyon: onlarca agent fan-out + adversarial verify</li>
+    <li>MCP server yazar (kendi API/DB'ni Claude'a tool olarak bağlar)</li>
+    <li>Çok-hook'lu pipeline (format + lint + test + bildirim)</li>
+    <li>Zamanlanmış/loop görevler (cron routine, <code>/loop</code>)</li>
+    <li>Meta: sistemin kendini iyileştirmesi, telemetri, ölçüm</li>
+  </ul>
+
+  <h3>Workflow orkestrasyon (kavram)</h3>
+  <pre><span class="c"># Çok dosyalı review: her boyut bulur → her bulgu doğrulanır</span>
+pipeline(DIMENSIONS,
+  d =&gt; agent(d.prompt, {schema, phase:'Review'}),
+  review =&gt; parallel(review.findings.map(f =&gt;
+     agent(`Adversarially verify: ${f}`, {phase:'Verify'}))))</pre>
+  <p class="small">Workflow = deterministik kontrol akışı (loop/fan-out/verify). Sadece kullanıcı açıkça isterse veya ultracode açıkken.</p>
+
+  <h3>MCP — kendi tool'unu bağla</h3>
+  <p>SQL Server, dosya sistemi, takvim, e-posta… Claude'a yeni yetenek = MCP server. Python (FastMCP) veya TS (MCP SDK). Bu repodaki <code>sqlserver-mcp-server</code> örnek.</p>
+
+  <h3>Hook ekosistemi (ileri)</h3>
+  <table>
+    <tr><th>Olay</th><th>İleri kullanım</th></tr>
+    <tr><td><code>PostToolUse</code> (Edit)</td><td>Otomatik format (prettier/dotnet format)</td></tr>
+    <tr><td><code>Stop</code></td><td>Yanıt bitince test/lint + bildirim</td></tr>
+    <tr><td><code>UserPromptSubmit</code></td><td>Bağlam enjeksiyonu, mesaj zenginleştirme</td></tr>
+  </table>
+
+  <div class="box key"><b>Plus zihniyeti:</b> Artık tek tek işleri değil, <i>iş üreten sistemleri</i> tasarlıyorsun. Token bütçesi ve doğrulama (verify) birinci sınıf tasarım girdisi.</div>
+
+  <div class="box warn"><b>Aşırı-mühendislik tuzağı:</b> Güçlü ≠ gerekli. Workflow/MCP pahalıdır. İhtiyaç kanıtlanmadan kurma — <code>coding-discipline</code> ilkesi burada da geçerli.</div>
+</div>
+
+<!-- KAPANIS / OZET -->
+<div class="page">
+  <h2>Hepsi tek sayfada</h2>
+  <table>
+    <tr><th>Seviye</th><th>Cümle</th><th>Oluşturma</th><th>Anahtar araç</th></tr>
+    <tr><td><b>L0 Acemi</b></td><td>Konuşabiliyorum</td><td>—</td><td>günaydın / iyi geceler</td></tr>
+    <tr><td><b>L1 Junior</b></td><td>Araçları kullanıyorum</td><td>"kurala yaz"</td><td>/code-check, /verify, compact/clear</td></tr>
+    <tr><td><b>L2 Senior</b></td><td>Araç üretiyorum</td><td>skill+agent+hook</td><td>frontmatter, model tier, plan-first</td></tr>
+    <tr><td><b>L3 Leader</b></td><td>Ekip standardı kuruyorum</td><td>ekosistem + template</td><td>bootstrap, ADR, council, governance</td></tr>
+    <tr><td><b>L4 Plus</b></td><td>Sistemi otomatikleştiriyorum</td><td>workflow + MCP</td><td>orkestrasyon, MCP, çok-hook</td></tr>
+  </table>
+
+  <h3>Üç değişmez ilke (her seviyede)</h3>
+  <div class="twocol">
+    <div class="box tip"><b>1 · Yazılı olan yaşar</b><br>Claude hatırlamaz. Kural/journal/dosya = kalıcı hafıza.</div>
+    <div class="box key"><b>2 · Karar insanda</b><br>Claude uygular, sen onaylarsın. Gösterileni oku.</div>
+  </div>
+  <div class="box note"><b>3 · Acıyı kalıcı yapıya çevir</b> — Aynı şeyi 2. kez yaptıysan/anlattıysan: kural, skill, agent veya hook doğmalı. İlk kez yapma, ikinci kez doğur, üçüncü olmasın.</div>
+
+  <h3>Daha derine</h3>
+  <p><span class="chip">acemi_rehberi.pdf</span> ilk adımlar ·
+     <span class="chip">GELISTIRICI_REHBERI.md</span> araç kataloğu ·
+     <span class="chip">PROJE_OZEL_KAVRAM.md</span> neden/niçin ·
+     <span class="chip">PROJE_OZEL_ORNEK_SENARYO.md</span> kopyala-yapıştır prompt ·
+     <span class="chip">PROJE_OZEL_OLUSTURMA.md</span> teknik yazım ·
+     <span class="chip">USAGE.md</span> bootstrap</p>
+
+  <div class="box key center"><b>Tek cümlelik yol:</b> Kullan (L0-L1) → Üret (L2) → Standartlaştır (L3) → Otomatikleştir (L4).</div>
+  <p class="small center" style="margin-top:18px;">claude-context-template · Ustalık Yolu · Sürüm 1.0</p>
+</div>
+
+</body>
+</html>

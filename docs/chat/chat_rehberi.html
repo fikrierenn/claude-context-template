@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../_guide.css">
+<style>
+  .cover{ background:linear-gradient(140deg,#0a3d2e 0%,#127a52 55%,#2bb673 100%); }
+  .surf{ display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.35); padding:5px 14px; border-radius:20px; font-size:10.5pt; margin-top:24px; }
+  h2{ border-color:#2bb673; } .lvlhead{ border-color:#2bb673; }
+  th{ background:#2bb673; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-inner">
+    <div class="kicker">Ustalık Yolu · Sohbet</div>
+    <h1>Claude Chat<br>(claude.ai)</h1>
+    <div class="sub">Web/uygulama sohbetinde Acemi'den Plus'a: Projeler, özel talimatlar, proje bilgisi, hafıza ve Skills.</div>
+    <div class="surf">💬 claude.ai · Projeler + Skills + Connectors · git/hook/CLI YOK</div>
+  </div>
+  <div class="foot">claude-context-template · Chat Rehberi · Sürüm 1.0 · © Fikri Eren 2026</div>
+</div>
+
+<!-- INTRO + MAP -->
+<div class="page">
+  <h2>Sohbet ortamı: neyi var, neyi yok</h2>
+  <p class="lead">Aynı felsefe (Claude hatırlamaz → bağlamı dışsallaştır) ama mekanikler farklı. Burada dosya/terminal/hook yok; bunun yerine <b>Projeler</b> ekosistemi var.</p>
+
+  <h3>Kavram köprüsü — Code → Chat karşılığı</h3>
+  <table>
+    <tr><th>Code (terminal/desktop)</th><th>Chat (claude.ai) karşılığı</th></tr>
+    <tr><td>CLAUDE.md (proje kimliği)</td><td><b>Proje + Özel Talimatlar</b></td></tr>
+    <tr><td>.claude/rules (kalıcı kural)</td><td><b>Özel Talimatlar</b> (project instructions)</td></tr>
+    <tr><td>journal / hafıza dosyası</td><td><b>Proje Bilgisi</b> (yüklenen dosyalar) + <b>Hafıza</b></td></tr>
+    <tr><td>Skill</td><td><b>Skills</b> (claude.ai destekler)</td></tr>
+    <tr><td>Çıktı (yazılan dosya)</td><td><b>Artifact</b> (kod/doküman paneli)</td></tr>
+    <tr><td>MCP / dış tool</td><td><b>Connectors</b> (Drive, vb.)</td></tr>
+    <tr><td>Agent (subagent) · Hook · git · bootstrap</td><td style="color:#c0392b;"><b>YOK</b> — ortam destek vermiyor</td></tr>
+  </table>
+  <div class="box warn"><b>Net sınır:</b> Sohbet ortamında otomatik hook, git commit, dosya sistemi, terminal yok. Bunlara ihtiyacın varsa Desktop/Cowork kullan. Sohbet = düşünme, taslak, doküman, hafif kod + Skills.</div>
+
+  <div class="box key"><b>Vurgu:</b> Burada Claude'un "seni hatırlaması", tutarlı ton/format, doğru reçeteyi uygulaması <b>senin yazdığın Özel Talimatlar, yüklediğin Proje Bilgisi ve oluşturduğun Skills sayesinde</b>. Boş bir sohbet sıfırdan başlar; akıcılığı sen kurarsın. (Code'daki hook/agent karşılığı burada yok — onun yerine bu üçlü çalışır.)</div>
+
+  <h3>Ne yaparsan → hangi yapı → ne olur</h3>
+  <table>
+    <tr><th>Sen yaparsın</th><th>Hangi yapı sayesinde</th><th>Ne olur</th></tr>
+    <tr><td>Projedeki sohbeti açarsın</td><td>Özel Talimatlar</td><td>ton/dil/format otomatik geçerli (her seferinde söylemezsin)</td></tr>
+    <tr><td>"haftalık rapor çıkar"</td><td>senin oluşturduğun Skill</td><td>standart reçeteyle aynı kalitede üretir</td></tr>
+    <tr><td>Belgeye dayalı soru</td><td>Proje Bilgisi (yüklediğin dosya)</td><td>uydurmadan, dosyadaki gerçeğe göre yanıtlar</td></tr>
+    <tr><td>Dış veri gerektiren iş</td><td>Connector (Drive vb.)</td><td>kaynaktan çekip kullanır</td></tr>
+    <tr><td>Önceki konuya atıf</td><td>Hafıza + Proje</td><td>geçmiş bağlamı hatırlar</td></tr>
+  </table>
+  <div class="box note"><b>Not:</b> Code'daki <code>günaydın</code>/commit/hook burada yok. Sohbette kalıcılık = <b>Proje + Özel Talimat + Proje Bilgisi + Skills</b>. Bunları sen kurmazsan her sohbet boş başlar.</div>
+
+  <h3>claude.ai ekranı neye benzer?</h3>
+  <svg width="490" height="220" viewBox="0 0 490 220">
+    <rect x="6" y="6" width="478" height="208" rx="9" fill="#f4f7fb" stroke="#c7d2e0" stroke-width="1.5"/>
+    <rect x="6" y="6" width="478" height="22" rx="9" fill="#e4ebf3"/>
+    <circle cx="22" cy="17" r="4" fill="#ff5f57"/><circle cx="36" cy="17" r="4" fill="#febc2e"/><circle cx="50" cy="17" r="4" fill="#28c840"/>
+    <rect x="150" y="11" width="200" height="13" rx="6" fill="#fff" stroke="#cdd8e4"/>
+    <text x="160" y="21" font-size="8" fill="#5a6b80">🔒 claude.ai/project/...</text>
+    <!-- left projects -->
+    <rect x="6" y="28" width="120" height="186" fill="#eef2f7"/>
+    <text x="16" y="46" font-size="9" fill="#34465a" font-weight="bold">📂 Projeler</text>
+    <rect x="12" y="52" width="108" height="20" rx="5" fill="#d7ead9"/>
+    <text x="20" y="66" font-size="8.5" fill="#1e7a4d">● ERP Asistanı</text>
+    <text x="20" y="86" font-size="8.5" fill="#5a6b80">Pazarlama</text>
+    <text x="16" y="112" font-size="8.5" fill="#34465a" font-weight="bold">⚙ Özel Talimatlar</text>
+    <text x="20" y="128" font-size="8" fill="#5a6b80">Türkçe, madde madde</text>
+    <text x="16" y="150" font-size="8.5" fill="#34465a" font-weight="bold">📎 Proje Bilgisi</text>
+    <text x="20" y="166" font-size="8" fill="#5a6b80">sema.pdf, sozluk.md</text>
+    <!-- center chat -->
+    <rect x="132" y="34" width="200" height="180" rx="6" fill="#fff" stroke="#dce4ee"/>
+    <rect x="142" y="44" width="140" height="26" rx="8" fill="#eaf1fb"/>
+    <text x="152" y="61" font-size="8.5" fill="#16518f">Sipariş modülü tasarla</text>
+    <rect x="172" y="78" width="150" height="40" rx="8" fill="#f0f4f9"/>
+    <text x="182" y="94" font-size="8" fill="#34465a">Proje Bilgisi'ne göre</text>
+    <text x="182" y="106" font-size="8" fill="#34465a">taslak hazır →</text>
+    <!-- right artifact -->
+    <rect x="336" y="34" width="142" height="180" rx="6" fill="#fbfdff" stroke="#2bb673"/>
+    <rect x="336" y="34" width="142" height="20" rx="6" fill="#e9f7ef"/>
+    <text x="346" y="48" font-size="8.5" fill="#1e7a4d" font-weight="bold">📄 Artifact: tasarım</text>
+    <text x="346" y="72" font-size="8" fill="#34465a" font-family="Consolas,monospace">## Sipariş Modülü</text>
+    <text x="346" y="88" font-size="8" fill="#5a6b80" font-family="Consolas,monospace">- başlık + satırlar</text>
+    <text x="346" y="102" font-size="8" fill="#5a6b80" font-family="Consolas,monospace">- onay akışı</text>
+    <text x="346" y="116" font-size="8" fill="#5a6b80" font-family="Consolas,monospace">- iade (ters kayıt)</text>
+    <text x="346" y="138" font-size="8" fill="#5a6b80" font-family="Consolas,monospace">- KDV / iskonto</text>
+  </svg>
+  <p class="small center">Sol: Projeler + Özel Talimatlar + Proje Bilgisi · Orta: sohbet · Sağ: Artifact paneli.</p>
+
+  <h3>Yetkinlik haritası</h3>
+  <table>
+    <tr><th>Yetkinlik</th><th>L0</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th></tr>
+    <tr><td>Sohbet, soru, artifact</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Proje + özel talimat + bilgi</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Skill + Connector kullan/oluştur</td><td>—</td><td>kısmi</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Takım projesi / paylaşılan standart</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>API + otomasyon (Plus)</td><td>—</td><td>—</td><td>—</td><td>kısmi</td><td>✓</td></tr>
+  </table>
+</div>
+
+<!-- L0 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l0">L0</span><h2>Acemi — "Soru sorabiliyorum"</h2></div>
+  <p class="lead">Hedef: Sohbeti açıp işe yarar cevap/çıktı almak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Yeni sohbet aç, net soru sor</li>
+    <li>Dosya/görsel ekle (PDF, ekran görüntüsü)</li>
+    <li>Artifact'ı tanı (sağ panelde kod/doküman) — düzenlet</li>
+    <li>İyi istek = bağlam + hedef + format ("madde madde yaz")</li>
+  </ul>
+  <div class="box tip"><b>İyi istek:</b> "Şu hata mesajını çözmeme yardım et: [yapıştır]. Adım adım anlat." · <b>Kötü:</b> "kod çalışmıyor."</div>
+  <div class="box note"><b>Oluşturma:</b> Yok. Sadece soruyorsun. Kalıcılık L1'de Proje ile başlar.</div>
+  <div class="gate"><b>Geçiş → L1:</b> Aynı bağlamı her sohbette tekrar yapıştırmaktan sıkıldıysan Junior'sın.</div>
+</div>
+
+<!-- L1 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l1">L1</span><h2>Junior — "Proje kuruyorum"</h2></div>
+  <p class="lead">Hedef: Bağlamı kalıcı yapmak. Sohbet ortamının "hafıza" katmanı.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li><b>Proje</b> oluştur — ilgili sohbetleri bir arada tut</li>
+    <li><b>Özel Talimatlar</b> yaz (= kural): "Her zaman Türkçe yanıtla, kod örnekli"</li>
+    <li><b>Proje Bilgisi</b>'ne dosya yükle (= kalıcı hafıza): şartname, stil kılavuzu, sözlük</li>
+    <li><b>Hafıza</b> özelliğini kullan — Claude proje boyunca hatırlasın</li>
+  </ul>
+  <h3>Özel Talimat = sohbetin "kuralı"</h3>
+  <pre><span class="c"># Proje → Özel Talimatlar kutusuna:</span>
+- Yanıtlar Türkçe, kısa ve madde madde.
+- Kod örnekleri TypeScript, açıklamalı.
+- Belirsizse varsayım yapma, sor.</pre>
+  <div class="box key"><b>Code'daki "kurala yaz" buna eşittir.</b> Tekrarlanan talimatı Özel Talimatlar'a koy → her sohbette otomatik geçerli.</div>
+  <div class="box tip"><b>Proje Bilgisi:</b> Sık atıf yaptığın doküman (API şeması, marka kılavuzu) → yükle. Her sohbette yeniden yapıştırma.</div>
+  <div class="gate"><b>Geçiş → L2:</b> Tekrarlayan bir işi (rapor/analiz reçetesi) standartlaştırmak istiyorsan Senior'sın.</div>
+</div>
+
+<!-- L2 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l2">L2</span><h2>Senior — "Skill ve Connector üretiyorum"</h2></div>
+  <p class="lead">Hedef: Tekrarlayan iş reçetesini Skill yapmak; dış kaynağı bağlamak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li><b>Skill</b> oluştur/yükle — tekrarlayan çok adımlı işin reçetesi</li>
+    <li><b>Connector</b> bağla (Drive vb.) — Claude dış veriye erişsin</li>
+    <li>Özel Talimatları olgunlaştır (rol, ton, kısıt, format)</li>
+    <li>Artifact'larla iteratif çalış — sürüm sürüm geliştir</li>
+  </ul>
+  <h3>Skill nedir (Chat'te)?</h3>
+  <p>Bir Skill = Claude'a verdiğin <b>tekrar kullanılabilir uzmanlık paketi</b> (talimat + örnek + opsiyonel kaynak). "Şu işi hep şöyle yap" mantığı. claude.ai'da Skills'i etkinleştirip kendi skill'ini ekleyebilirsin.</p>
+  <pre><span class="c"># Skill içeriği örneği (kavramsal):</span>
+Ad: haftalik-rapor
+Ne yapar: Verilen ham veriden standart haftalık özet üretir.
+Tetik: "haftalık rapor çıkar"
+Adımlar: 1) metrikleri ayıkla 2) tabloya dök 3) 3 madde içgörü
+Format: başlık + tablo + öneriler</pre>
+  <div class="box note"><b>Code farkı:</b> Burada <code>allowed-tools</code>, <code>model</code> gibi teknik frontmatter yok. Skill daha çok "talimat + bilgi paketi". Agent/hook yine yok.</div>
+  <div class="gate"><b>Geçiş → L3:</b> Skill/talimatları bir ekiple paylaşmak istiyorsan Leader'sın.</div>
+</div>
+
+<!-- L3 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l3">L3</span><h2>Leader — "Ekip standardı kuruyorum"</h2></div>
+  <p class="lead">Hedef: Paylaşılan projeler + ortak talimat/skill standardı (Team/Enterprise).</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Paylaşılan Proje — ekip aynı bağlam + talimatla çalışır</li>
+    <li>Ortak Özel Talimat standardı (ton, dil, gizlilik kuralları)</li>
+    <li>Skill paylaşımı / kütüphane — herkes aynı reçeteyi kullanır</li>
+    <li>Onboarding: yeni üyeye "şu projeye gir, talimatlar hazır"</li>
+    <li>Gizlilik yönetişimi: hassas veri Proje Bilgisi'ne girer mi, kuralı</li>
+  </ul>
+  <div class="box key"><b>Code'daki template/bootstrap'ın karşılığı:</b> Burada "paylaşılan proje + ortak talimat seti" ekip standardıdır. Bir kez kur, ekip tutarlı çalışsın.</div>
+  <div class="box note"><b>Governance:</b> Talimat/skill eskir. Periyodik gözden geçir; geçersiz olanı sil — yanlış yönlendirme yapar.</div>
+  <div class="gate"><b>Geçiş → L4:</b> Otomasyon / API / programatik kullanım gerekiyorsa Plus'tasın.</div>
+</div>
+
+<!-- L4 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l4">L4</span><h2>Plus — "Otomatikleştiriyorum"</h2></div>
+  <p class="lead">Hedef: Sohbetin sınırını aşıp programatik/otomatik kullanım.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li><b>Connector ekosistemi</b> — birden çok kaynak (dosya, takvim, e-posta) bağlı</li>
+    <li><b>API'ye geçiş</b> — tekrarlayan işi Claude API ile otomatikleştir (prompt caching)</li>
+    <li>Skill + API birleşimi: ölçeklenir iş akışı</li>
+    <li>Ölçüm: hangi talimat/skill işe yarıyor, neyi sadeleştirmeli</li>
+  </ul>
+  <div class="box key"><b>Eşik kararı:</b> Aynı sohbeti elle 20. kez yapıyorsan → bu artık bir API işi. Sohbet keşif/taslak içindir; tekrar otomasyon ister.</div>
+  <div class="box warn"><b>Gizlilik:</b> API/Connector ile veri akışı genişler. Hassas veri nereye gidiyor, her zaman bil. Sır/kişisel veri için kurum politikasına uy.</div>
+  <p class="small">API derinleşmek için: <span class="chip">claude-api skill</span> (Code tarafında).</p>
+</div>
+
+<!-- CLOSE -->
+<div class="page">
+  <h2>Özet + değişmez ilkeler</h2>
+  <table>
+    <tr><th>Seviye</th><th>Cümle</th><th>Kalıcılık aracı</th></tr>
+    <tr><td><b>L0 Acemi</b></td><td>Soru sorabiliyorum</td><td>—</td></tr>
+    <tr><td><b>L1 Junior</b></td><td>Proje kuruyorum</td><td>Özel Talimat + Proje Bilgisi</td></tr>
+    <tr><td><b>L2 Senior</b></td><td>Skill üretiyorum</td><td>Skills + Connectors</td></tr>
+    <tr><td><b>L3 Leader</b></td><td>Ekip standardı kuruyorum</td><td>Paylaşılan proje + skill kütüphanesi</td></tr>
+    <tr><td><b>L4 Plus</b></td><td>Otomatikleştiriyorum</td><td>API + connector ekosistemi</td></tr>
+  </table>
+  <div class="twocol">
+    <div class="box tip"><b>1 · Yazılı olan yaşar</b><br>Tekrarlanan bağlam → Özel Talimat / Proje Bilgisi. Sohbete her seferinde yapıştırma.</div>
+    <div class="box key"><b>2 · Karar sende</b><br>Claude taslak/öneri üretir; doğruluğu sen onaylarsın.</div>
+  </div>
+  <div class="box note"><b>3 · Acıyı kalıcı yapıya çevir</b> — Aynı talimatı 2. kez yazdıysan → Özel Talimat veya Skill yap.</div>
+  <div class="box warn center"><b>Ortam sınırı:</b> git/hook/terminal/agent gerekiyorsa → Desktop veya Cowork rehberine geç.</div>
+  <p class="small center" style="margin-top:14px;">claude-context-template · Chat Rehberi · © Fikri Eren 2026</p>
+</div>
+
+</body>
+</html>

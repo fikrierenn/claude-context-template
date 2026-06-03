@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  @page :first { margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: #1c2430; line-height: 1.55; font-size: 11pt; margin: 0;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  h1,h2,h3 { color: #0b2a4a; line-height: 1.2; }
+  h2 { font-size: 19pt; border-bottom: 3px solid #2c7be5; padding-bottom: 5px; margin-top: 0; }
+  h3 { font-size: 13.5pt; margin: 18px 0 6px; color: #145; }
+  p { margin: 7px 0; }
+  code { background:#eef2f7; padding:1.5px 5px; border-radius:4px; font-family:"Consolas",monospace; font-size:9.5pt; color:#b5326e; }
+  pre { background:#0d1b2a; color:#e6edf3; padding:13px 16px; border-radius:8px; font-family:"Consolas",monospace; font-size:9pt; line-height:1.5; overflow:hidden; white-space:pre-wrap; }
+  pre .c { color:#7d8fa3; }
+  pre .g { color:#7ee787; }
+  pre .y { color:#ffd479; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; font-size:9.8pt; }
+  th { background:#2c7be5; color:#fff; text-align:left; padding:7px 9px; }
+  td { border:1px solid #d4dce6; padding:6px 9px; vertical-align:top; }
+  tr:nth-child(even) td { background:#f5f8fc; }
+
+  /* page structure */
+  .page { page-break-after: always; padding: 4mm 2mm; }
+  .page:last-child { page-break-after: auto; }
+
+  /* cover */
+  .cover {
+    height: 297mm; width:210mm; margin:0; padding:0;
+    background: linear-gradient(140deg,#0b2a4a 0%,#11487f 55%,#2c7be5 100%);
+    color:#fff; display:flex; flex-direction:column; justify-content:center;
+    page-break-after: always; position:relative;
+  }
+  .cover-inner { padding: 0 26mm; }
+  .cover .kicker { font-size:13pt; letter-spacing:3px; text-transform:uppercase; opacity:.8; }
+  .cover h1 { color:#fff; font-size:40pt; margin:14px 0 6px; line-height:1.05; }
+  .cover .sub { font-size:15pt; opacity:.92; font-weight:300; max-width:140mm; }
+  .cover .foot { position:absolute; bottom:24mm; left:26mm; right:26mm; font-size:10pt; opacity:.75; border-top:1px solid rgba(255,255,255,.3); padding-top:10px; }
+  .cover .badge { display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.35); padding:5px 14px; border-radius:20px; font-size:10pt; margin-top:26px; }
+
+  /* callouts */
+  .box { border-radius:8px; padding:11px 15px; margin:11px 0; font-size:10pt; }
+  .tip { background:#e9f7ef; border-left:5px solid #2bb673; }
+  .warn { background:#fdecea; border-left:5px solid #e74c3c; }
+  .note { background:#fff6e5; border-left:5px solid #f5a623; }
+  .key { background:#eaf1fb; border-left:5px solid #2c7be5; }
+  .box b { color:#0b2a4a; }
+
+  .lead { font-size:12pt; color:#37485c; margin-bottom:14px; }
+  .num { display:inline-block; width:24px; height:24px; background:#2c7be5; color:#fff; border-radius:50%; text-align:center; line-height:24px; font-weight:700; margin-right:6px; font-size:11pt; }
+  ul,ol { margin:7px 0; padding-left:22px; }
+  li { margin:4px 0; }
+  .small { font-size:9pt; color:#667; }
+  .center { text-align:center; }
+  svg { display:block; margin:14px auto; }
+  .twocol { display:flex; gap:16px; }
+  .twocol > div { flex:1; }
+  .chip { display:inline-block; background:#eef2f7; border:1px solid #d4dce6; border-radius:6px; padding:2px 8px; font-size:9pt; margin:2px; font-family:Consolas,monospace; }
+  .screens { display:flex; flex-wrap:wrap; gap:12px; margin:12px 0; }
+  .screens > figure { flex:1 1 46%; margin:0; }
+  .screens figcaption { font-size:8.6pt; color:#667; text-align:center; margin-top:3px; }
+  .stepno { display:inline-block; width:18px; height:18px; background:#2c7be5; color:#fff; border-radius:50%; text-align:center; line-height:18px; font-size:9pt; font-weight:700; margin-right:5px; }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="kicker">Sıfırdan Başlangıç Rehberi</div>
+    <h1>Claude Code ile<br>Çalışmaya Başla</h1>
+    <div class="sub">Hiç bilmeyene; ilk oturumdan günlük akışa, kavramlardan hata kurtarmaya kadar resimli el kitabı.</div>
+    <div class="badge">⏱ İlk oturum 5 dakika · Tüm rehber ~25 dakika</div>
+  </div>
+  <div class="foot">claude-context-template · Acemi Rehberi · Sürüm 1.0 · © Fikri Eren 2026</div>
+</div>
+
+<!-- ============ İÇİNDEKİLER + ROL ============ -->
+<div class="page">
+  <h2>Bu rehber kime, nereden başlamalı?</h2>
+  <p class="lead">7 bölüm. Sırayla okumak en iyisi ama acelen varsa rolüne göre atla.</p>
+
+  <svg width="470" height="150" viewBox="0 0 470 150">
+    <rect x="5" y="10" width="145" height="130" rx="10" fill="#eaf1fb" stroke="#2c7be5" stroke-width="1.5"/>
+    <rect x="162" y="10" width="145" height="130" rx="10" fill="#e9f7ef" stroke="#2bb673" stroke-width="1.5"/>
+    <rect x="319" y="10" width="145" height="130" rx="10" fill="#fff6e5" stroke="#f5a623" stroke-width="1.5"/>
+    <text x="77" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="#0b2a4a">Hiç bilmeyen</text>
+    <text x="77" y="62" text-anchor="middle" font-size="10" fill="#345">Böl. 1 → 2 → 3</text>
+    <text x="77" y="80" text-anchor="middle" font-size="10" fill="#345">İlk oturum +</text>
+    <text x="77" y="96" text-anchor="middle" font-size="10" fill="#345">kavram + akış</text>
+    <text x="234" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="#0b2a4a">Kullanan</text>
+    <text x="234" y="62" text-anchor="middle" font-size="10" fill="#345">Böl. 4 → 5</text>
+    <text x="234" y="80" text-anchor="middle" font-size="10" fill="#345">Cheat-sheet +</text>
+    <text x="234" y="96" text-anchor="middle" font-size="10" fill="#345">örnek oturum</text>
+    <text x="391" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="#0b2a4a">Takılan</text>
+    <text x="391" y="62" text-anchor="middle" font-size="10" fill="#345">Böl. 6 → 7</text>
+    <text x="391" y="80" text-anchor="middle" font-size="10" fill="#345">Hata kurtarma +</text>
+    <text x="391" y="96" text-anchor="middle" font-size="10" fill="#345">sınırlar/SSS</text>
+  </svg>
+
+  <table>
+    <tr><th>#</th><th>Bölüm</th><th>Ne öğrenirsin</th></tr>
+    <tr><td>1</td><td>Claude Code nedir + ilk oturum</td><td>Aracı tanı, 5 dakikada ilk konuşma</td></tr>
+    <tr><td>2</td><td>En önemli kavram: Claude hatırlamaz</td><td>Neden journal/kural/hook var</td></tr>
+    <tr><td>3</td><td>Günlük akış (oturum döngüsü)</td><td>Sabah → iş → akşam ritüeli</td></tr>
+    <tr><td>4</td><td>Cheat-sheet — ne yazarsam ne olur</td><td>Tek sayfa komut kartı</td></tr>
+    <tr><td>5</td><td>Gerçek örnek oturum</td><td>Baştan sona bir gün, taklit et</td></tr>
+    <tr><td>6</td><td>Bir şey ters gitti — kurtarma</td><td>Panik anı çözümleri</td></tr>
+    <tr><td>7</td><td>Sınırlar, güven, SSS + sözlük</td><td>Claude neyi yapar/yapmaz, jargon</td></tr>
+  </table>
+
+  <div class="box key"><b>Altın kural baştan:</b> Bu sistemde her şeyi ezberlemene gerek yok. Ne istediğini düz Türkçe söyle — doğru aracı Claude seçer, sana sorar, sen onaylarsın.</div>
+</div>
+
+<!-- ============ BÖLÜM 1 ============ -->
+<div class="page">
+  <h2>1 · Claude Code nedir + ilk oturum</h2>
+
+  <h3>Claude Code nedir?</h3>
+  <p>Terminalde (komut satırında) çalışan bir <b>yapay zekâ yazılım asistanı</b>. Senin proje klasöründe oturur; kod okur, yazar, çalıştırır, git ile commit eder — ama <b>her önemli adımda sana sorar.</b> Chatbot değil; gerçek dosyalarınla çalışan bir takım arkadaşı.</p>
+
+  <div class="box note"><b>Önce kurulu mu?</b> Terminal aç, <code>claude --version</code> yaz. Numara dönerse kurulu. Dönmezse BT/kurulum ekibine danış — bu rehber kurulu olduğunu varsayar.</div>
+
+  <h3>İlk oturum — 4 adım</h3>
+  <pre><span class="c"># 1) Projenin klasörüne gir</span>
+cd D:\Dev\proje-adi
+
+<span class="c"># 2) Claude'u başlat</span>
+claude
+
+<span class="c"># 3) Açılınca otomatik "oturum başı özeti" gelir:</span>
+<span class="c">#    son commit'ler, yapılacaklar, dünden kalanlar</span>
+
+<span class="c"># 4) Sadece düz Türkçe yaz:</span>
+günaydın, nerede kalmıştık?</pre>
+
+  <p>Hepsi bu. Claude dünkü notları okur, "şunu yapıyorduk, şuradan devam edelim mi?" der. <b>Kod bilmek şart değil</b> — ne istediğini anlat yeter.</p>
+
+  <h3>Ekran neye benzer?</h3>
+  <svg width="480" height="200" viewBox="0 0 480 200">
+    <rect x="8" y="8" width="464" height="184" rx="9" fill="#0d1b2a" stroke="#24364a" stroke-width="1.5"/>
+    <rect x="8" y="8" width="464" height="26" rx="9" fill="#1b2a3d"/>
+    <circle cx="26" cy="21" r="5" fill="#ff5f57"/><circle cx="44" cy="21" r="5" fill="#febc2e"/><circle cx="62" cy="21" r="5" fill="#28c840"/>
+    <text x="240" y="25" text-anchor="middle" font-size="10" fill="#7d8fa3" font-family="Consolas,monospace">proje — claude</text>
+    <text x="22" y="56" font-size="10.5" fill="#7ee787" font-family="Consolas,monospace">$ cd D:\Dev\proje &amp;&amp; claude</text>
+    <text x="22" y="78" font-size="10" fill="#79c0ff" font-family="Consolas,monospace">┌ Oturum başı özeti ───────────────┐</text>
+    <text x="22" y="94" font-size="10" fill="#c9d6e3" font-family="Consolas,monospace">│ Dün: giriş formu bitti</text>
+    <text x="22" y="110" font-size="10" fill="#c9d6e3" font-family="Consolas,monospace">│ Bugün: şifre sıfırlama (Faz 0)</text>
+    <text x="22" y="126" font-size="10" fill="#c9d6e3" font-family="Consolas,monospace">│ Uncommitted: 3 dosya ✓</text>
+    <text x="22" y="142" font-size="10" fill="#79c0ff" font-family="Consolas,monospace">└──────────────────────────────────┘</text>
+    <text x="22" y="166" font-size="10.5" fill="#ffd479" font-family="Consolas,monospace">&gt; günaydın, nerede kalmıştık?</text>
+    <rect x="20" y="172" width="9" height="14" fill="#ffd479"><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/></rect>
+  </svg>
+  <p class="small center">Terminal penceresi: açılışta otomatik özet, sonra düz Türkçe yazarsın.</p>
+
+  <h3>Nasıl konuşulur?</h3>
+  <div class="twocol">
+    <div class="box tip"><b>İyi istek</b><br>"Giriş sayfasına 'şifremi unuttum' bağlantısı ekle."<br><br>Net hedef, Claude planlar + sana gösterir.</div>
+    <div class="box warn"><b>Belirsiz istek</b><br>"Bir şeyler düzelt."<br><br>Claude ne istediğini sorar — zaman kaybı. Hedefi söyle.</div>
+  </div>
+
+  <div class="box key"><b>Çıkış:</b> Bittiğinde <code>iyi geceler</code> yaz veya <code>/handoff</code>. Claude bugünü not defterine yazar (sonraki bölümde neden önemli göreceksin). Sonra terminali kapatabilirsin.</div>
+</div>
+
+<!-- ============ BÖLÜM 2 ============ -->
+<div class="page">
+  <h2>2 · En önemli kavram: Claude hatırlamaz</h2>
+  <p class="lead">Bu tek fikri anlarsan sistemin tamamı anlam kazanır.</p>
+
+  <p>Her oturum <b>sıfırdan</b> başlar. Dün konuştuklarınız, verdiğin talimatlar, aldığınız kararlar — Claude'un kafasında <b>kalmaz</b>. Tıpkı her sabah hafızası silinmiş çok yetenekli bir stajyer gibi.</p>
+
+  <svg width="480" height="170" viewBox="0 0 480 170">
+    <!-- brain empty -->
+    <circle cx="90" cy="60" r="40" fill="#fdecea" stroke="#e74c3c" stroke-width="2"/>
+    <text x="90" y="55" text-anchor="middle" font-size="22">🧠</text>
+    <text x="90" y="80" text-anchor="middle" font-size="9" fill="#c0392b">boş başlar</text>
+    <text x="90" y="120" text-anchor="middle" font-size="10" font-weight="bold" fill="#0b2a4a">Yeni oturum</text>
+
+    <!-- arrow -->
+    <line x1="135" y1="60" x2="200" y2="60" stroke="#2c7be5" stroke-width="2.5" marker-end="url(#ah)"/>
+    <text x="167" y="50" text-anchor="middle" font-size="9" fill="#345">okur</text>
+
+    <!-- files -->
+    <rect x="210" y="20" width="120" height="34" rx="6" fill="#eaf1fb" stroke="#2c7be5"/>
+    <text x="270" y="42" text-anchor="middle" font-size="10" fill="#0b2a4a">📋 Kurallar</text>
+    <rect x="210" y="62" width="120" height="34" rx="6" fill="#e9f7ef" stroke="#2bb673"/>
+    <text x="270" y="84" text-anchor="middle" font-size="10" fill="#0b2a4a">📓 Günlük (journal)</text>
+    <rect x="210" y="104" width="120" height="34" rx="6" fill="#fff6e5" stroke="#f5a623"/>
+    <text x="270" y="126" text-anchor="middle" font-size="10" fill="#0b2a4a">✅ Yapılacaklar</text>
+
+    <!-- arrow2 -->
+    <line x1="340" y1="78" x2="400" y2="78" stroke="#2c7be5" stroke-width="2.5" marker-end="url(#ah)"/>
+    <!-- brain full -->
+    <circle cx="445" cy="78" r="32" fill="#e9f7ef" stroke="#2bb673" stroke-width="2"/>
+    <text x="445" y="75" text-anchor="middle" font-size="18">🧠</text>
+    <text x="445" y="120" text-anchor="middle" font-size="9" fill="#1e7a4d">bağlam yüklü</text>
+    <defs>
+      <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2c7be5"/></marker>
+    </defs>
+  </svg>
+
+  <p>Çözüm: hafızayı <b>dosyalara dışsallaştırmak</b>. Önemli her şey diske yazılır; her oturum başında Claude bunları okuyup "hatırlar". Üç tür hafıza dosyası:</p>
+
+  <table>
+    <tr><th>Dosya</th><th>Ne tutar</th><th>Örnek</th></tr>
+    <tr><td><b>Kurallar</b> (.claude/rules)</td><td>Kalıcı davranış: "şöyle yap, şunu yapma"</td><td>"Sırları asla koda yazma"</td></tr>
+    <tr><td><b>Günlük</b> (journal)</td><td>Her günün özeti: ne yapıldı, ne kaldı</td><td>"Bugün giriş bitti, yarın test"</td></tr>
+    <tr><td><b>Yapılacaklar</b> (TODO.md)</td><td>Öncelikli iş listesi</td><td>"Faz 0: şifre sıfırlama"</td></tr>
+  </table>
+
+  <div class="box warn"><b>Bundan çıkan en önemli alışkanlık:</b> Yeni bir kural/karar söylediğinde "aklında tut" deme — işe yaramaz, buharlaşır. Bunun yerine <b>"bunu kurala yaz"</b> de. Claude dosyaya yazar, kalıcı olur.</div>
+
+  <div class="box tip"><b>Neden bu kadar önemli?</b> Çünkü "Claude akıllı, hatırlar herhalde" varsayımı en sık ve en pahalı hatadır. Hatırlamaz. Yazılı olan yaşar.</div>
+</div>
+
+<!-- ============ BÖLÜM 3 ============ -->
+<div class="page">
+  <h2>3 · Günlük akış — oturum döngüsü</h2>
+  <p class="lead">Her gün aynı basit ritüel: aç, çalış, kapat. Çoğu otomatik.</p>
+
+  <svg width="490" height="230" viewBox="0 0 490 230">
+    <!-- circle flow -->
+    <!-- sabah -->
+    <rect x="170" y="8" width="150" height="52" rx="10" fill="#eaf1fb" stroke="#2c7be5" stroke-width="2"/>
+    <text x="245" y="30" text-anchor="middle" font-size="12" font-weight="bold" fill="#0b2a4a">🌅 SABAH</text>
+    <text x="245" y="48" text-anchor="middle" font-size="9" fill="#345">claude → "günaydın"</text>
+
+    <!-- right arrow down -->
+    <line x1="325" y1="40" x2="395" y2="95" stroke="#2c7be5" stroke-width="2.5" marker-end="url(#ah2)"/>
+
+    <!-- gün içi -->
+    <rect x="320" y="92" width="160" height="64" rx="10" fill="#e9f7ef" stroke="#2bb673" stroke-width="2"/>
+    <text x="400" y="114" text-anchor="middle" font-size="12" font-weight="bold" fill="#0b2a4a">⚙️ GÜN İÇİ</text>
+    <text x="400" y="132" text-anchor="middle" font-size="9" fill="#345">iş iste, onayla,</text>
+    <text x="400" y="146" text-anchor="middle" font-size="9" fill="#345">commit et</text>
+
+    <!-- down arrow -->
+    <line x1="400" y1="158" x2="245" y2="188" stroke="#2c7be5" stroke-width="2.5" marker-end="url(#ah2)"/>
+
+    <!-- akşam -->
+    <rect x="170" y="178" width="150" height="52" rx="10" fill="#fff6e5" stroke="#f5a623" stroke-width="2"/>
+    <text x="245" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="#0b2a4a">🌙 AKŞAM</text>
+    <text x="245" y="218" text-anchor="middle" font-size="9" fill="#345">"iyi geceler" → kaydet</text>
+
+    <!-- left arrow up to sabah -->
+    <line x1="165" y1="195" x2="95" y2="120" stroke="#c7d2e0" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah2)"/>
+    <line x1="95" y1="120" x2="170" y2="40" stroke="#c7d2e0" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah2)"/>
+    <text x="60" y="120" text-anchor="middle" font-size="9" fill="#889" transform="rotate(-55 60 120)">ertesi gün</text>
+    <defs>
+      <marker id="ah2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2c7be5"/></marker>
+    </defs>
+  </svg>
+
+  <h3>🌅 Sabah (otomatik + 1 cümle sen)</h3>
+  <p>Claude açılınca dünün özetini kendi okur. Sen sadece <code>günaydın</code> de — "şuradan kalmıştık, devam mı?" der.</p>
+
+  <h3>⚙️ Gün içi (esas iş burada)</h3>
+  <ul>
+    <li>İş iste: <i>"sipariş ekranına filtre ekle"</i></li>
+    <li>Claude planını gösterir → sen <b>onayla</b> → yapar</li>
+    <li>İş bitince <b>commit</b> iste: <i>"bunu commit'le"</i> (kaydetme noktası)</li>
+    <li>Uyarı gelirse dinle: <i>"15 dosya birikti, önce commit"</i> gibi</li>
+  </ul>
+
+  <h3>🌙 Akşam (1 cümle)</h3>
+  <p><code>iyi geceler</code> yaz. Claude bugünü günlüğe yazar: ne bitti, ne kaldı, yarın nereden. Ertesi sabah bu sayede "hatırlar".</p>
+
+  <div class="box key"><b>Tek cümlede döngü:</b> Sabah <code>günaydın</code>, akşam <code>iyi geceler</code>. Arası senin işin. Hafıza otomatik taşınır.</div>
+
+  <div class="box warn"><b>Niçin bu kadar otomatik?</b> Sabah özetini <b>session-start hook'u</b>, akşam günlüğünü <b>session-handoff skill'i</b> ve commit kaydını <b>post-commit-journal hook'u</b> yapıyor — yani <b>senin kurduğun yapılar</b>. Claude'u sihirli yapan bu dosyalar. Hiçbiri olmasa her sabah sıfırdan başlardın.</div>
+</div>
+
+<!-- ============ BÖLÜM 4 — CHEAT SHEET ============ -->
+<div class="page">
+  <h2>4 · Cheat-sheet — ne yazarsam ne olur</h2>
+  <p class="lead">Buzdolabı kartı. Aklında tutman gereken tek sayfa.</p>
+
+  <table>
+    <tr><th>Ne istiyorsan</th><th>Ne yaz / söyle</th></tr>
+    <tr><td>Güne başla, "nerede kaldık"</td><td><code>günaydın</code></td></tr>
+    <tr><td>Günü kapat, kaydet</td><td><code>iyi geceler</code> · <code>/handoff</code></td></tr>
+    <tr><td>İşi kaydet (kayıt noktası)</td><td>"bunu commit'le"</td></tr>
+    <tr><td>Çok dosya birikti, düzene sok</td><td>"dosyaları böl / commit-split"</td></tr>
+    <tr><td>Kararsızım, hangi seçenek?</td><td>"hangi seçenek?" · "council this"</td></tr>
+    <tr><td>Yazdığın kodu gözden geçir</td><td><code>/code-check</code></td></tr>
+    <tr><td>Güvenlik denetimi</td><td><code>/security-check</code></td></tr>
+    <tr><td>Değişikliği gerçekten çalıştır, doğrula</td><td><code>/verify</code></td></tr>
+    <tr><td>Yeni özelliği mimariyle kur</td><td><code>/feature-dev &lt;açıklama&gt;</code></td></tr>
+    <tr><td>Kalıcı kural koy</td><td>"şunu kurala yaz: ..."</td></tr>
+    <tr><td>Çok kaynaklı araştırma</td><td><code>/deep-research &lt;soru&gt;</code></td></tr>
+    <tr><td>Konuşma şişti, odakla</td><td><code>/compact &lt;konu&gt;</code></td></tr>
+    <tr><td>Yeni/başka işe geç</td><td><code>/clear</code></td></tr>
+  </table>
+
+  <div class="box tip"><b>Hatırlama yükü sıfır:</b> Bunları ezberlemek zorunda değilsin. Düz Türkçe "şunu yapmak istiyorum" de — Claude doğru komutu/aracı kendi seçer. Bu tablo sadece hızlandırır.</div>
+
+  <h3>Slash (/) komutu nedir?</h3>
+  <p><code>/</code> ile başlayanlar hazır <b>kısayol akışlardır</b>. <code>/</code> yazınca liste açılır, seçersin. Doğal dille de aynısını tetikleyebilirsin — örn. <code>/handoff</code> yerine "iyi geceler".</p>
+
+  <div class="box note"><b>İki kafa karıştıran kavram, basitçe:</b><br>
+  • <b>/compact</b> = "aynı işe devam ama konuşma uzadı, özetle." Hafıza korunur.<br>
+  • <b>/clear</b> = "bambaşka işe geçiyorum, sıfırla." Önce <code>iyi geceler</code> demeyi unutma yoksa not kalmaz.</div>
+</div>
+
+<!-- ============ BÖLÜM 5 — ÖRNEK OTURUM ============ -->
+<div class="page">
+  <h2>5 · Gerçek örnek oturum (baştan sona)</h2>
+  <p class="lead">Bir günü olduğu gibi taklit et. Sol: sen. Sağ: ne olur.</p>
+
+  <table>
+    <tr><th style="width:42%">Sen yazarsın</th><th>Olan</th></tr>
+    <tr><td><code>günaydın</code></td><td>Claude dünkü günlüğü okur: "Dün giriş formu bitti. Bugün 'şifremi unuttum' akışı sırada. Başlayalım mı?"</td></tr>
+    <tr><td>"evet, başla"</td><td>Planı gösterir: 3 dosya değişecek (form + servis + e-posta). "Onaylıyor musun?"</td></tr>
+    <tr><td>"onaylıyorum"</td><td>Dosyaları yazar. Her dosyada ne değişti gösterir.</td></tr>
+    <tr><td>"çalışıyor mu test et"</td><td><code>/verify</code> mantığı: uygulamayı çalıştırır, akışı dener, sonucu söyler.</td></tr>
+    <tr><td>"güzel, commit'le"</td><td>Kayıt noktası atar: <code>feat: şifre sıfırlama akışı</code></td></tr>
+    <tr><td>"e-posta metni hep Türkçe olsun"</td><td>"Bunu kurala yazayım mı?" → evet → kalıcı kural dosyasına işler.</td></tr>
+    <tr><td>"iyi geceler"</td><td>Günlüğe yazar: bitenler, yarına kalan (test yazımı), commit listesi. "Kaydedildi, iyi geceler."</td></tr>
+  </table>
+
+  <div class="twocol">
+    <div class="box warn"><b>Skill/kural YOKKEN</b><br>Her gün "biz Türkçe e-posta yolluyoruz, şifre şöyle sıfırlanır..." diye baştan anlatırsın. 10 dk/gün kayıp. Bir gün unutursun → İngilizce e-posta gider.</div>
+    <div class="box tip"><b>Kural VARKEN</b><br>Bir kez "kurala yaz" dedin. Artık Claude her oturum biliyor. Anlatım 0 dk. Tutarlılık garantili.</div>
+  </div>
+
+  <div class="box key"><b>Gözlem:</b> Hiçbir yerde kod yazmadın. Hedef söyledin, onayladın, kaydettirdin. Karar sende, yazım Claude'da.</div>
+</div>
+
+<!-- ============ BÖLÜM 5b — EKRAN EKRAN STORYBOARD ============ -->
+<div class="page">
+  <h2>5b · Ekran ekran — aynı oturum görsel</h2>
+  <p class="lead">Yukarıdaki diyalog, terminalde adım adım böyle görünür.</p>
+
+  <div class="screens">
+    <figure>
+      <svg width="340" height="150" viewBox="0 0 340 150">
+        <rect x="4" y="4" width="332" height="142" rx="8" fill="#0d1b2a" stroke="#24364a"/>
+        <rect x="4" y="4" width="332" height="22" rx="8" fill="#1b2a3d"/>
+        <circle cx="18" cy="15" r="4" fill="#ff5f57"/><circle cx="32" cy="15" r="4" fill="#febc2e"/><circle cx="46" cy="15" r="4" fill="#28c840"/>
+        <text x="170" y="19" text-anchor="middle" font-size="8.5" fill="#7d8fa3" font-family="Consolas,monospace">proje</text>
+        <text x="16" y="46" font-size="9.5" fill="#7ee787" font-family="Consolas,monospace">$ cd D:\Dev\proje</text>
+        <text x="16" y="64" font-size="9.5" fill="#7ee787" font-family="Consolas,monospace">$ claude</text>
+        <text x="16" y="88" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace">Başlatılıyor… SessionStart</text>
+        <text x="16" y="104" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace">hook çalıştı ✓</text>
+        <rect x="16" y="116" width="8" height="13" fill="#ffd479"><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/></rect>
+      </svg>
+      <figcaption><span class="stepno">1</span>Aç: <code>cd</code> + <code>claude</code></figcaption>
+    </figure>
+
+    <figure>
+      <svg width="340" height="150" viewBox="0 0 340 150">
+        <rect x="4" y="4" width="332" height="142" rx="8" fill="#0d1b2a" stroke="#24364a"/>
+        <rect x="4" y="4" width="332" height="22" rx="8" fill="#1b2a3d"/>
+        <circle cx="18" cy="15" r="4" fill="#ff5f57"/><circle cx="32" cy="15" r="4" fill="#febc2e"/><circle cx="46" cy="15" r="4" fill="#28c840"/>
+        <text x="16" y="44" font-size="9" fill="#79c0ff" font-family="Consolas,monospace">┌ Oturum Özeti ─────────────┐</text>
+        <text x="16" y="60" font-size="9" fill="#c9d6e3" font-family="Consolas,monospace">│ Dün: giriş formu bitti</text>
+        <text x="16" y="76" font-size="9" fill="#c9d6e3" font-family="Consolas,monospace">│ Bugün: şifre sıfırlama</text>
+        <text x="16" y="92" font-size="9" fill="#c9d6e3" font-family="Consolas,monospace">│ Uncommitted: 3 ✓</text>
+        <text x="16" y="108" font-size="9" fill="#79c0ff" font-family="Consolas,monospace">└───────────────────────────┘</text>
+        <text x="16" y="130" font-size="9.5" fill="#ffd479" font-family="Consolas,monospace">&gt; günaydın</text>
+      </svg>
+      <figcaption><span class="stepno">2</span>Otomatik özet + <code>günaydın</code></figcaption>
+    </figure>
+
+    <figure>
+      <svg width="340" height="150" viewBox="0 0 340 150">
+        <rect x="4" y="4" width="332" height="142" rx="8" fill="#0d1b2a" stroke="#24364a"/>
+        <rect x="4" y="4" width="332" height="22" rx="8" fill="#1b2a3d"/>
+        <circle cx="18" cy="15" r="4" fill="#ff5f57"/><circle cx="32" cy="15" r="4" fill="#febc2e"/><circle cx="46" cy="15" r="4" fill="#28c840"/>
+        <text x="16" y="44" font-size="9" fill="#c9d6e3" font-family="Consolas,monospace">Plan: 3 dosya değişecek</text>
+        <text x="16" y="60" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace"> · form.cshtml</text>
+        <text x="16" y="76" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace"> · ResetService.cs</text>
+        <text x="16" y="92" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace"> · Mail.cs</text>
+        <rect x="14" y="104" width="150" height="22" rx="5" fill="#143a5e"/>
+        <text x="24" y="119" font-size="9" fill="#ffd479" font-family="Consolas,monospace">Onaylıyor musun? (e/h)</text>
+        <text x="180" y="119" font-size="11" fill="#7ee787" font-family="Consolas,monospace">&gt; e</text>
+      </svg>
+      <figcaption><span class="stepno">3</span>Plan gösterilir → onayla</figcaption>
+    </figure>
+
+    <figure>
+      <svg width="340" height="150" viewBox="0 0 340 150">
+        <rect x="4" y="4" width="332" height="142" rx="8" fill="#0d1b2a" stroke="#24364a"/>
+        <rect x="4" y="4" width="332" height="22" rx="8" fill="#1b2a3d"/>
+        <circle cx="18" cy="15" r="4" fill="#ff5f57"/><circle cx="32" cy="15" r="4" fill="#febc2e"/><circle cx="46" cy="15" r="4" fill="#28c840"/>
+        <text x="170" y="19" text-anchor="middle" font-size="8.5" fill="#7d8fa3" font-family="Consolas,monospace">ResetService.cs · diff</text>
+        <rect x="10" y="34" width="320" height="15" fill="rgba(231,76,60,.25)"/>
+        <text x="16" y="45" font-size="9" fill="#ff9b94" font-family="Consolas,monospace">- public void Reset() {}</text>
+        <rect x="10" y="51" width="320" height="15" fill="rgba(43,182,115,.25)"/>
+        <text x="16" y="62" font-size="9" fill="#7ee787" font-family="Consolas,monospace">+ public async Task Reset(u){</text>
+        <rect x="10" y="67" width="320" height="15" fill="rgba(43,182,115,.25)"/>
+        <text x="16" y="78" font-size="9" fill="#7ee787" font-family="Consolas,monospace">+   var t = NewToken();</text>
+        <rect x="10" y="83" width="320" height="15" fill="rgba(43,182,115,.25)"/>
+        <text x="16" y="94" font-size="9" fill="#7ee787" font-family="Consolas,monospace">+   await Mail.Send(u, t); }</text>
+        <text x="16" y="118" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace">3 dosya güncellendi</text>
+      </svg>
+      <figcaption><span class="stepno">4</span>Değişiklik diff'i (yeşil/kırmızı)</figcaption>
+    </figure>
+
+    <figure>
+      <svg width="340" height="150" viewBox="0 0 340 150">
+        <rect x="4" y="4" width="332" height="142" rx="8" fill="#0d1b2a" stroke="#24364a"/>
+        <rect x="4" y="4" width="332" height="22" rx="8" fill="#1b2a3d"/>
+        <circle cx="18" cy="15" r="4" fill="#ff5f57"/><circle cx="32" cy="15" r="4" fill="#febc2e"/><circle cx="46" cy="15" r="4" fill="#28c840"/>
+        <text x="16" y="44" font-size="9.5" fill="#ffd479" font-family="Consolas,monospace">&gt; çalışıyor mu test et</text>
+        <text x="16" y="64" font-size="9" fill="#7d8fa3" font-family="Consolas,monospace">/verify → uygulama çalıştı</text>
+        <text x="16" y="84" font-size="9" fill="#7ee787" font-family="Consolas,monospace">✓ şifre maili gönderildi</text>
+        <text x="16" y="100" font-size="9" fill="#7ee787" font-family="Consolas,monospace">✓ 8/8 test geçti</text>
+        <text x="16" y="124" font-size="9" fill="#c9d6e3" font-family="Consolas,monospace">Akış doğrulandı.</text>
+      </svg>
+      <figcaption><span class="stepno">5</span><code>/verify</code> — gerçekten çalıştı</figcaption>
+    </figure>
+
+    <figure>
+      <svg width="340" height="150" viewBox="0 0 340 150">
+        <rect x="4" y="4" width="332" height="142" rx="8" fill="#0d1b2a" stroke="#24364a"/>
+        <rect x="4" y="4" width="332" height="22" rx="8" fill="#1b2a3d"/>
+        <circle cx="18" cy="15" r="4" fill="#ff5f57"/><circle cx="32" cy="15" r="4" fill="#febc2e"/><circle cx="46" cy="15" r="4" fill="#28c840"/>
+        <text x="16" y="42" font-size="9.5" fill="#ffd479" font-family="Consolas,monospace">&gt; commit'le, iyi geceler</text>
+        <text x="16" y="62" font-size="9" fill="#7ee787" font-family="Consolas,monospace">✓ feat: şifre sıfırlama</text>
+        <text x="16" y="82" font-size="9" fill="#c9d6e3" font-family="Consolas,monospace">Journal yazıldı:</text>
+        <text x="16" y="98" font-size="8.5" fill="#7d8fa3" font-family="Consolas,monospace">  bitti · yarın: test yaz</text>
+        <text x="16" y="122" font-size="9" fill="#79c0ff" font-family="Consolas,monospace">İyi geceler 🌙</text>
+      </svg>
+      <figcaption><span class="stepno">6</span>Commit + <code>iyi geceler</code> → kayıt</figcaption>
+    </figure>
+  </div>
+
+  <div class="box key center"><b>6 ekran = 1 gün.</b> Aç → özet → onay → diff → doğrula → kaydet. Hep aynı ritim.</div>
+
+  <h3>⚙️ Bu ekranlardaki "sihir" nereden geliyor?</h3>
+  <div class="box warn"><b>Dikkat — en önemli nokta:</b> Bu otomatik davranışların hiçbiri Claude'un kendiliğinden yaptığı şey <u>değil</u>. Her biri <b>senin <code>.claude/</code> altına yazdığın / Claude'a yazdırdığın skill, agent ve hook'lar sayesinde</b> çalışıyor. Sistem bu kadar akıcıysa, sebebi sensin.</div>
+  <table>
+    <tr><th>Ekran</th><th>Görünen davranış</th><th>Neden çalışıyor (senin kurduğun yapı)</th></tr>
+    <tr><td>1-2</td><td>Açılışta otomatik özet</td><td><b>session-start hook</b> + <b>session-protocol kuralı</b> sayesinde</td></tr>
+    <tr><td>3</td><td>Önce plan + onay istemesi</td><td><b>plan-first kuralı</b> sayesinde</td></tr>
+    <tr><td>4</td><td>Düzenli, tek-konu commit</td><td><b>commit-discipline kuralı</b> sayesinde</td></tr>
+    <tr><td>5</td><td>"Bitti" demeden gerçekten test</td><td><b>verify skill</b> + <b>test-discipline kuralı</b> sayesinde</td></tr>
+    <tr><td>6</td><td>Günlüğe yazıp kaydetmesi</td><td><b>session-handoff skill</b> + <b>post-commit-journal hook</b> sayesinde</td></tr>
+  </table>
+  <div class="box key"><b>Çıkarım:</b> "Claude akıllı" değil — <b>senin kurduğun yapı akıllı</b>. Yeni bir kolaylık istiyorsan: yeni bir skill/agent/hook yaz (veya yazdır). İleri seviyeler (Senior+) tam bunu öğretir.</div>
+
+  <h3>Örnek: <code>günaydın</code> deyince tam olarak ne oluyor?</h3>
+  <p>Tek kelime yazarsın, arkada <b>senin kurduğun yapı</b> şunları yapar:</p>
+  <svg width="500" height="172" viewBox="0 0 500 172">
+    <rect x="6" y="60" width="120" height="48" rx="9" fill="#fff6e5" stroke="#f5a623" stroke-width="2"/>
+    <text x="66" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#9a6a10">sen yazarsın</text>
+    <text x="66" y="98" text-anchor="middle" font-size="12" fill="#0b2a4a" font-family="Consolas,monospace">günaydın</text>
+    <line x1="128" y1="84" x2="166" y2="84" stroke="#2c7be5" stroke-width="2.5" marker-end="url(#go)"/>
+    <rect x="168" y="48" width="150" height="72" rx="9" fill="#eaf1fb" stroke="#2c7be5" stroke-width="2"/>
+    <text x="243" y="66" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#16518f">tetiklenen yapı</text>
+    <text x="243" y="84" text-anchor="middle" font-size="9" fill="#234">session-start hook</text>
+    <text x="243" y="99" text-anchor="middle" font-size="9" fill="#234">+ session-handoff</text>
+    <text x="243" y="113" text-anchor="middle" font-size="9" fill="#234">(ters yön: oku)</text>
+    <line x1="320" y1="84" x2="358" y2="84" stroke="#2c7be5" stroke-width="2.5" marker-end="url(#go)"/>
+    <rect x="360" y="20" width="134" height="132" rx="9" fill="#e9f7ef" stroke="#2bb673" stroke-width="2"/>
+    <text x="427" y="38" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#1e7a4d">otomatik yapılanlar</text>
+    <text x="370" y="56" font-size="8.5" fill="#234">✓ git: son 3 gün commit</text>
+    <text x="370" y="72" font-size="8.5" fill="#234">✓ uncommitted sayısı</text>
+    <text x="370" y="88" font-size="8.5" fill="#234">✓ TODO Faz 0 (bugün)</text>
+    <text x="370" y="104" font-size="8.5" fill="#234">✓ son journal okunur</text>
+    <text x="370" y="120" font-size="8.5" fill="#234">✓ "nerede kaldık"</text>
+    <text x="370" y="136" font-size="8.5" fill="#234">  özeti sunulur</text>
+    <defs><marker id="go" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2c7be5"/></marker></defs>
+  </svg>
+  <div class="box note"><b>Yani:</b> "günaydın" sihirli değil. <b>session-start hook'u</b> dünkü durumu toplar, <b>session-handoff skill'i</b> (ters yön) son günlüğü okuyup özetler. Bu iki dosya olmasa "günaydın" hiçbir şey yapmazdı.</div>
+
+  <h3>Hangi söz → hangi yapı → ne yapar</h3>
+  <table>
+    <tr><th>Sen dersin</th><th>Hangi yapı sayesinde</th><th>Ne yapar</th></tr>
+    <tr><td><code>günaydın</code></td><td>session-start hook + session-handoff</td><td>git/TODO/journal okur, "nerede kaldık" özetler</td></tr>
+    <tr><td><code>iyi geceler</code> / <code>/handoff</code></td><td>session-handoff skill</td><td>bugünü journale yazar, TODO işaretler, journal+TODO commit'ler</td></tr>
+    <tr><td>"bunu commit'le"</td><td>commit-discipline kuralı</td><td>tek-konu, doğru formatlı commit (<code>feat: …</code>)</td></tr>
+    <tr><td>"dosyaları böl"</td><td>commit-splitter agent</td><td>15+ dosyayı anlamlı commit bucket'larına ayırır</td></tr>
+    <tr><td>"hangi seçenek?"</td><td>llm-council skill</td><td>5 danışman + sentez ile karar analizi</td></tr>
+    <tr><td><code>/verify</code></td><td>verify skill + test-discipline</td><td>uygulamayı çalıştırır, davranışı doğrular</td></tr>
+    <tr><td>(commit'te şifre)</td><td>pre-commit-antipattern hook</td><td>sızıntıyı yakalar, commit'i bloklar</td></tr>
+    <tr><td>(15 dosya birikince)</td><td>session-start + commit-discipline</td><td>"yeni iş yasak, önce böl" uyarısı</td></tr>
+  </table>
+  <div class="box key center"><b>Kalıp:</b> her kolaylık = <b>bir tetik söz</b> + <b>senin kurduğun bir yapı</b>. Yapıyı sil → kolaylık kaybolur. Yeni yapı yaz → yeni kolaylık kazan.</div>
+</div>
+
+<!-- ============ BÖLÜM 6 — HATA KURTARMA ============ -->
+<div class="page">
+  <h2>6 · Bir şey ters gitti — kurtarma</h2>
+  <p class="lead">Panik yok. Çoğu sorun tek cümleyle çözülür.</p>
+
+  <table>
+    <tr><th>Belirti</th><th>Ne yap</th></tr>
+    <tr><td><b>Claude yanlış dosyayı değiştirdi</b></td><td>"son değişikliği geri al" de. Henüz commit yoksa kolayca geri alır. Git her şeyi tutar — kalıcı kayıp nadirdir.</td></tr>
+    <tr><td><b>Commit "bloklandı" dedi</b></td><td>İyi haber — koruma çalıştı (örn. şifre sızıntısı yakalandı). Claude'a "neden bloklandı?" sor, düzelt, tekrar commit.</td></tr>
+    <tr><td><b>Cevaplar saçmaladı / konu dağıldı</b></td><td>Konuşma şişmiş. <code>/compact</code> (aynı iş) veya <code>/clear</code> (yeni iş). Önce <code>iyi geceler</code> ile notu kaydet.</td></tr>
+    <tr><td><b>Claude eski/yanlış bilgiyle konuşuyor</b></td><td>Hafıza eskimiş olabilir. "git durumunu tekrar oku" veya oturumu kapat-aç. Doğru kaynak: dosyalar, ezber değil.</td></tr>
+    <tr><td><b>"15 dosya eşiği" uyarısı</b></td><td>Çok iş birikti, kaydetmeden devam riskli. "dosyaları böl ve commit'le" de.</td></tr>
+    <tr><td><b>Bir kuralı sürekli unutuyor</b></td><td>Kural dosyada değil, konuşmada kalmış. "bunu kalıcı kurala yaz" de.</td></tr>
+    <tr><td><b>Yanlışlıkla bir şey sildim/bozdum</b></td><td>"git ile en son commit'e dön" de — ama önce Claude sana neyin kaybolacağını söyler, onayını ister.</td></tr>
+  </table>
+
+  <div class="box warn"><b>Tehlikeli komutlar koruma altında:</b> Geri alınamaz git işlemleri (<code>reset --hard</code>, <code>push --force</code>) Claude tarafından <b>onayın olmadan çalıştırılmaz</b>. "N dosya kaybolacak, emin misin?" diye sorar. Acele etme, oku, sonra onayla.</div>
+
+  <div class="box tip"><b>Genel kurtarma refleksi:</b> Ne olduğunu Claude'a anlat ("şunu yaptım, böyle oldu"). Tanı + çözüm önerir. Bilmiyorsan tahmin etme — sor.</div>
+</div>
+
+<!-- ============ BÖLÜM 7 — SINIRLAR + SSS + SÖZLÜK ============ -->
+<div class="page">
+  <h2>7 · Sınırlar, güven, SSS</h2>
+
+  <h3>Claude neyi yapar / yapmaz</h3>
+  <div class="twocol">
+    <div class="box tip"><b>YAPAR</b><br>• Kod okur, yazar, çalıştırır<br>• Önemli adımda onay ister<br>• İstersen commit eder<br>• Kurallara uyar<br>• Hata bulur, açıklar</div>
+    <div class="box warn"><b>YAPMAZ (izinsiz)</b><br>• Sen istemeden commit<br>• Geri alınamaz git komutu<br>• Sırları koda gömme<br>• Onaysız dosya silme<br>• "Bitti" demeden doğrulamadan geçme</div>
+  </div>
+
+  <h3>Güvenlik temeli</h3>
+  <ul>
+    <li><b>Sırlar</b> (şifre, API anahtarı) koda <b>yazılmaz</b> — ortam değişkenine gider. Koruma bunu commit'te yakalar.</li>
+    <li>Kullanıcıya teknik hata detayı gösterilmez; log'a gider.</li>
+    <li>Her büyük değişiklik öncesi/sonrası <code>/security-check</code> iyi alışkanlık.</li>
+  </ul>
+
+  <h3>Sık sorulan acemi soruları</h3>
+  <table>
+    <tr><th>Soru</th><th>Cevap</th></tr>
+    <tr><td>Benim yerime kod mu yazıyor?</td><td>Evet ama kontrol sende — onaylamadan kalıcı olmaz. Sen mimar, o uygulayıcı.</td></tr>
+    <tr><td>Terminali kapatınca kaybolur mu?</td><td>Konuşma kaybolur ama <code>iyi geceler</code> dediysen önemli her şey dosyaya yazıldı. Commit'lediysen kod güvende.</td></tr>
+    <tr><td>Kod bilmem, kullanabilir miyim?</td><td>Evet. Ne istediğini Türkçe anlat yeter. Ama ürettiğini gözden geçirmek için temel bilgi faydalı.</td></tr>
+    <tr><td>Yanlış yaparsa kim sorumlu?</td><td>Sen onaylıyorsun, sen sorumlusun. O yüzden gösterdiğini oku, körü körüne "onayla" deme.</td></tr>
+    <tr><td>Skill/agent/hook ne farkı?</td><td>Karıştırma — "şunu istiyorum" de, doğru olanı Claude seçer + gerekçesini söyler.</td></tr>
+  </table>
+
+  <h3>Mini sözlük (jargon)</h3>
+  <p>
+    <span class="chip">oturum</span> = bir <code>claude</code> açıp kapatma süresi.
+    <span class="chip">bağlam (context)</span> = Claude'un o an "aklındaki" bilgi.
+    <span class="chip">commit</span> = kod kaydetme noktası (git).
+    <span class="chip">journal</span> = günlük not defteri dosyası.
+    <span class="chip">kural (rule)</span> = kalıcı davranış talimatı.
+    <span class="chip">skill</span> = hazır iş reçetesi.
+    <span class="chip">agent</span> = ayrı kafada iş yapan yardımcı.
+    <span class="chip">hook</span> = otomatik tetiklenen kontrol.
+    <span class="chip">compact</span> = konuşmayı özetle-sıkıştır.
+    <span class="chip">clear</span> = sıfırla, yeni iş.
+    <span class="chip">handoff</span> = gün sonu devir/kaydetme.
+    <span class="chip">tier</span> = işin büyüklük seviyesi (plan gerekir mi).
+  </p>
+
+  <div class="box key center"><b>Tek cümlelik özet:</b> Ne istediğini söyle · gösterdiğini oku · onayla · kaydettir. Gerisini sistem halleder.</div>
+
+  <p class="small center" style="margin-top:24px;">claude-context-template · Acemi Rehberi · Daha fazlası: GELISTIRICI_REHBERI.md, PROJE_OZEL_KAVRAM.md</p>
+</div>
+
+</body>
+</html>

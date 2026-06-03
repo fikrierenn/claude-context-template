@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../_guide.css">
+<style>
+  .cover{ background:linear-gradient(140deg,#0b2a4a 0%,#11487f 55%,#2c7be5 100%); }
+  .surf{ display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.35); padding:5px 14px; border-radius:20px; font-size:10.5pt; margin-top:24px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-inner">
+    <div class="kicker">Ustalık Yolu · Masaüstü</div>
+    <h1>Claude Code<br>Desktop</h1>
+    <div class="sub">Masaüstü uygulamasında Acemi'den Plus'a: pencereler, onay butonları, projeler — terminal bilmeden tüm sistem.</div>
+    <div class="surf">🖥️ Claude Code Desktop · GUI · git/skill/agent/hook destekli</div>
+  </div>
+  <div class="foot">claude-context-template · Desktop Rehberi · Sürüm 1.0 · © Fikri Eren 2026</div>
+</div>
+
+<!-- INTRO + MAP -->
+<div class="page">
+  <h2>Desktop nedir, terminalden farkı ne?</h2>
+  <p class="lead">Aynı motor, farklı kabin. Terminaldeki her şey (kurallar, skill, agent, hook, git) burada da var — ama komut yazmak yerine <b>pencere + buton</b> ile.</p>
+
+  <table>
+    <tr><th>İş</th><th>Terminal</th><th>Desktop (uygulama)</th></tr>
+    <tr><td>Aç</td><td><code>cd proje && claude</code></td><td>Uygulamayı aç → projeyi seç</td></tr>
+    <tr><td>Konuş</td><td>terminale yaz</td><td>sohbet paneline yaz</td></tr>
+    <tr><td>Onay</td><td>enter</td><td>"İzin ver / Reddet" butonu</td></tr>
+    <tr><td>Değişiklik gör</td><td>diff metni</td><td>yan yana görsel diff</td></tr>
+    <tr><td>Komut (/handoff…)</td><td>yaz</td><td><code>/</code> yaz → liste açılır</td></tr>
+  </table>
+  <div class="box key"><b>Önemli:</b> <code>.claude/</code> klasörü, kurallar, journal, skill, agent, hook — hepsi <b>birebir aynı</b>. Bu rehber boyunca "söyle/onayla" derken paneldeki sohbeti kastediyoruz.</div>
+
+  <div class="box warn"><b>Vurgu:</b> Penceredeki otomatik kolaylıklar (açılış özeti, plan-onay, otomatik diff/commit, güvenlik bloğu) Claude'un hazır sihri değil — <b>senin <code>.claude/</code> altına yazdığın/yazdırdığın skill, agent ve hook'lar sayesinde</b>. Masaüstü sadece kabin; akıl o dosyalarda.</div>
+
+  <h3>Hangi söz → hangi yapı → ne yapar</h3>
+  <table>
+    <tr><th>Sen dersin</th><th>Hangi yapı sayesinde</th><th>Ne yapar</th></tr>
+    <tr><td><code>günaydın</code></td><td>session-start hook + session-handoff</td><td>git/TODO/journal okur, "nerede kaldık" özetler</td></tr>
+    <tr><td><code>iyi geceler</code> / <code>/handoff</code></td><td>session-handoff skill</td><td>bugünü journale yazar, TODO işaretler, commit'ler</td></tr>
+    <tr><td>"bunu commit'le"</td><td>commit-discipline kuralı</td><td>tek-konu, doğru formatlı commit</td></tr>
+    <tr><td>"dosyaları böl"</td><td>commit-splitter agent</td><td>15+ dosyayı anlamlı commit bucket'larına ayırır</td></tr>
+    <tr><td><code>/verify</code></td><td>verify skill + test-discipline</td><td>uygulamayı çalıştırır, davranışı doğrular</td></tr>
+    <tr><td>(commit'te şifre)</td><td>pre-commit-antipattern hook</td><td>sızıntıyı yakalar, commit'i bloklar</td></tr>
+    <tr><td>(plan gerektiren iş)</td><td>plan-first kuralı</td><td>kod yazmadan önce plan + onay ister</td></tr>
+  </table>
+  <div class="box key center"><b>Kalıp:</b> her kolaylık = <b>tetik söz</b> + <b>senin kurduğun yapı</b>. Sil → kaybolur. Yaz → kazan.</div>
+
+  <h3>Masaüstü penceresi neye benzer?</h3>
+  <svg width="490" height="230" viewBox="0 0 490 230">
+    <rect x="6" y="6" width="478" height="218" rx="9" fill="#f4f7fb" stroke="#c7d2e0" stroke-width="1.5"/>
+    <rect x="6" y="6" width="478" height="24" rx="9" fill="#e4ebf3"/>
+    <circle cx="22" cy="18" r="4.5" fill="#ff5f57"/><circle cx="38" cy="18" r="4.5" fill="#febc2e"/><circle cx="54" cy="18" r="4.5" fill="#28c840"/>
+    <text x="245" y="22" text-anchor="middle" font-size="9" fill="#5a6b80">Claude Code — proje</text>
+    <!-- left tree -->
+    <rect x="6" y="30" width="120" height="194" fill="#eef2f7"/>
+    <text x="16" y="50" font-size="9" fill="#34465a" font-weight="bold">📁 .claude</text>
+    <text x="24" y="66" font-size="8.5" fill="#5a6b80">rules/</text>
+    <text x="24" y="80" font-size="8.5" fill="#5a6b80">skills/</text>
+    <text x="24" y="94" font-size="8.5" fill="#5a6b80">agents/</text>
+    <text x="16" y="112" font-size="9" fill="#34465a" font-weight="bold">📁 src</text>
+    <text x="24" y="128" font-size="8.5" fill="#b5326e">login.ts ●</text>
+    <text x="16" y="146" font-size="9" fill="#34465a">📄 TODO.md</text>
+    <!-- center chat -->
+    <rect x="130" y="34" width="210" height="186" rx="6" fill="#fff" stroke="#dce4ee"/>
+    <rect x="140" y="44" width="150" height="30" rx="8" fill="#eaf1fb"/>
+    <text x="150" y="63" font-size="9" fill="#16518f">günaydın, devam edelim</text>
+    <rect x="180" y="82" width="150" height="44" rx="8" fill="#f0f4f9"/>
+    <text x="190" y="99" font-size="8.5" fill="#34465a">Şifre akışı için 3 dosya</text>
+    <text x="190" y="113" font-size="8.5" fill="#34465a">değişecek. Onay?</text>
+    <rect x="190" y="134" width="64" height="22" rx="6" fill="#2bb673"/>
+    <text x="222" y="149" text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">İzin Ver</text>
+    <rect x="260" y="134" width="58" height="22" rx="6" fill="#fff" stroke="#e0792c"/>
+    <text x="289" y="149" text-anchor="middle" font-size="9" fill="#c25e10">Reddet</text>
+    <!-- right diff -->
+    <rect x="344" y="34" width="134" height="186" rx="6" fill="#0d1b2a"/>
+    <text x="354" y="50" font-size="8.5" fill="#7d8fa3" font-family="Consolas,monospace">login.ts · diff</text>
+    <rect x="348" y="58" width="126" height="14" fill="rgba(231,76,60,.25)"/>
+    <text x="354" y="69" font-size="8" fill="#ff9b94" font-family="Consolas,monospace">- if (u)</text>
+    <rect x="348" y="74" width="126" height="14" fill="rgba(43,182,115,.25)"/>
+    <text x="354" y="85" font-size="8" fill="#7ee787" font-family="Consolas,monospace">+ if (u &amp;&amp; u.active)</text>
+    <rect x="348" y="90" width="126" height="14" fill="rgba(43,182,115,.25)"/>
+    <text x="354" y="101" font-size="8" fill="#7ee787" font-family="Consolas,monospace">+ sendReset(u)</text>
+    <text x="354" y="124" font-size="8" fill="#c9d6e3" font-family="Consolas,monospace">  return ok</text>
+  </svg>
+  <p class="small center">Sol: dosya ağacı · Orta: sohbet + onay butonları · Sağ: görsel diff (yeşil ekle / kırmızı sil).</p>
+
+  <h3>Yetkinlik haritası</h3>
+  <table>
+    <tr><th>Yetkinlik</th><th>L0</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th></tr>
+    <tr><td>Proje aç, konuş, onayla</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Komut + skill kullan</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Skill/agent/hook oluştur</td><td>—</td><td>kısmi</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Plan-first, agent çağır</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Ekip standardı / template</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Workflow / MCP / meta</td><td>—</td><td>—</td><td>—</td><td>kısmi</td><td>✓</td></tr>
+  </table>
+</div>
+
+<!-- L0 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l0">L0</span><h2>Acemi — "Uygulamayı kullanabiliyorum"</h2></div>
+  <p class="lead">Hedef: Pencereyi açıp iş yaptırmak. Kod/terminal bilmeden.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Uygulamayı aç → proje klasörünü seç</li>
+    <li>Sohbet paneline <code>günaydın</code> yaz, özeti oku</li>
+    <li>Hedefi net söyle → plan kutusunu oku → <b>İzin Ver</b></li>
+    <li>Görsel diff'i incele (yeşil=eklendi, kırmızı=silindi)</li>
+    <li>"bunu commit'le" ile kaydet</li>
+  </ul>
+  <h3>Araçlar</h3>
+  <p><span class="chip">günaydın</span><span class="chip">iyi geceler</span><span class="chip">İzin Ver butonu</span><span class="chip">diff paneli</span></p>
+  <div class="box note"><b>Oluşturma:</b> Henüz yok. Skill/hook kurulu geldi; sen tetikliyorsun.</div>
+  <div class="box tip"><b>Desktop avantajı:</b> Onay butonları sayesinde "yanlışlıkla onay" zorlaşır — her değişikliği görsel görüp tıklarsın.</div>
+  <div class="gate"><b>Geçiş → L1:</b> Bir haftalık işi yardımsız bitirdiysen Junior'sın.</div>
+</div>
+
+<!-- L1 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l1">L1</span><h2>Junior — "Araçları kullanıyorum"</h2></div>
+  <p class="lead">Hedef: Hazır komut/skill/kuralları bilinçli kullanmak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li><code>/</code> menüsünden komut: <code>/code-check</code>, <code>/verify</code>, <code>/security-check</code></li>
+    <li><code>/compact</code> (devam) vs <code>/clear</code> (yeni iş) farkı</li>
+    <li>Kuralları okur (dosya ağacından <code>.claude/rules/</code>); TODO/journal takip</li>
+    <li>Commit disiplini: 1 commit = 1 konu; 15 dosya uyarısını dinle</li>
+  </ul>
+  <h3>Skill/agent/hook oluşturma — bu seviyede</h3>
+  <p>Kural ürettirirsin (sohbette):</p>
+  <pre><span class="c"># Panele yaz:</span>
+bunu kalıcı kurala yaz: tüm tarihler gg.aa.yyyy formatında olsun
+<span class="c"># Claude .claude/rules/ altına işler, onay kutusu çıkar → İzin Ver</span></pre>
+  <div class="box tip"><b>Junior refleksi:</b> Aynı şeyi 2. kez söylüyorsan "kurala yaz" de.</div>
+  <div class="gate"><b>Geçiş → L2:</b> "Buna özel bir skill olsa" demeye başladıysan Senior'sın.</div>
+</div>
+
+<!-- L2 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l2">L2</span><h2>Senior — "Araç üretiyorum"</h2></div>
+  <p class="lead">Hedef: Proje-özel skill / agent / hook oluşturmak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Skill/agent/hook oluşturur (frontmatter, tetik, kısıt)</li>
+    <li>Model katmanı: haiku (mekanik) / sonnet (analiz) / opus (yüksek-risk)</li>
+    <li>Salt-okuma vs yazma ayrımı (denetçi agent yazamaz)</li>
+    <li>Tier 3 işte plan; agent çağırır (code-review, security)</li>
+  </ul>
+  <h3>En pratik yol: Claude'a yazdır</h3>
+  <pre><span class="c"># Panele yaz:</span>
+Bana "rapor-yazici" skill'i oluştur. Excel rapor üretirken
+şu kolonları zorunlu tutsun, "rapor çıkar" denince tetiklensin.
+salt-okuma olsun. <span class="c"># Claude SKILL.md yazar → onayla</span></pre>
+  <h3>Frontmatter — bilmen yeten kadar</h3>
+  <pre><span class="k">---</span>
+name: rapor-yazici
+description: Excel rapor standardı. "rapor çıkar" denince tetiklenir.
+allowed-tools: Read, Grep, Glob   <span class="c"># yazma yok = güvenli</span>
+model: inherit
+<span class="k">---</span></pre>
+  <div class="box key"><b>description = tetikleyici sözleşme.</b> Gerçek cümleleri buraya göm; Claude ne zaman çağıracağını oradan bilir.</div>
+  <div class="box note"><b>Hook (otomatik koruma):</b> "commit öncesi şifre taraması yapan bir hook ekle" de — Claude script + <code>settings.json</code> kaydını yapar.</div>
+  <div class="gate"><b>Geçiş → L3:</b> Başka devler senin kurallarını soruyorsa Leader'sın.</div>
+</div>
+
+<!-- L3 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l3">L3</span><h2>Leader — "Ekip standardı kuruyorum"</h2></div>
+  <p class="lead">Hedef: Template'i ekibe yaymak, kararları sistematik kılmak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Yeni projeye template kurar (bootstrap); <code>--update</code> ile yayar</li>
+    <li>Evrensel / stack / proje kural ayrımını yönetir</li>
+    <li>Mimari karar → ADR; kararsızlıkta <code>council this</code></li>
+    <li>Agent + hook ekosistemi (faz-kapanış kapısı: build→review→security)</li>
+    <li>Onboarding: yeni dev'e acemi rehberi → bu rehber</li>
+  </ul>
+  <div class="box note"><b>Desktop notu:</b> bootstrap script'i terminalde/uygulamanın komut panelinde çalışır. Leader seviyesinde komut satırına biraz değmen gerekir — Claude'a "şu projeye template kur" desen de yapar.</div>
+  <h3>Governance</h3>
+  <p>Stale skill/kural = aktif zarar. "Son 2 ayda tetiklendi mi, hâlâ doğru mu?" Hayır → emekli et.</p>
+  <div class="gate"><b>Geçiş → L4:</b> Çok-ajanlı orkestrasyon / MCP ihtiyacı doğduysa Plus'tasın.</div>
+</div>
+
+<!-- L4 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l4">L4</span><h2>Plus — "Sistemi otomatikleştiriyorum"</h2></div>
+  <p class="lead">Hedef: Tek bağlama sığmayan işleri orkestre etmek; kendi tool'unu bağlamak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Workflow orkestrasyon: çok agent fan-out + adversarial verify</li>
+    <li>MCP server (kendi DB/API'ni Claude'a tool olarak bağla)</li>
+    <li>Çok-hook'lu pipeline (format + lint + test + bildirim)</li>
+    <li>Zamanlanmış/loop görevler</li>
+    <li>Meta: telemetri, ölçüm, sistemin kendini iyileştirmesi</li>
+  </ul>
+  <div class="box key"><b>Plus zihniyeti:</b> Tek tek işleri değil, iş üreten sistemleri tasarlarsın. Token bütçesi + doğrulama birinci sınıf girdi.</div>
+  <div class="box warn"><b>Tuzak:</b> Güçlü ≠ gerekli. Workflow/MCP pahalı; ihtiyaç kanıtlanmadan kurma.</div>
+</div>
+
+<!-- CLOSE -->
+<div class="page">
+  <h2>Özet + değişmez ilkeler</h2>
+  <table>
+    <tr><th>Seviye</th><th>Cümle</th><th>Oluşturma</th></tr>
+    <tr><td><b>L0 Acemi</b></td><td>Uygulamayı kullanabiliyorum</td><td>—</td></tr>
+    <tr><td><b>L1 Junior</b></td><td>Araçları kullanıyorum</td><td>"kurala yaz"</td></tr>
+    <tr><td><b>L2 Senior</b></td><td>Araç üretiyorum</td><td>skill+agent+hook</td></tr>
+    <tr><td><b>L3 Leader</b></td><td>Ekip standardı kuruyorum</td><td>ekosistem+template</td></tr>
+    <tr><td><b>L4 Plus</b></td><td>Sistemi otomatikleştiriyorum</td><td>workflow+MCP</td></tr>
+  </table>
+  <div class="twocol">
+    <div class="box tip"><b>1 · Yazılı olan yaşar</b><br>Claude hatırlamaz. Kural/journal = kalıcı hafıza.</div>
+    <div class="box key"><b>2 · Karar insanda</b><br>O uygular, sen onaylarsın (İzin Ver). Diff'i oku.</div>
+  </div>
+  <div class="box note"><b>3 · Acıyı kalıcı yapıya çevir</b> — 2. kez yaptıysan: kural/skill/agent/hook doğmalı.</div>
+  <div class="box key center"><b>Yol:</b> Kullan (L0-L1) → Üret (L2) → Standartlaştır (L3) → Otomatikleştir (L4).</div>
+  <p class="small center" style="margin-top:16px;">claude-context-template · Desktop Rehberi · © Fikri Eren 2026</p>
+</div>
+
+</body>
+</html>

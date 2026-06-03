@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../_guide.css">
+<style>
+  .cover{ background:linear-gradient(140deg,#3a1d5e 0%,#5b32b0 55%,#7d4ce0 100%); }
+  .surf{ display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.35); padding:5px 14px; border-radius:20px; font-size:10.5pt; margin-top:24px; }
+  h2{ border-color:#7d4ce0; } .lvlhead{ border-color:#7d4ce0; }
+  th{ background:#7d4ce0; }
+  .box.key{ border-left-color:#7d4ce0; background:#f3edfc; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-inner">
+    <div class="kicker">Ustalık Yolu · Cowork</div>
+    <h1>Claude<br>Cowork</h1>
+    <div class="sub">Ajan ortamında Acemi'den Plus'a: rol-eşli plugin'ler, Skills, MCP connector'lar ve izole worktree'de çalışan görevler.</div>
+    <div class="surf">🤝 Cowork · Skills + MCP + Plugin · ajan görevleri + sandbox worktree</div>
+  </div>
+  <div class="foot">claude-context-template · Cowork Rehberi · Sürüm 1.0 · © Fikri Eren 2026</div>
+</div>
+
+<!-- INTRO + MAP -->
+<div class="page">
+  <h2>Cowork nedir? Code ve Chat arasında nerede?</h2>
+  <p class="lead">Cowork = <b>ajan ortamı</b>: sen görev verirsin, Claude araçlarıyla (Skills, MCP, plugin) izole bir alanda yürütür. Chat'ten güçlü (gerçek tool + dosya), Code'dan daha yönetilen/GUI.</p>
+
+  <table>
+    <tr><th>Özellik</th><th>Chat</th><th>Cowork</th><th>Code (Desktop/Terminal)</th></tr>
+    <tr><td>Skills</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>MCP / Connector</td><td>kısmi</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Plugin (rol-eşli)</td><td>—</td><td>✓</td><td>kısmi</td></tr>
+    <tr><td>Ajan görev yürütme + sandbox</td><td>—</td><td>✓ (worktree)</td><td>✓</td></tr>
+    <tr><td>Hook / derin git kontrolü</td><td>—</td><td>kısmi</td><td>✓ tam</td></tr>
+  </table>
+  <div class="box key"><b>Konumlama:</b> İşleri otomatik yürütmek (araştır, düzenle, test et) ama terminal/hook ayrıntısına girmeden istiyorsan Cowork tam yeri. Her ajan kendi <b>izole worktree</b>'sinde çalışır — birbirini bozmaz.</div>
+
+  <div class="box warn"><b>Vurgu:</b> Ajanların doğru işi doğru yapması (müşteri özeti, risk skoru, doğrulama) <b>senin kurduğun/yazdırdığın Skills, bağladığın MCP connector'lar ve seçtiğin plugin'ler sayesinde</b>. Cowork güçlü; ama o gücü yönlendiren senin eklediğin yapı. Hazır gelen değil — senin kurduğun.</div>
+
+  <h3>Ne yaparsan → hangi yapı → ne olur</h3>
+  <table>
+    <tr><th>Sen yaparsın</th><th>Hangi yapı sayesinde</th><th>Ne olur</th></tr>
+    <tr><td>"müşteri özeti çıkar"</td><td>senin oluşturduğun Skill</td><td>standart reçeteyle adım adım üretir</td></tr>
+    <tr><td>Dış veri (CRM/DB) gerekir</td><td>bağladığın MCP connector</td><td>kaynaktan çeker, tool olarak kullanır</td></tr>
+    <tr><td>Rolüne göre başlarsın</td><td>seçtiğin plugin (rol-eşli)</td><td>doğru araç seti hazır gelir</td></tr>
+    <tr><td>Çok parçalı iş verirsin</td><td>çok-ajan + izole worktree</td><td>paralel yürütür, çakışma olmaz</td></tr>
+    <tr><td>Sonucu onaylarsın</td><td>ajan görev akışı</td><td>biten iş onayına gelir, sen karar verirsin</td></tr>
+  </table>
+  <div class="box note"><b>Not:</b> Bu akışların hepsi <b>senin eklediğin Skill + connector + plugin</b> ile mümkün. Boş Cowork sadece genel sohbettir; iş yapan yetenekleri sen bağlarsın.</div>
+
+  <h3>İlk kurulum — rehberli</h3>
+  <pre><span class="c"># Cowork'te:</span>
+setup-cowork   <span class="c"># rol-eşli plugin kur + araçlarını bağla + bir skill dene</span></pre>
+
+  <h3>Cowork ekranı neye benzer?</h3>
+  <svg width="490" height="210" viewBox="0 0 490 210">
+    <rect x="6" y="6" width="478" height="198" rx="9" fill="#f6f3fb" stroke="#d3c7e8" stroke-width="1.5"/>
+    <rect x="6" y="6" width="478" height="22" rx="9" fill="#ece4f6"/>
+    <circle cx="22" cy="17" r="4" fill="#ff5f57"/><circle cx="36" cy="17" r="4" fill="#febc2e"/><circle cx="50" cy="17" r="4" fill="#28c840"/>
+    <text x="245" y="21" text-anchor="middle" font-size="9" fill="#5b32b0">Cowork — görev panosu</text>
+    <!-- left plugins -->
+    <rect x="6" y="28" width="116" height="176" fill="#efe8f8"/>
+    <text x="16" y="46" font-size="9" fill="#4a2c7a" font-weight="bold">🧩 Plugin'ler</text>
+    <text x="20" y="64" font-size="8.5" fill="#5a4d70">● Geliştirici</text>
+    <text x="20" y="80" font-size="8.5" fill="#5a4d70">● Analist</text>
+    <text x="16" y="104" font-size="9" fill="#4a2c7a" font-weight="bold">🔌 Connector</text>
+    <text x="20" y="120" font-size="8.5" fill="#5a4d70">CRM · DB · Drive</text>
+    <text x="16" y="144" font-size="9" fill="#4a2c7a" font-weight="bold">⚡ Skills</text>
+    <text x="20" y="160" font-size="8.5" fill="#5a4d70">musteri-ozet</text>
+    <!-- task cards -->
+    <text x="134" y="44" font-size="9" fill="#4a2c7a" font-weight="bold">Görev: müşteri özeti çıkar</text>
+    <rect x="134" y="52" width="340" height="30" rx="6" fill="#e9f7ef" stroke="#2bb673"/>
+    <text x="146" y="71" font-size="8.5" fill="#1e7a4d">✓ CRM'den veri çek (ajan 1)</text>
+    <rect x="134" y="86" width="340" height="30" rx="6" fill="#e9f7ef" stroke="#2bb673"/>
+    <text x="146" y="105" font-size="8.5" fill="#1e7a4d">✓ Risk skoru hesapla (ajan 2)</text>
+    <rect x="134" y="120" width="340" height="30" rx="6" fill="#fff6e5" stroke="#f5a623"/>
+    <text x="146" y="139" font-size="8.5" fill="#9a6a10">⏳ Özet üret + doğrula (ajan 3)…</text>
+    <rect x="134" y="160" width="340" height="34" rx="6" fill="#f6f3fb" stroke="#d3c7e8"/>
+    <text x="146" y="174" font-size="8" fill="#5a4d70">Her ajan izole worktree'de — çakışma yok.</text>
+    <text x="146" y="187" font-size="8" fill="#5a4d70">Bitince sonuç onayına gelir.</text>
+  </svg>
+  <p class="small center">Sol: plugin + connector + skill · Sağ: paralel ajan görev kartları (✓ biten, ⏳ süren).</p>
+
+  <h3>Yetkinlik haritası</h3>
+  <table>
+    <tr><th>Yetkinlik</th><th>L0</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th></tr>
+    <tr><td>Görev ver, sonucu onayla</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Plugin + Skill + Connector kullan</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Skill / MCP connector oluştur</td><td>—</td><td>kısmi</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Ekip plugin/skill standardı</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Çok-ajan workflow / otomasyon</td><td>—</td><td>—</td><td>—</td><td>kısmi</td><td>✓</td></tr>
+  </table>
+</div>
+
+<!-- L0 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l0">L0</span><h2>Acemi — "Görev verebiliyorum"</h2></div>
+  <p class="lead">Hedef: Cowork'ü açıp bir işi yürüttürmek, sonucu görmek.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li><code>setup-cowork</code> ile ilk kurulumu yap (plugin + araç bağlama)</li>
+    <li>Net görev ver: "şu klasördeki raporu özetle"</li>
+    <li>Claude'un adımlarını izle; onay isteyince oku → onayla</li>
+    <li>İzole worktree mantığını bil: deneme güvenli, ana dosyan korunur</li>
+  </ul>
+  <div class="box note"><b>Oluşturma:</b> Henüz yok. Plugin/skill kurulu gelir; sen tetiklersin.</div>
+  <div class="box tip"><b>Cowork avantajı:</b> Ajan birden çok adımı kendi yürütür (ara, oku, düzenle, test) — sen hedefi verip sonucu denetlersin.</div>
+  <div class="gate"><b>Geçiş → L1:</b> Görevleri rahat verdiysen, hangi skill/plugin'in ne yaptığını merak ediyorsan Junior'sın.</div>
+</div>
+
+<!-- L1 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l1">L1</span><h2>Junior — "Plugin ve Skill kullanıyorum"</h2></div>
+  <p class="lead">Hedef: Hazır yetenekleri (plugin, skill, connector) bilinçli kullanmak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Rol-eşli plugin'leri tanı (geliştirici / analist / tasarım)</li>
+    <li>Skill tetikle: tetik ifadesini bilerek kullan</li>
+    <li>Connector bağla: Drive, takvim, e-posta, DB</li>
+    <li>Görev sonucunu onayla; gerekirse "şunu düzelt" ile iterasyon</li>
+  </ul>
+  <div class="box key"><b>Hafıza notu:</b> Tekrarlayan talimatları görev tanımına / proje bağlamına yaz. Cowork'te de "yazılı olan yaşar" geçerli.</div>
+  <div class="gate"><b>Geçiş → L2:</b> "Kendi işime özel bir skill/connector olsa" diyorsan Senior'sın.</div>
+</div>
+
+<!-- L2 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l2">L2</span><h2>Senior — "Skill / MCP üretiyorum"</h2></div>
+  <p class="lead">Hedef: Kendi tekrar reçeteni Skill yapmak; kendi aracını MCP ile bağlamak.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Skill oluştur (tetik + adımlar + kısıt)</li>
+    <li>MCP connector ekle — kendi DB/API'ni tool olarak bağla</li>
+    <li>Görevi parçala: keşif → uygula → doğrula</li>
+    <li>Salt-okuma vs yazma sınırını gözet (denetim görevleri değiştirmesin)</li>
+  </ul>
+  <h3>En pratik yol: Claude'a yazdır</h3>
+  <pre><span class="c"># Cowork'te:</span>
+Bana "musteri-ozet" skill'i oluştur. CRM connector'dan müşteri
+çekip standart özet üretsin; "müşteri özeti çıkar" denince tetiklensin.</pre>
+  <div class="box note"><b>Code farkı:</b> Cowork'te hook/derin git ayarı sınırlı; bunun yerine plugin + MCP + skill üçlüsüyle çalışırsın. Ağır git/hook disiplini gerekiyorsa Code'a geç.</div>
+  <div class="box key"><b>MCP = yetenek genişletme:</b> Bu repodaki <code>sqlserver-mcp-server</code> örnek — kendi veri kaynağını Claude'a tool yapar.</div>
+  <div class="gate"><b>Geçiş → L3:</b> Plugin/skill'i ekiple paylaşmak istiyorsan Leader'sın.</div>
+</div>
+
+<!-- L3 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l3">L3</span><h2>Leader — "Ekip standardı kuruyorum"</h2></div>
+  <p class="lead">Hedef: Ekip için ortak plugin/skill/connector seti + onboarding.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Rol bazlı plugin standardı (herkes doğru araçla başlasın)</li>
+    <li>Paylaşılan skill kütüphanesi + ortak görev şablonları</li>
+    <li>Connector erişim + gizlilik yönetişimi (kim neye bağlı)</li>
+    <li>Onboarding: yeni üye → <code>setup-cowork</code> + hazır skill seti</li>
+  </ul>
+  <div class="box key"><b>Code'daki bootstrap karşılığı:</b> Cowork'te "rol-eşli plugin + paylaşılan skill seti" ekip standardıdır. Bir kez kur, ekip tutarlı.</div>
+  <div class="box note"><b>Governance:</b> Stale skill/connector = risk + zarar. Periyodik gözden geçir, gereksizi kaldır, erişimi denetle.</div>
+  <div class="gate"><b>Geçiş → L4:</b> Çok-ajan orkestrasyon / zamanlı otomasyon ihtiyacı doğduysa Plus'tasın.</div>
+</div>
+
+<!-- L4 -->
+<div class="page">
+  <div class="lvlhead"><span class="lvltag l4">L4</span><h2>Plus — "Orkestrasyon ve otomasyon"</h2></div>
+  <p class="lead">Hedef: Çok-ajanlı işleri orkestre etmek; zamanlı/otomatik akışlar.</p>
+  <h3>Kazanımlar</h3>
+  <ul class="check">
+    <li>Çok-ajan görev: paralel fan-out + adversarial verify</li>
+    <li>İzole worktree'lerle paralel değişiklik (çakışma yok)</li>
+    <li>MCP server'ları zincirle — birden çok kaynak tek akışta</li>
+    <li>Zamanlanmış/loop görevler (periyodik kontrol, rapor)</li>
+    <li>Meta: hangi skill/plugin değer üretiyor — ölç, sadeleştir</li>
+  </ul>
+  <div class="box key"><b>Plus zihniyeti:</b> Tek görevi değil, görev üreten sistemi tasarlarsın. Doğrulama (verify) ve izolasyon birinci sınıf girdi.</div>
+  <div class="box warn"><b>Tuzak:</b> Çok-ajan + MCP pahalı ve karmaşık. İhtiyaç kanıtlanmadan kurma; basit görev için tek ajan yeter.</div>
+</div>
+
+<!-- CLOSE -->
+<div class="page">
+  <h2>Özet + değişmez ilkeler</h2>
+  <table>
+    <tr><th>Seviye</th><th>Cümle</th><th>Araç</th></tr>
+    <tr><td><b>L0 Acemi</b></td><td>Görev verebiliyorum</td><td>setup-cowork</td></tr>
+    <tr><td><b>L1 Junior</b></td><td>Plugin/Skill kullanıyorum</td><td>plugin + skill + connector</td></tr>
+    <tr><td><b>L2 Senior</b></td><td>Skill/MCP üretiyorum</td><td>skill + MCP connector</td></tr>
+    <tr><td><b>L3 Leader</b></td><td>Ekip standardı kuruyorum</td><td>plugin standardı + skill kütüphanesi</td></tr>
+    <tr><td><b>L4 Plus</b></td><td>Orkestrasyon + otomasyon</td><td>çok-ajan + MCP zinciri</td></tr>
+  </table>
+  <div class="twocol">
+    <div class="box tip"><b>1 · Yazılı olan yaşar</b><br>Tekrarlanan talimat → skill / görev şablonu.</div>
+    <div class="box key"><b>2 · Karar sende</b><br>Ajan yürütür, sen onaylarsın. İzole worktree güvenli dener.</div>
+  </div>
+  <div class="box note"><b>3 · Acıyı kalıcı yapıya çevir</b> — 2. kez yaptıysan: skill / connector / plugin doğmalı.</div>
+  <div class="box warn center"><b>Ortam seçimi:</b> Hafif düşünme → Chat · Ajan görev → Cowork · Tam git/hook kontrolü → Code (Desktop/Terminal).</div>
+  <p class="small center" style="margin-top:14px;">claude-context-template · Cowork Rehberi · © Fikri Eren 2026</p>
+</div>
+
+</body>
+</html>

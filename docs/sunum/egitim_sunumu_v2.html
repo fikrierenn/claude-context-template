@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: 297mm 167mm; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Helvetica,Arial,sans-serif; color:#0f1b2d; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .s{ width:297mm; height:167mm; page-break-after:always; position:relative; overflow:hidden; }
+  .s:last-child{ page-break-after:auto; }
+  .pad{ padding:15mm 17mm; height:100%; }
+  /* renkler: Ocean Depth */
+  /* deep #06283D  teal #1C7293  aqua #2EC4B6  ink #0f1b2d  red #E63946  amber #F4A259  green #2BB673 */
+  h1,h2,.huge{ font-family:Georgia,"Times New Roman",serif; }
+  .kick{ font-size:11.5pt; letter-spacing:4px; text-transform:uppercase; font-weight:700; }
+  .title{ font-size:30pt; font-weight:bold; color:#06283D; line-height:1.1; }
+  .sub{ font-size:14.5pt; color:#43586e; line-height:1.5; }
+  .mute{ color:#7c8ba0; }
+  .fill{ position:absolute; inset:0; }
+  /* DARK slides */
+  .dark{ background:radial-gradient(120% 130% at 80% 10%, #0d4f6b 0%, #06283D 55%, #04141f 100%); color:#eaf3f8; }
+  .dark .title{ color:#fff; }
+  .dark .kick{ color:#5fd3c4; }
+  .grad-accent{ color:#2EC4B6; }
+  /* footer */
+  .ft{ position:absolute; bottom:7mm; left:17mm; right:17mm; display:flex; justify-content:space-between; font-size:8.5pt; color:#9fb0c2; letter-spacing:.5px; }
+  .dark .ft{ color:#7fa8b8; border-top:1px solid rgba(255,255,255,.12); padding-top:6px; }
+  .ftL{ }
+  /* card with depth */
+  .card{ background:#fff; border-radius:14px; box-shadow:0 6px 20px rgba(6,40,61,.10); padding:16px 18px; border:1px solid #e7eef4; }
+  .card h3{ font-size:14pt; color:#06283D; margin-bottom:5px; }
+  .card p{ font-size:11pt; color:#37485c; line-height:1.42; }
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .icon{ width:38px; height:38px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:18px; color:#fff; margin-bottom:8px; }
+  /* divider giant number */
+  .num{ font-family:Georgia,serif; font-size:150pt; font-weight:bold; line-height:1; color:rgba(46,196,182,.18); position:absolute; right:8mm; top:2mm; }
+  /* stat */
+  .stat{ font-family:Georgia,serif; font-size:96pt; font-weight:bold; line-height:1; }
+  .chiprow{ margin-top:6px; }
+  .chip{ display:inline-block; background:#eef5f9; border:1px solid #d3e1ec; border-radius:20px; padding:4px 13px; font-size:10.5pt; color:#1C7293; margin:3px 4px 0 0; font-weight:600; }
+  table{ border-collapse:collapse; width:100%; font-size:11pt; }
+  th{ background:#06283D; color:#fff; text-align:left; padding:8px 11px; font-weight:600; }
+  td{ border-bottom:1px solid #e3eaf1; padding:8px 11px; color:#27384a; }
+  tr:nth-child(even) td{ background:#f4f9fc; }
+  .badge{ display:inline-block; min-width:26px; height:26px; line-height:26px; text-align:center; border-radius:50%; color:#fff; font-weight:bold; font-size:12pt; margin-right:8px; }
+  .arrow{ color:#2EC4B6; font-size:22pt; align-self:center; }
+  .flow{ display:flex; align-items:stretch; gap:10px; }
+  .fnode{ flex:1; border-radius:12px; padding:12px; font-size:11pt; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+</style>
+</head>
+<body>
+
+<!-- 1 KAPAK -->
+<div class="s dark"><div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
+  <div class="kick">Eğitim · claude-context-template</div>
+  <h1 style="font-size:50pt;color:#fff;line-height:1.04;margin:14px 0;">Claude'u Süper<br>Güce Dönüştürmek</h1>
+  <div class="sub" style="color:#bfe0ea;max-width:175mm;">Ham model ne yapar · handikapları neydi · skill / agent / hook / kural katmanı ona hangi süper güçleri kattı.</div>
+  <div style="margin-top:26px;"><span class="chip" style="background:rgba(46,196,182,.15);border-color:#2EC4B6;color:#7fe9dc;">6 bölüm</span><span class="chip" style="background:rgba(46,196,182,.15);border-color:#2EC4B6;color:#7fe9dc;">~20 dk</span><span class="chip" style="background:rgba(46,196,182,.15);border-color:#2EC4B6;color:#7fe9dc;">Acemi → Plus</span></div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>01 / 16</span></div>
+</div></div>
+
+<!-- 2 GÜNDEM -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Gündem</div>
+  <div class="title" style="margin:6px 0 16px;">Yolculuk altı durakta</div>
+  <div class="grid3">
+    <div class="card"><div class="icon" style="background:#1C7293;">1</div><h3>Claude nedir?</h3><p>Ne yapar, hangi ortamlar, neyi iyi yapar.</p></div>
+    <div class="card"><div class="icon" style="background:#E63946;">2</div><h3>Handikaplar</h3><p>Ham haliyle 6 büyük zaaf. Neden tek başına yetmez.</p></div>
+    <div class="card"><div class="icon" style="background:#2BB673;">3</div><h3>Süper güçler</h3><p>Hafıza, hook, skill, agent, kural katmanı.</p></div>
+    <div class="card"><div class="icon" style="background:#F4A259;">4</div><h3>Çözüm haritası</h3><p>Hangi zaafı hangi yapı ile güçlendirdik.</p></div>
+    <div class="card"><div class="icon" style="background:#2EC4B6;">5</div><h3>Önce / Sonra</h3><p>Somut: <i>günaydın</i> deyince ne oluyor.</p></div>
+    <div class="card"><div class="icon" style="background:#06283D;">6</div><h3>Sonuç</h3><p>Akıl Claude'da değil, kurduğun yapıda.</p></div>
+  </div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>02 / 16</span></div>
+</div></div>
+
+<!-- 3 DIVIDER 01 -->
+<div class="s dark"><div class="num">01</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
+  <div class="kick">Bölüm 1</div>
+  <h1 style="font-size:42pt;color:#fff;margin-top:10px;">Claude nedir,<br>ne yapar?</h1>
+  <div class="sub grad-accent" style="margin-top:12px;">Temeli netleştirelim — sonra zaaflara geçeceğiz.</div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>03 / 16</span></div>
+</div></div>
+
+<!-- 4 CLAUDE NEDIR -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 1 · Temel</div>
+  <div class="title" style="margin:6px 0 6px;">İki yüzü var</div>
+  <div class="sub" style="margin-bottom:16px;">Anthropic'in LLM'i. Bizim için kritik olan: kod ve dosyalarla çalışan asistana dönüşmesi.</div>
+  <div class="grid2">
+    <div class="card" style="border-top:4px solid #7c8ba0;"><div class="icon" style="background:#7c8ba0;">💬</div><h3>Genel Claude (sohbet)</h3><p>Soru-cevap, yazım, analiz. Kod örneği üretir — ama projene <b>doğrudan dokunamaz</b>.</p></div>
+    <div class="card" style="border-top:4px solid #1C7293;"><div class="icon" style="background:#1C7293;">🖥️</div><h3>Claude Code (asistan)</h3><p>Gerçek dosyaları okur, yazar, çalıştırır · git commit · test koşar · çok adımlı görevi yürütür · her adımda <b>onay ister</b>.</p></div>
+  </div>
+  <div class="card" style="margin-top:16px;background:#06283D;color:#fff;border:none;">
+    <p style="color:#cfe6ee;font-family:Georgia,serif;font-size:16pt;font-style:italic;">"Chatbot değil — proje klasöründe oturan, yönlendirme bekleyen kıdemli bir yazılımcı."</p>
+  </div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>04 / 16</span></div>
+</div></div>
+
+<!-- 5 ORTAMLAR -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 1 · Temel</div>
+  <div class="title" style="margin:6px 0 16px;">Nerede kullanılır?</div>
+  <div class="grid3">
+    <div class="card" style="border-top:4px solid #2BB673;"><div class="icon" style="background:#2BB673;">💬</div><h3>Chat (claude.ai)</h3><p>Düşünme, taslak, doküman. Projeler + Skills.<br><span class="mute">git/hook/terminal yok.</span></p></div>
+    <div class="card" style="border-top:4px solid #7D4CE0;"><div class="icon" style="background:#7D4CE0;">🤝</div><h3>Cowork</h3><p>Ajan görevleri. Skill + MCP + plugin. İzole worktree.</p></div>
+    <div class="card" style="border-top:4px solid #1C7293;"><div class="icon" style="background:#1C7293;">🖥️</div><h3>Desktop / Terminal</h3><p>Tam güç: dosya + git + hook + agent. <b>Bu sunumun odağı.</b></p></div>
+  </div>
+  <div style="margin-top:18px;"><span class="mute" style="font-size:13pt;font-weight:600;">İyi yaptıkları:</span></div>
+  <div class="chiprow">
+    <span class="chip">mekanik işi hızlı bitirir</span><span class="chip">geniş kod tabanını tarar</span><span class="chip">çok dosyalı düşünür</span><span class="chip">açıklar, öğretir</span><span class="chip">yorulmaz, tutarlı hız</span>
+  </div>
+  <div class="card" style="margin-top:16px;border-left:5px solid #F4A259;"><p style="font-size:12.5pt;"><b>Ama</b> — kutudan çıktığı <b>ham</b> haliyle ciddi handikapları var. Sıradaki bölüm.</p></div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>05 / 16</span></div>
+</div></div>
+
+<!-- 6 DIVIDER 02 -->
+<div class="s dark"><div class="num" style="color:rgba(230,57,70,.22);">02</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
+  <div class="kick" style="color:#ff8b93;">Bölüm 2 · Problem</div>
+  <h1 style="font-size:42pt;color:#fff;margin-top:10px;">Ham Claude'un<br>handikapları</h1>
+  <div class="sub" style="color:#ffc9cd;margin-top:12px;">Güçlü ama disiplinsiz. Tek başına bırakılırsa...</div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>06 / 16</span></div>
+</div></div>
+
+<!-- 7 STAT -->
+<div class="s dark"><div class="pad" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+  <div class="kick" style="color:#ff8b93;">En büyük zaaf</div>
+  <div class="stat" style="color:#fff;margin:8px 0;">%100</div>
+  <div class="sub" style="color:#dfeaf0;font-size:18pt;max-width:180mm;">her yeni oturumda <b style="color:#2EC4B6;">hafıza kaybı</b>. Claude dünü, kararları, talimatları hatırlamaz — her sabah hafızası silinmiş bir stajyer.</div>
+  <div class="sub mute" style="margin-top:14px;color:#8fb0c0;">Sonuç: tekrar anlatım, tutarsızlık, "bir gün unutursun → bug".</div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>07 / 16</span></div>
+</div></div>
+
+<!-- 8 6 HANDIKAP -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#E63946;">Bölüm 2 · Problem</div>
+  <div class="title" style="margin:6px 0 14px;">Altı handikap</div>
+  <div class="grid3">
+    <div class="card" style="border-left:5px solid #E63946;"><h3>1 · Hafızasızlık</h3><p>Her oturum sıfırdan. Dünü hatırlamaz.</p></div>
+    <div class="card" style="border-left:5px solid #E63946;"><h3>2 · Tutarsızlık</h3><p>Aynı işi her sefer farklı yapar.</p></div>
+    <div class="card" style="border-left:5px solid #E63946;"><h3>3 · Disiplinsizlik</h3><p>Commit/test/plan'ı kendiliğinden uygulamaz.</p></div>
+    <div class="card" style="border-left:5px solid #E63946;"><h3>4 · Domain körlüğü</h3><p>Senin işini bilmez; genel bilgiyle uydurabilir.</p></div>
+    <div class="card" style="border-left:5px solid #E63946;"><h3>5 · Riskli işlem</h3><p>Dosya siler, sır sızdırır, geri-alınamaz komut.</p></div>
+    <div class="card" style="border-left:5px solid #E63946;"><h3>6 · Sahte "bitti"</h3><p>Çalıştırmadan "tamam" der, doğrulamaz.</p></div>
+  </div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>08 / 16</span></div>
+</div></div>
+
+<!-- 9 DIVIDER 03 -->
+<div class="s dark"><div class="num" style="color:rgba(43,182,115,.22);">03</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
+  <div class="kick" style="color:#7fe9b0;">Bölüm 3 · Çözüm</div>
+  <h1 style="font-size:42pt;color:#fff;margin-top:10px;">Bizim katman:<br>süper güçler</h1>
+  <div class="sub" style="color:#bfead2;margin-top:12px;">Ham model + <span class="grad-accent">.claude/</span> kalıcı yapısı = her zaafa cevap.</div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>09 / 16</span></div>
+</div></div>
+
+<!-- 10 MIMARI KATMAN -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 3 · Mimari</div>
+  <div class="title" style="margin:6px 0 14px;">Beş bileşenli yapı</div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div class="card" style="border-left:6px solid #2BB673;padding:12px 18px;"><h3 style="margin:0;">🧠 Hafıza katmanı &nbsp;<span class="mute" style="font-size:11pt;font-weight:400;">CLAUDE.md + rules + journal + TODO — bilgi dosyada yaşar, oturumlar arası taşınır</span></h3></div>
+    <div class="card" style="border-left:6px solid #1C7293;padding:12px 18px;"><h3 style="margin:0;">⚙️ Hook'lar &nbsp;<span class="mute" style="font-size:11pt;font-weight:400;">olay tetikli script — insan/LLM unutsa bile mekanik çalışır</span></h3></div>
+    <div class="card" style="border-left:6px solid #7D4CE0;padding:12px 18px;"><h3 style="margin:0;">📦 Skills &nbsp;<span class="mute" style="font-size:11pt;font-weight:400;">çok adımlı iş reçeteleri — "şunu hep şöyle yap"</span></h3></div>
+    <div class="card" style="border-left:6px solid #F4A259;padding:12px 18px;"><h3 style="margin:0;">🤖 Agent'lar &nbsp;<span class="mute" style="font-size:11pt;font-weight:400;">izole uzmanlar + model katmanı (haiku/sonnet/opus)</span></h3></div>
+    <div class="card" style="border-left:6px solid #06283D;padding:12px 18px;"><h3 style="margin:0;">📋 Kurallar &nbsp;<span class="mute" style="font-size:11pt;font-weight:400;">14 evrensel kalıcı davranış — commit, plan, test, güvenlik</span></h3></div>
+  </div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>10 / 16</span></div>
+</div></div>
+
+<!-- 11 HOOK + HAFIZA detay -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 3 · Nasıl çalışır</div>
+  <div class="title" style="margin:6px 0 14px;">Hafıza dışsallaştırılır</div>
+  <div class="flow" style="margin:18px 0;">
+    <div class="fnode" style="background:#fdecee;border:1px solid #E63946;color:#06283D;"><b>Yeni oturum</b><br><span style="font-size:22pt;">🧠</span><br>boş başlar</div>
+    <div class="arrow">➜</div>
+    <div class="fnode" style="background:#eef5f9;border:1px solid #1C7293;"><b>session-start hook</b><br>git + TODO + journal okur</div>
+    <div class="arrow">➜</div>
+    <div class="fnode" style="background:#e9f7ef;border:1px solid #2BB673;color:#06283D;"><b>bağlam yüklü 🧠</b><br>"nerede kaldık" özeti</div>
+  </div>
+  <div class="grid3" style="margin-top:6px;">
+    <div class="card"><div class="icon" style="background:#1C7293;">⚙️</div><h3>session-start</h3><p>Açılışta otomatik durum özeti.</p></div>
+    <div class="card"><div class="icon" style="background:#E63946;">🛡️</div><h3>pre-commit</h3><p>Şifre/riskli desen → commit'i bloklar.</p></div>
+    <div class="card"><div class="icon" style="background:#2BB673;">📓</div><h3>post-commit</h3><p>Her commit → günlüğe otomatik kayıt.</p></div>
+  </div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>11 / 16</span></div>
+</div></div>
+
+<!-- 12 DIVIDER 04 -->
+<div class="s dark"><div class="num" style="color:rgba(244,162,89,.22);">04</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
+  <div class="kick" style="color:#ffd0a0;">Bölüm 4 · Harita</div>
+  <h1 style="font-size:42pt;color:#fff;margin-top:10px;">Handikap →<br>nasıl güçlendirdik</h1>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>12 / 16</span></div>
+</div></div>
+
+<!-- 13 HARITA TABLO -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 4 · Eşleme</div>
+  <div class="title" style="margin:6px 0 10px;">Her zaaf bir yapı ile kapandı</div>
+  <table>
+    <tr><th>Ham zaaf</th><th>Çözüm (yapı)</th><th>Sonuç</th></tr>
+    <tr><td><b>1</b> Hafızasızlık</td><td>3 katman hafıza + session-start hook</td><td>Her oturum dünü hatırlar</td></tr>
+    <tr><td><b>2</b> Tutarsızlık</td><td>Kurallar + Skills (reçete)</td><td>Her sefer aynı doğru sonuç</td></tr>
+    <tr><td><b>3</b> Disiplinsizlik</td><td>commit/plan/test kuralları + hook</td><td>Disiplin mekanik, atlanamaz</td></tr>
+    <tr><td><b>4</b> Domain körlüğü</td><td>Proje-özel skill + kural + ADR</td><td>Senin işini bilir, uydurmaz</td></tr>
+    <tr><td><b>5</b> Riskli işlem</td><td>pre-commit hook + before-major-change</td><td>Sır sızmaz, riskli işlem onaylı</td></tr>
+    <tr><td><b>6</b> Sahte "bitti"</td><td>verify skill + test-discipline + denetçi agent</td><td>Çalıştırmadan "tamam" yok</td></tr>
+  </table>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>13 / 16</span></div>
+</div></div>
+
+<!-- 14 ONCE/SONRA -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 5 · Somut</div>
+  <div class="title" style="margin:6px 0 14px;">Tek kelime: <span style="font-family:Consolas,monospace;color:#1C7293;">günaydın</span></div>
+  <div class="grid2">
+    <div class="card" style="border-top:4px solid #E63946;background:#fff7f8;">
+      <div class="kick" style="color:#E63946;">Önce · ham</div>
+      <p style="margin-top:8px;font-size:12pt;">Claude: <i>"Merhaba! Nasıl yardımcı olabilirim?"</i></p>
+      <p style="margin-top:10px;color:#b03038;"><b>→ Dünü bilmez. Sen baştan anlatırsın. 10 dk kayıp.</b></p>
+    </div>
+    <div class="card" style="border-top:4px solid #2BB673;background:#f5fcf8;">
+      <div class="kick" style="color:#1e7a4d;">Sonra · yapı kurulu</div>
+      <p style="margin-top:8px;font-size:12pt;">Claude: <i>"Dün giriş formu bitti. Bugün şifre sıfırlama (Faz 0). 3 uncommitted dosya. Başlayalım mı?"</i></p>
+      <p style="margin-top:10px;color:#1e7a4d;"><b>→ session-start hook + handoff skill okudu.</b></p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;background:#06283D;color:#fff;border:none;">
+    <p style="font-size:13pt;color:#cfe6ee;"><b style="color:#2EC4B6;">"günaydın" sihirli değil.</b> Arkada git + TODO Faz 0 + son günlük + özet — hepsi <b>senin kurduğun yapı</b> sayesinde.</p>
+  </div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>14 / 16</span></div>
+</div></div>
+
+<!-- 15 TETIK -> YAPI -->
+<div class="s"><div class="pad">
+  <div class="kick" style="color:#1C7293;">Bölüm 5 · Somut</div>
+  <div class="title" style="margin:6px 0 10px;">Söz → yapı → eylem</div>
+  <table>
+    <tr><th>Sen dersin</th><th>Hangi yapı sayesinde</th><th>Ne yapar</th></tr>
+    <tr><td><code>günaydın</code></td><td>session-start hook + handoff</td><td>git/TODO/journal okur, özetler</td></tr>
+    <tr><td><code>iyi geceler</code></td><td>session-handoff skill</td><td>günlüğe yazar, TODO işaretler, commit'ler</td></tr>
+    <tr><td>dosyaları böl</td><td>commit-splitter agent</td><td>15+ dosyayı bucket'lara ayırır</td></tr>
+    <tr><td>hangi seçenek?</td><td>llm-council skill</td><td>5 danışman + sentez</td></tr>
+    <tr><td>(commit'te şifre)</td><td>pre-commit hook</td><td>sızıntıyı yakalar, bloklar</td></tr>
+  </table>
+  <div class="card" style="margin-top:14px;border-left:5px solid #2EC4B6;"><p style="font-size:12.5pt;font-family:Georgia,serif;font-style:italic;color:#06283D;">Her kolaylık = bir tetik söz + senin kurduğun bir yapı. Yapıyı sil → kolaylık kaybolur.</p></div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>15 / 16</span></div>
+</div></div>
+
+<!-- 16 KAPANIS -->
+<div class="s dark"><div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
+  <div class="kick">Bölüm 6 · Sonuç</div>
+  <h1 style="font-size:46pt;color:#fff;line-height:1.06;margin:12px 0;">Akıl Claude'da değil —<br><span class="grad-accent">kurduğun yapıda.</span></h1>
+  <div class="sub" style="color:#cfe6ee;max-width:185mm;">Ham model güçlü ama disiplinsiz. Hafıza + hook + skill + agent + kural katmanı her handikabı süper güce çevirdi. Daha fazla kolaylık istersen: daha fazla yapı yaz.</div>
+  <div style="margin-top:22px;font-size:13.5pt;color:#7fe9dc;font-weight:600;">Kullan → Üret → Standartlaştır → Otomatikleştir</div>
+  <div class="ft"><span>© Fikri Eren 2026</span><span>16 / 16</span></div>
+</div></div>
+
+</body>
+</html>

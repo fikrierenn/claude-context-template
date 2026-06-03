@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: 297mm 167mm; margin: 0; }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif; color:#16202c; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .slide { width:297mm; height:167mm; page-break-after:always; position:relative; overflow:hidden; padding:16mm 18mm 14mm; }
+  .slide:last-child{ page-break-after:auto; }
+  .bar { position:absolute; top:0; left:0; width:12mm; height:167mm; }
+  .b-blue{background:#2c7be5;} .b-green{background:#2bb673;} .b-red{background:#e74c3c;} .b-purple{background:#7d4ce0;} .b-orange{background:#e0792c;}
+  .kicker { font-size:12pt; letter-spacing:3px; text-transform:uppercase; color:#2c7be5; font-weight:700; }
+  h1 { font-size:32pt; color:#0b2a4a; line-height:1.1; margin:6px 0 10px; }
+  h2 { font-size:25pt; color:#0b2a4a; line-height:1.12; margin:2px 0 12px; }
+  h3 { font-size:14pt; color:#16518f; margin:10px 0 5px; }
+  p,li { font-size:13pt; line-height:1.5; color:#2a3848; }
+  .lead { font-size:15pt; color:#37485c; margin-bottom:12px; }
+  ul { padding-left:22px; } li { margin:6px 0; }
+  code { background:#eef2f7; padding:1px 6px; border-radius:4px; font-family:Consolas,monospace; font-size:11.5pt; color:#b5326e; }
+  .pageno { position:absolute; bottom:8mm; right:14mm; font-size:9pt; color:#9aa7b5; }
+  .sig { position:absolute; bottom:8mm; left:18mm; font-size:9pt; color:#9aa7b5; }
+  .cards { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
+  .card { flex:1 1 30%; border-radius:12px; padding:14px 16px; font-size:11.5pt; }
+  .c-blue{background:#eaf1fb;border:1.5px solid #2c7be5;} .c-green{background:#e9f7ef;border:1.5px solid #2bb673;}
+  .c-red{background:#fdecea;border:1.5px solid #e74c3c;} .c-amber{background:#fff6e5;border:1.5px solid #f5a623;}
+  .c-purple{background:#f3edfc;border:1.5px solid #7d4ce0;}
+  .card b{ color:#0b2a4a; font-size:12.5pt; }
+  table { border-collapse:collapse; width:100%; margin-top:8px; font-size:11.5pt; }
+  th{ background:#0b2a4a; color:#fff; text-align:left; padding:8px 10px; }
+  td{ border:1px solid #d4dce6; padding:7px 10px; vertical-align:top; }
+  tr:nth-child(even) td{ background:#f5f8fc; }
+  .big-emoji{ font-size:34pt; }
+  .cover { background:linear-gradient(140deg,#0b2a4a 0%,#11487f 55%,#2c7be5 100%); color:#fff; display:flex; flex-direction:column; justify-content:center; padding:0 30mm; }
+  .cover h1{ color:#fff; font-size:44pt; margin:10px 0; }
+  .cover .kicker{ color:#bcd4f0; }
+  .cover .sub{ font-size:17pt; opacity:.92; font-weight:300; max-width:200mm; }
+  .cover .meta{ position:absolute; bottom:16mm; left:30mm; font-size:11pt; opacity:.8; border-top:1px solid rgba(255,255,255,.3); padding-top:10px; width:230mm;}
+  .quote { font-size:18pt; color:#0b2a4a; font-weight:300; font-style:italic; border-left:5px solid #2c7be5; padding-left:18px; margin:14px 0; }
+  .flow { display:flex; align-items:center; gap:8px; margin:14px 0; flex-wrap:wrap; }
+  .node { border-radius:10px; padding:10px 14px; font-size:11pt; text-align:center; }
+  .arrow { font-size:20pt; color:#2c7be5; }
+  .tag{ display:inline-block; border-radius:6px; padding:3px 11px; font-size:11pt; font-weight:700; color:#fff; margin-right:4px;}
+  .t0{background:#8a94a6;}.t1{background:#2bb673;}.t2{background:#2c7be5;}.t3{background:#7d4ce0;}.t4{background:#e0792c;}
+  .two{ display:flex; gap:18px; } .two>div{ flex:1; }
+  .hl{ background:#fff3cd; padding:0 4px; border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- 1 KAPAK -->
+<div class="slide cover">
+  <div class="kicker">Eğitim Sunumu</div>
+  <h1>Claude'u Süper Güce<br>Dönüştürmek</h1>
+  <div class="sub">Ham Claude ne yapar · Handikapları neydi · Bizim skill / agent / hook / kural katmanı ona hangi süper güçleri kattı.</div>
+  <div class="meta">claude-context-template · Eğitim · © Fikri Eren 2026</div>
+</div>
+
+<!-- 2 GUNDEM -->
+<div class="slide">
+  <div class="bar b-blue"></div>
+  <div class="kicker">Gündem</div>
+  <h2>Bugün ne anlatacağız?</h2>
+  <div class="cards">
+    <div class="card c-blue"><b>1 · Claude nedir?</b><br>Ne yapar, hangi ortamlar (Chat / Desktop / Cowork / Terminal), neyi iyi yapar.</div>
+    <div class="card c-red"><b>2 · Ham Claude'un handikapları</b><br>Kutudan çıktığı haliyle 6 büyük zaafı. Neden tek başına yetmez.</div>
+    <div class="card c-green"><b>3 · Bizim katman = süper güçler</b><br>Hafıza, hook, skill, agent, kural — her zaafı kapatan yapı.</div>
+  </div>
+  <div class="cards">
+    <div class="card c-amber"><b>4 · Handikap → Çözüm haritası</b><br>Hangi zaafı hangi yapı ile güçlendirdik (eşleme tablosu).</div>
+    <div class="card c-purple"><b>5 · Önce / Sonra</b><br>Somut: <code>günaydın</code> deyince ne oluyor, neden.</div>
+    <div class="card c-blue"><b>6 · Sonuç</b><br>"Akıl Claude'da değil, kurduğun yapıda." Nasıl büyütülür.</div>
+  </div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">2</div>
+</div>
+
+<!-- 3 CLAUDE NEDIR -->
+<div class="slide">
+  <div class="bar b-blue"></div>
+  <div class="kicker">Bölüm 1 · Temel</div>
+  <h2>Claude nedir?</h2>
+  <p class="lead">Anthropic'in büyük dil modeli (LLM). Metni anlar, üretir, akıl yürütür. Ama bizim için önemli olan: <b>kod ve dosyalarla çalışan bir asistana</b> dönüşmesi.</p>
+  <div class="two">
+    <div>
+      <h3>Genel Claude (sohbet)</h3>
+      <ul>
+        <li>Soru-cevap, yazım, analiz, özet</li>
+        <li>Kod örneği üretir (kopyalarsın)</li>
+        <li>Dosyana/projene <b>doğrudan dokunamaz</b></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Claude Code (asistan)</h3>
+      <ul>
+        <li>Gerçek dosyaları <b>okur, yazar, çalıştırır</b></li>
+        <li>git ile commit eder, test koşar</li>
+        <li>Çok adımlı görevi kendi yürütür</li>
+        <li>Her önemli adımda <b>onay ister</b></li>
+      </ul>
+    </div>
+  </div>
+  <div class="quote">Chatbot değil — proje klasöründe oturan, yönlendirme bekleyen kıdemli bir yazılımcı.</div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">3</div>
+</div>
+
+<!-- 4 ORTAMLAR -->
+<div class="slide">
+  <div class="bar b-blue"></div>
+  <div class="kicker">Bölüm 1 · Temel</div>
+  <h2>Claude'u nerede kullanırız?</h2>
+  <div class="cards">
+    <div class="card c-green"><span class="big-emoji">💬</span><br><b>Chat (claude.ai)</b><br>Düşünme, taslak, doküman. Projeler + Skills. <br><i>git/hook/terminal yok.</i></div>
+    <div class="card c-purple"><span class="big-emoji">🤝</span><br><b>Cowork</b><br>Ajan görevleri. Skill + MCP + plugin. İzole worktree.</div>
+    <div class="card c-blue"><span class="big-emoji">🖥️</span><br><b>Desktop / Terminal (Code)</b><br>Tam güç: dosya + git + hook + agent. Bu sunumun odağı.</div>
+  </div>
+  <h3>Neyi iyi yapar?</h3>
+  <ul>
+    <li>Tekrarlayan/mekanik işi hızlı bitirir · Geniş kod tabanını tarar · Çok dilli/çok dosyalı düşünür</li>
+    <li>Açıklar, öğretir, alternatif üretir · Yorulmaz, tutarlı hızda çalışır</li>
+  </ul>
+  <div class="card c-amber" style="margin-top:8px;"><b>Ama...</b> kutudan çıktığı <b>ham</b> haliyle ciddi handikapları var. Sıradaki bölüm.</div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">4</div>
+</div>
+
+<!-- 5 HANDIKAPLAR BASLIK -->
+<div class="slide">
+  <div class="bar b-red"></div>
+  <div class="kicker">Bölüm 2 · Problem</div>
+  <h2>Ham Claude'un 6 handikabı</h2>
+  <p class="lead">Güçlü ama disiplinsiz. Tek başına bırakılırsa şu 6 zaaf üretir:</p>
+  <div class="cards">
+    <div class="card c-red"><b>1 · Hafızasızlık</b><br>Her oturum SIFIRDAN başlar. Dünü, kararları, talimatları hatırlamaz.</div>
+    <div class="card c-red"><b>2 · Tutarsızlık</b><br>Aynı işi her sefer farklı yapar. Stil/standart kaymaz garantisi yok.</div>
+    <div class="card c-red"><b>3 · Disiplinsizlik</b><br>Commit'i, test'i, planı kendiliğinden uygulamaz. Unutur.</div>
+  </div>
+  <div class="cards">
+    <div class="card c-red"><b>4 · Domain körlüğü</b><br>Senin işini/mevzuatını bilmez; genel bilgiyle <span class="hl">uydurabilir</span>.</div>
+    <div class="card c-red"><b>5 · Riskli işlem</b><br>Yanlışlıkla dosya siler, sır sızdırır, geri-alınamaz komut çalıştırır.</div>
+    <div class="card c-red"><b>6 · Sahte "bitti"</b><br>Çalıştırmadan "tamam" der. Doğrulamaz, sessiz hata bırakır.</div>
+  </div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">5</div>
+</div>
+
+<!-- 6 HANDIKAP DERIN: HAFIZA -->
+<div class="slide">
+  <div class="bar b-red"></div>
+  <div class="kicker">Bölüm 2 · Problem · Derin</div>
+  <h2>En büyük handikap: hafızasızlık</h2>
+  <p class="lead">Claude her sabah hafızası silinmiş çok yetenekli bir stajyer gibidir. Dün ne yaptığınızı, hangi kuralı koyduğunuzu <b>bilmez</b>.</p>
+  <div class="flow">
+    <div class="node c-red"><b>Yeni oturum</b><br>🧠 boş</div>
+    <div class="arrow">→</div>
+    <div class="node c-amber">Sen yine anlatırsın<br>(10 dk kayıp)</div>
+    <div class="arrow">→</div>
+    <div class="node c-red">Bir gün anlatmayı<br>unutursun</div>
+    <div class="arrow">→</div>
+    <div class="node c-red"><b>Kural ihlali / bug</b></div>
+  </div>
+  <h3>Bunun bedeli</h3>
+  <ul>
+    <li>Her oturum tekrar = zaman + token israfı</li>
+    <li>Tutarsızlık: iki oturum, iki farklı sonuç</li>
+    <li>Bilgi konuşmada yaşar → <code>/clear</code> veya kapatınca <b>buharlaşır</b></li>
+  </ul>
+  <div class="quote">Çözüm: hafızayı Claude'a değil, <span class="hl">dosyalara</span> emanet etmek.</div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">6</div>
+</div>
+
+<!-- 7 COZUM BASLIK -->
+<div class="slide">
+  <div class="bar b-green"></div>
+  <div class="kicker">Bölüm 3 · Çözüm</div>
+  <h2>Bizim katman: 5 süper güç</h2>
+  <p class="lead">Ham Claude'un üstüne <code>.claude/</code> klasöründe bir <b>kalıcı yapı</b> kurduk. 5 bileşen:</p>
+  <div class="cards">
+    <div class="card c-green"><b>🧠 Hafıza katmanı</b><br>CLAUDE.md + rules + journal + TODO. Bilgi dosyada yaşar, oturumlar arası taşınır.</div>
+    <div class="card c-blue"><b>⚙️ Hook'lar</b><br>Otomatik tetiklenen script'ler. İnsan/LLM unutsa bile çalışır.</div>
+    <div class="card c-purple"><b>📦 Skills</b><br>Çok adımlı iş reçeteleri. "Şunu hep şöyle yap."</div>
+  </div>
+  <div class="cards">
+    <div class="card c-amber"><b>🤖 Agent'lar</b><br>İzole uzman yardımcılar + model katmanı (haiku/sonnet/opus).</div>
+    <div class="card c-green"><b>📋 Kurallar</b><br>Kalıcı davranış: commit, plan, test, güvenlik disiplini.</div>
+    <div class="card c-blue"><b>🚀 Bootstrap</b><br>Tüm bu yapıyı tek komutla her projeye kurar/günceller.</div>
+  </div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">7</div>
+</div>
+
+<!-- 8 HAFIZA KATMANI -->
+<div class="slide">
+  <div class="bar b-green"></div>
+  <div class="kicker">Bölüm 3 · Süper Güç 1</div>
+  <h2>🧠 Hafıza katmanı — 3 kademe</h2>
+  <p class="lead">"Aynı bilgi tam olarak bir yerde yaşar." Buharlaşma biter.</p>
+  <table>
+    <tr><th>Katman</th><th>Dosya</th><th>Ne tutar</th></tr>
+    <tr><td>Kimlik</td><td><code>CLAUDE.md</code></td><td>Proje tanımı, stack, klasörler (değişmez)</td></tr>
+    <tr><td>Kural</td><td><code>.claude/rules/*.md</code></td><td>Kalıcı davranış talimatları</td></tr>
+    <tr><td>Süreç</td><td><code>TODO.md</code> · <code>journal/</code> · <code>ADR/</code></td><td>Plan, öncelik, günlük, kararlar</td></tr>
+  </table>
+  <div class="card c-green" style="margin-top:12px;"><b>Kattığı süper güç:</b> Claude her oturum başı bu dosyaları okur → "hatırlar". Dün ne yaptığını, hangi kuralın geçerli olduğunu bilir. <span class="hl">Handikap 1 (hafızasızlık) kapandı.</span></div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">8</div>
+</div>
+
+<!-- 9 HOOKLAR -->
+<div class="slide">
+  <div class="bar b-blue"></div>
+  <div class="kicker">Bölüm 3 · Süper Güç 2</div>
+  <h2>⚙️ Hook'lar — unutulamayan refleksler</h2>
+  <p class="lead">Olay tetikli script. Karara/hafızaya değil, <b>mekanik çalışmaya</b> dayanır → atlanamaz.</p>
+  <div class="cards">
+    <div class="card c-blue"><b>session-start</b><br>Oturum açılınca: son commit'ler, TODO, uncommitted, son günlük → otomatik özet.</div>
+    <div class="card c-red"><b>pre-commit-antipattern</b><br>Commit öncesi tarar: hardcoded şifre, riskli desen → <b>commit'i bloklar.</b></div>
+    <div class="card c-green"><b>post-commit-journal</b><br>Her başarılı commit → günlüğe otomatik kayıt.</div>
+  </div>
+  <div class="card c-amber" style="margin-top:12px;"><b>Kattığı süper güç:</b> "Claude dikkat etsin" demek yetmez — bazen atlar. Hook atlamaz. <span class="hl">Handikap 3 (disiplinsizlik) + 5 (riskli işlem) kapandı.</span></div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">9</div>
+</div>
+
+<!-- 10 SKILLS -->
+<div class="slide">
+  <div class="bar b-purple"></div>
+  <div class="kicker">Bölüm 3 · Süper Güç 3</div>
+  <h2>📦 Skills — iş reçeteleri</h2>
+  <p class="lead">Çok adımlı, domain-bilgili işin tek dosyada standardı. Tetik söz ile çalışır.</p>
+  <div class="cards">
+    <div class="card c-purple"><b>session-handoff</b><br>"iyi geceler" → bugünü günlüğe yazar, TODO senkronlar, commit'ler.</div>
+    <div class="card c-purple"><b>plan-tracker</b><br>Çok adımlı planı TODO.md ile canlı senkron tutar.</div>
+    <div class="card c-purple"><b>llm-council</b><br>"hangi seçenek?" → 5 danışman + sentez ile karar analizi.</div>
+  </div>
+  <div class="card c-green" style="margin-top:12px;"><b>Kattığı süper güç:</b> Domain bilgisi + adım sırası kalıcı. Yeni dev (ve gelecekteki sen) aynı reçeteyle çalışır. <span class="hl">Handikap 2 (tutarsızlık) + 4 (domain körlüğü) kapandı.</span></div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">10</div>
+</div>
+
+<!-- 11 AGENTS -->
+<div class="slide">
+  <div class="bar b-amber" style="background:#e0792c;"></div>
+  <div class="kicker">Bölüm 3 · Süper Güç 4</div>
+  <h2>🤖 Agent'lar — izole uzmanlar</h2>
+  <p class="lead">Ağır/bağımsız işi ayrı bağlamda yapan yardımcılar. Ana sohbeti kirletmez. Doğru model = doğru maliyet.</p>
+  <div class="two">
+    <div>
+      <h3>Örnek agent'lar</h3>
+      <ul>
+        <li><b>commit-splitter</b> — 15+ dosyayı bucket'lara böler</li>
+        <li><b>security-reviewer</b> — güvenlik denetimi (opus)</li>
+        <li><b>silent-failure-hunter</b> — sessiz hata avı</li>
+        <li><b>build-validator / test-runner</b> — hızlı kontrol (haiku)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Model katmanı</h3>
+      <ul>
+        <li><span class="tag t1">haiku</span> mekanik, ucuz, hızlı tarama</li>
+        <li><span class="tag t2">sonnet</span> dengeli analiz + üretim</li>
+        <li><span class="tag t4">opus</span> yüksek-risk derin muhakeme</li>
+      </ul>
+      <p style="font-size:11pt;">Salt-okuma disiplini: denetçi agent <b>yazamaz</b> — "raporla, çözme".</p>
+    </div>
+  </div>
+  <div class="card c-green" style="margin-top:8px;"><b>Kattığı süper güç:</b> Paralel + uzmanlaşmış iş, kontrollü maliyet, bağımsız denetim. <span class="hl">Handikap 6 (sahte bitti) için bağımsız doğrulayıcı.</span></div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">11</div>
+</div>
+
+<!-- 12 KURALLAR -->
+<div class="slide">
+  <div class="bar b-green"></div>
+  <div class="kicker">Bölüm 3 · Süper Güç 5</div>
+  <h2>📋 Kurallar — kalıcı içgüdü</h2>
+  <p class="lead">Her oturum yüklenen davranış anayasası (14 evrensel kural). Tetik gerekmez, hep aktif.</p>
+  <div class="two">
+    <div><ul>
+      <li><b>commit-discipline</b> — 1 commit=1 konu, 15 dosya eşiği</li>
+      <li><b>plan-first</b> — büyük işte önce plan + onay</li>
+      <li><b>test-discipline</b> — "bitti" demeden test koş</li>
+      <li><b>todo-verification</b> — iddiayı canlı kodla doğrula</li>
+    </ul></div>
+    <div><ul>
+      <li><b>error-handling</b> — sessiz yutma yasak</li>
+      <li><b>security-principles</b> — sır/SQL/XSS koruması</li>
+      <li><b>before-major-change</b> — silmeden önce grep + onay</li>
+      <li><b>agent-usage</b> — doğru iş → doğru agent → doğru model</li>
+    </ul></div>
+  </div>
+  <div class="card c-green" style="margin-top:8px;"><b>Kattığı süper güç:</b> Her zaaf için kalıcı koruma. <span class="hl">Handikap 3 (disiplin) + 6 (doğrulama) + 5 (güvenlik) kapandı.</span></div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">12</div>
+</div>
+
+<!-- 13 HANDIKAP -> COZUM HARITASI -->
+<div class="slide">
+  <div class="bar b-amber" style="background:#f5a623;"></div>
+  <div class="kicker">Bölüm 4 · Harita</div>
+  <h2>Handikap → nasıl güçlendirdik</h2>
+  <table>
+    <tr><th>Ham Claude zaafı</th><th>Bizim çözüm (yapı)</th><th>Sonuç</th></tr>
+    <tr><td>1 · Hafızasızlık</td><td>3 katman hafıza + session-start hook</td><td>Her oturum dünü hatırlar</td></tr>
+    <tr><td>2 · Tutarsızlık</td><td>Kurallar + Skills (reçete)</td><td>Her sefer aynı doğru sonuç</td></tr>
+    <tr><td>3 · Disiplinsizlik</td><td>commit/plan/test kuralları + hook</td><td>Disiplin mekanik, atlanamaz</td></tr>
+    <tr><td>4 · Domain körlüğü</td><td>Proje-özel skill + kural + ADR</td><td>Senin işini bilir, uydurmaz</td></tr>
+    <tr><td>5 · Riskli işlem</td><td>pre-commit hook + before-major-change</td><td>Sır sızmaz, geri-alınamaz işlem onaylı</td></tr>
+    <tr><td>6 · Sahte "bitti"</td><td>verify skill + test-discipline + denetçi agent</td><td>Çalıştırmadan "tamam" yok</td></tr>
+  </table>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">13</div>
+</div>
+
+<!-- 14 ONCE/SONRA -->
+<div class="slide">
+  <div class="bar b-purple"></div>
+  <div class="kicker">Bölüm 5 · Somut</div>
+  <h2>Önce / Sonra — <code>günaydın</code></h2>
+  <div class="two">
+    <div>
+      <h3 style="color:#c0392b;">ÖNCE (ham Claude)</h3>
+      <div class="card c-red">
+        Sen: "günaydın"<br><br>
+        Claude: "Merhaba! Nasıl yardımcı olabilirim?"<br><br>
+        <i>→ Dünü bilmez. Sen baştan anlatırsın. 10 dk kayıp.</i>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:#1e7a4d;">SONRA (yapı kurulu)</h3>
+      <div class="card c-green">
+        Sen: "günaydın"<br><br>
+        Claude: "Dün giriş formu bitti. Bugün şifre sıfırlama (Faz 0). 3 uncommitted dosya var. Başlayalım mı?"<br><br>
+        <i>→ session-start hook + handoff skill okudu.</i>
+      </div>
+    </div>
+  </div>
+  <div class="card c-amber" style="margin-top:10px;"><b>Tek kelime, arkada senin kurduğun yapı:</b> git durumu + TODO Faz 0 + son günlük + "nerede kaldık" özeti. <span class="hl">"günaydın" sihirli değil — o iki dosya sayesinde çalışıyor.</span></div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">14</div>
+</div>
+
+<!-- 15 TETIK -> YAPI -->
+<div class="slide">
+  <div class="bar b-purple"></div>
+  <div class="kicker">Bölüm 5 · Somut</div>
+  <h2>Hangi söz → hangi yapı → ne yapar</h2>
+  <table>
+    <tr><th>Sen dersin</th><th>Hangi yapı sayesinde</th><th>Ne yapar</th></tr>
+    <tr><td><code>günaydın</code></td><td>session-start hook + handoff</td><td>git/TODO/journal okur, özetler</td></tr>
+    <tr><td><code>iyi geceler</code></td><td>session-handoff skill</td><td>günlüğe yazar, TODO işaretler, commit'ler</td></tr>
+    <tr><td>"dosyaları böl"</td><td>commit-splitter agent</td><td>15+ dosyayı bucket'lara ayırır</td></tr>
+    <tr><td>"hangi seçenek?"</td><td>llm-council skill</td><td>5 danışman + sentez</td></tr>
+    <tr><td>(commit'te şifre)</td><td>pre-commit hook</td><td>sızıntıyı yakalar, bloklar</td></tr>
+  </table>
+  <div class="quote" style="font-size:15pt;">Her kolaylık = bir tetik söz + senin kurduğun bir yapı. Yapıyı sil → kolaylık kaybolur.</div>
+  <div class="sig">© Fikri Eren 2026</div><div class="pageno">15</div>
+</div>
+
+<!-- 16 SONUC -->
+<div class="slide cover" style="background:linear-gradient(140deg,#0a3d2e 0%,#127a52 55%,#2bb673 100%);">
+  <div class="kicker" style="color:#bfe9d4;">Bölüm 6 · Sonuç</div>
+  <h1>Akıl Claude'da değil —<br>kurduğun yapıda.</h1>
+  <div class="sub">Ham Claude güçlü ama disiplinsiz. Hafıza + hook + skill + agent + kural katmanı, her handikabı süper güce çevirdi. Daha fazla kolaylık istiyorsan: daha fazla yapı yaz.</div>
+  <div style="margin-top:22px; font-size:13pt; opacity:.95;">
+    Kullan (Acemi/Junior) → Üret (Senior) → Standartlaştır (Leader) → Otomatikleştir (Plus)
+  </div>
+  <div class="meta">claude-context-template · Eğitim Sunumu · © Fikri Eren 2026 · Devamı: acemi + seviye rehberleri</div>
+</div>
+
+</body>
+</html>

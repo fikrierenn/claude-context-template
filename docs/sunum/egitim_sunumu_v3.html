@@ -1,0 +1,743 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><style>
+@page{size:297mm 167mm;margin:0}*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Helvetica,Arial,sans-serif;color:#0f1b2d;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.s{width:297mm;height:167mm;page-break-after:always;position:relative;overflow:hidden}.s:last-child{page-break-after:auto}
+.pad{padding:15mm 17mm;height:100%}
+h1,.tt{font-family:Georgia,serif}
+.kick{font-size:11.5pt;letter-spacing:4px;text-transform:uppercase;font-weight:700;color:#1C7293}
+.tt{font-size:30pt;font-weight:bold;color:#06283D;line-height:1.1}
+.sub{font-size:14.5pt;color:#43586e;line-height:1.5}.mute{color:#7c8ba0}
+.dark{background:radial-gradient(120% 130% at 80% 10%,#0d4f6b 0%,#06283D 55%,#04141f 100%);color:#eaf3f8}
+.dark .kick{color:#2EC4B6}.dark .tt{color:#fff}
+.ft{position:absolute;bottom:7mm;left:17mm;right:17mm;display:flex;justify-content:space-between;font-size:8.5pt;color:#9fb0c2}
+.dark .ft{color:#7fa8b8;border-top:1px solid rgba(255,255,255,.12);padding-top:6px}
+.ic{width:42px;height:42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;margin-bottom:9px}
+.card{background:#fff;border-radius:14px;box-shadow:0 6px 20px rgba(6,40,61,.10);padding:16px 18px;border:1px solid #e7eef4}
+.card h3{font-size:13.5pt;color:#06283D;margin-bottom:4px}.card p{font-size:10.5pt;color:#37485c;line-height:1.4}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.num{font-family:Georgia,serif;font-size:150pt;font-weight:bold;line-height:1;position:absolute;right:10mm;top:6mm}
+.chip{display:inline-block;background:#eef5f9;border:1px solid #d3e1ec;border-radius:20px;padding:4px 13px;font-size:10.5pt;color:#1C7293;margin:3px 4px 0 0;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:11pt}th{background:#06283D;color:#fff;text-align:left;padding:8px 11px}
+td{border-bottom:1px solid #e3eaf1;padding:7px 11px;color:#27384a}tr:nth-child(even) td{background:#f4f9fc}
+.tdico{display:inline-flex;vertical-align:middle;margin-right:6px;color:#2BB673}
+.stack{display:flex;flex-direction:column;gap:9px}
+.layer{display:flex;align-items:center;gap:12px;border-radius:12px;padding:11px 16px;color:#fff;box-shadow:0 4px 14px rgba(6,40,61,.18);width:88%}
+.layer .lic{display:inline-flex}.layer .lt{font-weight:bold;font-size:13pt}.layer .ld{font-size:10.5pt;opacity:.9}
+.flow{display:flex;align-items:stretch;gap:10px}.arrow{color:#2EC4B6;font-size:22pt;align-self:center}
+.fnode{flex:1;border-radius:12px;padding:12px;font-size:11pt;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px;align-items:center}
+</style></head><body><div class="s dark"><div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+<div class="kick">Eğitim · claude-context-template</div>
+<h1 style="font-size:50pt;color:#fff;line-height:1.04;margin:14px 0">Claude'u Süper<br>Güce Dönüştürmek</h1>
+<div class="sub" style="color:#bfe0ea;max-width:175mm">Ham model ne yapar · handikapları neydi · skill / agent / hook / kural katmanı ona hangi süper güçleri kattı.</div>
+<div style="margin-top:24px"><span class="chip" style="background:rgba(46,196,182,.12);border-color:#2EC4B6;color:#7fe9dc">6 bölüm</span><span class="chip" style="background:rgba(46,196,182,.12);border-color:#2EC4B6;color:#7fe9dc">~20 dk</span><span class="chip" style="background:rgba(46,196,182,.12);border-color:#2EC4B6;color:#7fe9dc">Acemi → Plus</span></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>01 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Gündem</div>
+<div class="tt" style="margin:6px 0 16px">Yolculuk altı durakta</div><div class="grid3"><div class="card"><span class="ic" style="background:#1C7293"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-cpu"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 20v2" />
+  <path d="M12 2v2" />
+  <path d="M17 20v2" />
+  <path d="M17 2v2" />
+  <path d="M2 12h2" />
+  <path d="M2 17h2" />
+  <path d="M2 7h2" />
+  <path d="M20 12h2" />
+  <path d="M20 17h2" />
+  <path d="M20 7h2" />
+  <path d="M7 20v2" />
+  <path d="M7 2v2" />
+  <rect x="4" y="4" width="16" height="16" rx="2" />
+  <rect x="8" y="8" width="8" height="8" rx="1" />
+</svg>
+</span><h3>Claude nedir?</h3><p>Ne yapar, hangi ortamlar, neyi iyi yapar.</p></div><div class="card"><span class="ic" style="background:#E63946"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+</span><h3>Handikaplar</h3><p>Ham haliyle 6 büyük zaaf.</p></div><div class="card"><span class="ic" style="background:#2BB673"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-zap"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+</svg>
+</span><h3>Süper güçler</h3><p>Hafıza, hook, skill, agent, kural.</p></div><div class="card"><span class="ic" style="background:#F4A259"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-layers"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+  <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
+  <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
+</svg>
+</span><h3>Çözüm haritası</h3><p>Hangi zaafı hangi yapı kapattı.</p></div><div class="card"><span class="ic" style="background:#2EC4B6"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-workflow"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="8" height="8" x="3" y="3" rx="2" />
+  <path d="M7 11v4a2 2 0 0 0 2 2h4" />
+  <rect width="8" height="8" x="13" y="13" rx="2" />
+</svg>
+</span><h3>Önce / Sonra</h3><p>Somut: günaydın deyince ne oluyor.</p></div><div class="card"><span class="ic" style="background:#06283D"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-rocket"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09" />
+  <path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z" />
+  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" />
+</svg>
+</span><h3>Sonuç</h3><p>Akıl Claude'da değil, kurduğun yapıda.</p></div></div><div class="ft"><span>© Fikri Eren 2026</span><span>02 / 16</span></div></div></div><div class="s dark"><div class="num" style="color:rgba(46,196,182,.18)">01</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+<div class="kick">Bölüm 1</div><h1 style="font-size:42pt;color:#fff;margin-top:10px">Claude nedir,<br>ne yapar?</h1>
+<div class="sub" style="color:#2EC4B6;margin-top:12px">Temeli netleştirelim — sonra zaaflara geçeceğiz.</div><div class="ft"><span>© Fikri Eren 2026</span><span>03 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 1 · Temel</div>
+<div class="tt" style="margin:6px 0 6px">İki yüzü var</div>
+<div class="sub" style="margin-bottom:16px">Anthropic'in LLM'i. Bizim için kritik: kod ve dosyalarla çalışan asistana dönüşmesi.</div>
+<div class="grid2">
+<div class="card" style="border-top:4px solid #7c8ba0"><span class="ic" style="background:#7c8ba0"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-message-circle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
+</svg>
+</span><h3>Genel Claude (sohbet)</h3><p>Soru-cevap, yazım, analiz. Kod örneği üretir — ama projene <b>doğrudan dokunamaz</b>.</p></div>
+<div class="card" style="border-top:4px solid #1C7293"><span class="ic" style="background:#1C7293"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-monitor"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="20" height="14" x="2" y="3" rx="2" />
+  <line x1="8" x2="16" y1="21" y2="21" />
+  <line x1="12" x2="12" y1="17" y2="21" />
+</svg>
+</span><h3>Claude Code (asistan)</h3><p>Dosyaları okur/yazar/çalıştırır · git commit · test koşar · çok adımlı görevi yürütür · her adımda <b>onay ister</b>.</p></div></div>
+<div class="card" style="margin-top:16px;background:#06283D;border:none"><p style="color:#cfe6ee;font-family:Georgia,serif;font-size:16pt;font-style:italic">"Chatbot değil — proje klasöründe oturan, yönlendirme bekleyen kıdemli bir yazılımcı."</p></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>04 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 1 · Temel</div>
+<div class="tt" style="margin:6px 0 16px">Nerede kullanılır?</div><div class="grid3">
+<div class="card" style="border-top:4px solid #2BB673"><span class="ic" style="background:#2BB673"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-message-circle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
+</svg>
+</span><h3>Chat (claude.ai)</h3><p>Düşünme, taslak, doküman. Projeler + Skills. <span class="mute">git/hook yok.</span></p></div>
+<div class="card" style="border-top:4px solid #7D4CE0"><span class="ic" style="background:#7D4CE0"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-users"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+  <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+  <circle cx="9" cy="7" r="4" />
+</svg>
+</span><h3>Cowork</h3><p>Ajan görevleri. Skill + MCP + plugin. İzole worktree.</p></div>
+<div class="card" style="border-top:4px solid #1C7293"><span class="ic" style="background:#1C7293"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-monitor"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="20" height="14" x="2" y="3" rx="2" />
+  <line x1="8" x2="16" y1="21" y2="21" />
+  <line x1="12" x2="12" y1="17" y2="21" />
+</svg>
+</span><h3>Desktop / Terminal</h3><p>Tam güç: dosya + git + hook + agent. <b>Bu sunumun odağı.</b></p></div></div>
+<div style="margin-top:16px"><span class="mute" style="font-size:13pt;font-weight:600">İyi yaptıkları:</span></div>
+<div style="margin-top:4px"><span class="chip">mekanik işi hızlı bitirir</span><span class="chip">geniş kod tabanını tarar</span><span class="chip">çok dosyalı düşünür</span><span class="chip">açıklar, öğretir</span><span class="chip">tutarlı hız</span></div>
+<div class="card" style="margin-top:14px;border-left:5px solid #F4A259"><p style="font-size:12pt"><b>Ama</b> — kutudan çıktığı <b>ham</b> haliyle ciddi handikapları var.</p></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>05 / 16</span></div></div></div><div class="s dark"><div class="num" style="color:rgba(230,57,70,.22)">02</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+<div class="kick" style="color:#ff8b93">Bölüm 2 · Problem</div><h1 style="font-size:42pt;color:#fff;margin-top:10px">Ham Claude'un<br>handikapları</h1>
+<div class="sub" style="color:#ffc9cd;margin-top:12px">Güçlü ama disiplinsiz.</div><div class="ft"><span>© Fikri Eren 2026</span><span>06 / 16</span></div></div></div><div class="s dark"><div class="pad" style="display:flex;align-items:center;gap:50px">
+<div><svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="70" fill="none" stroke="#13415a" stroke-width="20"/>
+    <circle cx="100" cy="100" r="70" fill="none" stroke="#E63946" stroke-width="20"
+       stroke-linecap="round" stroke-dasharray="439.822971502571" stroke-dashoffset="0"
+       transform="rotate(-90 100 100)"/>
+    <text x="100" y="96" text-anchor="middle" font-family="Georgia,serif" font-size="46" font-weight="bold" fill="#fff">%100</text>
+    <text x="100" y="122" text-anchor="middle" font-family="Segoe UI,Arial" font-size="13" fill="#9fc6d6">hafıza kaybı</text>
+  </svg></div>
+<div style="flex:1"><div class="kick" style="color:#ff8b93">En büyük zaaf</div>
+<div class="sub" style="color:#dfeaf0;font-size:19pt;margin-top:10px;max-width:150mm">Her yeni oturumda <b style="color:#2EC4B6">tam hafıza kaybı</b>. Claude dünü, kararları, talimatları hatırlamaz — her sabah hafızası silinmiş bir stajyer.</div>
+<div class="sub" style="margin-top:14px;color:#8fb0c0">Sonuç: tekrar anlatım · tutarsızlık · "bir gün unutursun → bug".</div></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>07 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick" style="color:#E63946">Bölüm 2 · Problem</div>
+<div class="tt" style="margin:6px 0 14px">Altı handikap</div><div class="grid3"><div class="card" style="border-left:5px solid #E63946"><div style="display:flex;align-items:center;gap:8px;color:#E63946;margin-bottom:4px"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="18"
+  height="18"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+<h3 style="margin:0">1 · Hafızasızlık</h3></div><p>Her oturum sıfırdan. Dünü hatırlamaz.</p></div><div class="card" style="border-left:5px solid #E63946"><div style="display:flex;align-items:center;gap:8px;color:#E63946;margin-bottom:4px"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="18"
+  height="18"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+<h3 style="margin:0">2 · Tutarsızlık</h3></div><p>Aynı işi her sefer farklı yapar.</p></div><div class="card" style="border-left:5px solid #E63946"><div style="display:flex;align-items:center;gap:8px;color:#E63946;margin-bottom:4px"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="18"
+  height="18"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+<h3 style="margin:0">3 · Disiplinsizlik</h3></div><p>Commit/test/plan'ı kendiliğinden uygulamaz.</p></div><div class="card" style="border-left:5px solid #E63946"><div style="display:flex;align-items:center;gap:8px;color:#E63946;margin-bottom:4px"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="18"
+  height="18"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+<h3 style="margin:0">4 · Domain körlüğü</h3></div><p>Senin işini bilmez; uydurabilir.</p></div><div class="card" style="border-left:5px solid #E63946"><div style="display:flex;align-items:center;gap:8px;color:#E63946;margin-bottom:4px"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="18"
+  height="18"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+<h3 style="margin:0">5 · Riskli işlem</h3></div><p>Dosya siler, sır sızdırır.</p></div><div class="card" style="border-left:5px solid #E63946"><div style="display:flex;align-items:center;gap:8px;color:#E63946;margin-bottom:4px"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-alert-triangle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="18"
+  height="18"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path d="M12 9v4" />
+  <path d="M12 17h.01" />
+</svg>
+<h3 style="margin:0">6 · Sahte "bitti"</h3></div><p>Çalıştırmadan 'tamam' der.</p></div></div><div class="ft"><span>© Fikri Eren 2026</span><span>08 / 16</span></div></div></div><div class="s dark"><div class="num" style="color:rgba(43,182,115,.22)">03</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+<div class="kick" style="color:#7fe9b0">Bölüm 3 · Çözüm</div><h1 style="font-size:42pt;color:#fff;margin-top:10px">Bizim katman:<br>süper güçler</h1>
+<div class="sub" style="color:#bfead2;margin-top:12px">Ham model + <span style="color:#2EC4B6">.claude/</span> kalıcı yapısı = her zaafa cevap.</div><div class="ft"><span>© Fikri Eren 2026</span><span>09 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 3 · Mimari</div>
+<div class="tt" style="margin:6px 0 16px">Beş bileşenli yapı</div>
+<div class="stack"><div class="layer" style="background:#2BB673;margin-left:0px;">
+      <span class="lic"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-brain"
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="22"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 18V5" />
+  <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4" />
+  <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5" />
+  <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77" />
+  <path d="M18 18a4 4 0 0 0 2-7.464" />
+  <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517" />
+  <path d="M6 18a4 4 0 0 1-2-7.464" />
+  <path d="M6.003 5.125a4 4 0 0 0-2.526 5.77" />
+</svg>
+</span>
+      <span class="lt">Hafıza katmanı</span><span class="ld">CLAUDE.md + rules + journal + TODO</span></div><div class="layer" style="background:#1C7293;margin-left:8px;">
+      <span class="lic"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-cpu"
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="22"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 20v2" />
+  <path d="M12 2v2" />
+  <path d="M17 20v2" />
+  <path d="M17 2v2" />
+  <path d="M2 12h2" />
+  <path d="M2 17h2" />
+  <path d="M2 7h2" />
+  <path d="M20 12h2" />
+  <path d="M20 17h2" />
+  <path d="M20 7h2" />
+  <path d="M7 20v2" />
+  <path d="M7 2v2" />
+  <rect x="4" y="4" width="16" height="16" rx="2" />
+  <rect x="8" y="8" width="8" height="8" rx="1" />
+</svg>
+</span>
+      <span class="lt">Hook'lar</span><span class="ld">olay tetikli — unutsa bile mekanik çalışır</span></div><div class="layer" style="background:#7D4CE0;margin-left:16px;">
+      <span class="lic"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-package"
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="22"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
+  <path d="M12 22V12" />
+  <polyline points="3.29 7 12 12 20.71 7" />
+  <path d="m7.5 4.27 9 5.15" />
+</svg>
+</span>
+      <span class="lt">Skills</span><span class="ld">çok adımlı iş reçeteleri</span></div><div class="layer" style="background:#F4A259;margin-left:24px;">
+      <span class="lic"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-bot"
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="22"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 8V4H8" />
+  <rect width="16" height="12" x="4" y="8" rx="2" />
+  <path d="M2 14h2" />
+  <path d="M20 14h2" />
+  <path d="M15 13v2" />
+  <path d="M9 13v2" />
+</svg>
+</span>
+      <span class="lt">Agent'lar</span><span class="ld">izole uzmanlar + model katmanı</span></div><div class="layer" style="background:#06283D;margin-left:32px;">
+      <span class="lic"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-scroll-text"
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="22"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 12h-5" />
+  <path d="M15 8h-5" />
+  <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+  <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" />
+</svg>
+</span>
+      <span class="lt">Kurallar</span><span class="ld">14 evrensel kalıcı davranış</span></div></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>10 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 3 · Nasıl çalışır</div>
+<div class="tt" style="margin:6px 0 14px">Hafıza dışsallaştırılır</div>
+<div class="flow" style="margin:14px 0">
+<div class="fnode" style="background:#fdecee;border:1px solid #E63946"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-brain"
+  xmlns="http://www.w3.org/2000/svg"
+  width="26"
+  height="26"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 18V5" />
+  <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4" />
+  <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5" />
+  <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77" />
+  <path d="M18 18a4 4 0 0 0 2-7.464" />
+  <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517" />
+  <path d="M6 18a4 4 0 0 1-2-7.464" />
+  <path d="M6.003 5.125a4 4 0 0 0-2.526 5.77" />
+</svg>
+<b>Yeni oturum</b><span class="mute">boş başlar</span></div>
+<div class="arrow">➜</div>
+<div class="fnode" style="background:#eef5f9;border:1px solid #1C7293"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-cpu"
+  xmlns="http://www.w3.org/2000/svg"
+  width="26"
+  height="26"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 20v2" />
+  <path d="M12 2v2" />
+  <path d="M17 20v2" />
+  <path d="M17 2v2" />
+  <path d="M2 12h2" />
+  <path d="M2 17h2" />
+  <path d="M2 7h2" />
+  <path d="M20 12h2" />
+  <path d="M20 17h2" />
+  <path d="M20 7h2" />
+  <path d="M7 20v2" />
+  <path d="M7 2v2" />
+  <rect x="4" y="4" width="16" height="16" rx="2" />
+  <rect x="8" y="8" width="8" height="8" rx="1" />
+</svg>
+<b>session-start hook</b><span>git + TODO + journal okur</span></div>
+<div class="arrow">➜</div>
+<div class="fnode" style="background:#e9f7ef;border:1px solid #2BB673"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-circle-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="26"
+  height="26"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="m9 12 2 2 4-4" />
+</svg>
+<b>bağlam yüklü</b><span>"nerede kaldık" özeti</span></div></div>
+<div class="grid3" style="margin-top:8px">
+<div class="card"><span class="ic" style="background:#1C7293"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-terminal"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 19h8" />
+  <path d="m4 17 6-6-6-6" />
+</svg>
+</span><h3>session-start</h3><p>Açılışta otomatik durum özeti.</p></div>
+<div class="card"><span class="ic" style="background:#E63946"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-shield-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <path d="m9 12 2 2 4-4" />
+</svg>
+</span><h3>pre-commit</h3><p>Şifre/riskli desen → commit'i bloklar.</p></div>
+<div class="card"><span class="ic" style="background:#2BB673"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-book-open"
+  xmlns="http://www.w3.org/2000/svg"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 7v14" />
+  <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+</svg>
+</span><h3>post-commit</h3><p>Her commit → günlüğe otomatik kayıt.</p></div></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>11 / 16</span></div></div></div><div class="s dark"><div class="num" style="color:rgba(244,162,89,.22)">04</div><div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+<div class="kick" style="color:#ffd0a0">Bölüm 4 · Harita</div><h1 style="font-size:42pt;color:#fff;margin-top:10px">Handikap →<br>nasıl güçlendirdik</h1><div class="ft"><span>© Fikri Eren 2026</span><span>12 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 4 · Eşleme</div>
+<div class="tt" style="margin:6px 0 10px">Her zaaf bir yapı ile kapandı</div>
+<table><tr><th>Ham zaaf</th><th>Çözüm (yapı)</th><th>Sonuç</th></tr><tr><td><b>1</b> Hafızasızlık</td><td>3 katman hafıza + session-start hook</td><td><span class="tdico"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="15"
+  height="15"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>
+</span>Her oturum dünü hatırlar</td></tr><tr><td><b>2</b> Tutarsızlık</td><td>Kurallar + Skills (reçete)</td><td><span class="tdico"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="15"
+  height="15"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>
+</span>Her sefer aynı doğru sonuç</td></tr><tr><td><b>3</b> Disiplinsizlik</td><td>commit/plan/test kuralları + hook</td><td><span class="tdico"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="15"
+  height="15"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>
+</span>Disiplin mekanik, atlanamaz</td></tr><tr><td><b>4</b> Domain körlüğü</td><td>Proje-özel skill + kural + ADR</td><td><span class="tdico"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="15"
+  height="15"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>
+</span>Senin işini bilir, uydurmaz</td></tr><tr><td><b>5</b> Riskli işlem</td><td>pre-commit hook + before-major-change</td><td><span class="tdico"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="15"
+  height="15"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>
+</span>Sır sızmaz, riskli işlem onaylı</td></tr><tr><td><b>6</b> Sahte "bitti"</td><td>verify skill + test-discipline + denetçi agent</td><td><span class="tdico"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="15"
+  height="15"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>
+</span>Çalıştırmadan 'tamam' yok</td></tr></table><div class="ft"><span>© Fikri Eren 2026</span><span>13 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 5 · Somut</div>
+<div class="tt" style="margin:6px 0 12px">Tek kelime: <span style="font-family:Consolas,monospace;color:#1C7293">günaydın</span></div>
+<div class="grid2">
+<div class="card" style="border-top:4px solid #E63946;background:#fff7f8"><div class="kick" style="color:#E63946">Önce · ham</div><p style="margin-top:8px;font-size:11.5pt">Claude: <i>"Merhaba! Nasıl yardımcı olabilirim?"</i></p><p style="margin-top:8px;color:#b03038"><b>→ Dünü bilmez. Baştan anlatırsın.</b></p></div>
+<div class="card" style="border-top:4px solid #2BB673;background:#f5fcf8"><div class="kick" style="color:#1e7a4d">Sonra · yapı kurulu</div><p style="margin-top:8px;font-size:11.5pt">Claude: <i>"Dün giriş formu bitti. Bugün şifre sıfırlama (Faz 0). 3 uncommitted. Başlayalım mı?"</i></p><p style="margin-top:8px;color:#1e7a4d"><b>→ session-start + handoff okudu.</b></p></div></div>
+<div style="display:flex;align-items:center;gap:30px;margin-top:12px">
+<div class="card" style="flex:0 0 auto"><svg width="430" height="120" viewBox="0 0 430 120">
+    <text x="0" y="20" font-size="13" fill="#7c8ba0">Önce (ham)</text>
+    <rect x="0" y="28" width="300" height="26" rx="6" fill="#E63946"/>
+    <text x="310" y="46" font-size="15" font-weight="bold" fill="#E63946">~10 dk / oturum</text>
+    <text x="0" y="84" font-size="13" fill="#7c8ba0">Sonra (yapı)</text>
+    <rect x="0" y="92" width="14" height="26" rx="6" fill="#2BB673"/>
+    <text x="24" y="110" font-size="15" font-weight="bold" fill="#2BB673">~0 dk · otomatik</text>
+  </svg></div>
+<div class="card" style="flex:1;background:#06283D;border:none"><p style="font-size:12.5pt;color:#cfe6ee"><b style="color:#2EC4B6">"günaydın" sihirli değil.</b> Arkada git + TODO + günlük + özet — hepsi <b>senin kurduğun yapı</b> sayesinde.</p></div></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>14 / 16</span></div></div></div><div class="s"><div class="pad"><div class="kick">Bölüm 5 · Somut</div>
+<div class="tt" style="margin:6px 0 10px">Söz → yapı → eylem</div>
+<table><tr><th>Sen dersin</th><th>Hangi yapı sayesinde</th><th>Ne yapar</th></tr><tr><td style="font-family:Consolas,monospace;color:#1C7293">günaydın</td><td>session-start hook + handoff</td><td>git/TODO/journal okur, özetler</td></tr><tr><td style="font-family:Consolas,monospace;color:#1C7293">iyi geceler</td><td>session-handoff skill</td><td>günlüğe yazar, TODO işaretler, commit'ler</td></tr><tr><td style="font-family:Consolas,monospace;color:#1C7293">dosyaları böl</td><td>commit-splitter agent</td><td>15+ dosyayı bucket'lara ayırır</td></tr><tr><td style="font-family:Consolas,monospace;color:#1C7293">hangi seçenek?</td><td>llm-council skill</td><td>5 danışman + sentez</td></tr><tr><td style="font-family:Consolas,monospace;color:#1C7293">(commit'te şifre)</td><td>pre-commit hook</td><td>sızıntıyı yakalar, bloklar</td></tr></table><div class="card" style="margin-top:14px;border-left:5px solid #2EC4B6"><p style="font-size:12.5pt;font-family:Georgia,serif;font-style:italic;color:#06283D">Her kolaylık = bir tetik söz + senin kurduğun bir yapı. Yapıyı sil → kolaylık kaybolur.</p></div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>15 / 16</span></div></div></div><div class="s dark"><div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+<div class="kick">Bölüm 6 · Sonuç</div>
+<h1 style="font-size:46pt;color:#fff;line-height:1.06;margin:12px 0">Akıl Claude'da değil —<br><span style="color:#2EC4B6">kurduğun yapıda.</span></h1>
+<div class="sub" style="color:#cfe6ee;max-width:185mm">Ham model güçlü ama disiplinsiz. Hafıza + hook + skill + agent + kural katmanı her handikabı süper güce çevirdi. Daha fazla kolaylık istersen: daha fazla yapı yaz.</div>
+<div style="margin-top:22px;display:flex;align-items:center;gap:10px;color:#7fe9dc;font-size:13.5pt;font-weight:600"><!-- @license lucide-static v1.17.0 - ISC -->
+<svg
+  class="lucide lucide-rocket"
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="22"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09" />
+  <path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z" />
+  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" />
+</svg>
+ Kullan → Üret → Standartlaştır → Otomatikleştir</div>
+<div class="ft"><span>© Fikri Eren 2026</span><span>16 / 16</span></div></div></div></body></html>
