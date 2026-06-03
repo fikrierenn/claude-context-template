@@ -70,7 +70,8 @@ Write-Host "Hedef: $ProjectPath"
 Write-Host "Ad:    $ProjectName"
 Write-Host "Stack: $Stack"
 Write-Host "Turkce UI: $IncludeTurkish"
-Write-Host "Pre-commit hook: $(if ($EnablePreCommitHook) {'AKTIF'} else {'pasif (settings.json\'dan ileride aktiflestir)'})"
+$hookState = if ($EnablePreCommitHook) { 'AKTIF' } else { "pasif (settings.json'dan ileride aktiflestir)" }
+Write-Host "Pre-commit hook: $hookState"
 Write-Host "Mod:   $(if ($Update) {'GUNCELLEME (project-ozel dokunulmaz)'} else {'YENI KURULUM'})"
 Write-Host ""
 
@@ -94,7 +95,11 @@ $fwdPath = ($ProjectPath -replace '\\','/')
 Write-Host "[1/8] .claude/rules/" -ForegroundColor Green
 Ensure-Dir "$ProjectPath/.claude/rules"
 
-$universalFiles = @('session-protocol.md','commit-discipline.md','session-memory.md','security-principles.md')
+$universalFiles = @(
+    'session-protocol.md','session-memory.md','commit-discipline.md','security-principles.md',
+    'coding-discipline.md','response-style.md','before-major-change.md','file-size-discipline.md',
+    'plan-first.md','error-handling.md','test-discipline.md','todo-verification.md','agent-usage.md'
+)
 if ($IncludeTurkish) { $universalFiles += 'turkish-ui.md' }
 foreach ($f in $universalFiles) {
     Copy-Item -Path "$TemplatesDir/.claude/rules/_universal/$f" -Destination "$ProjectPath/.claude/rules/$f" -Force

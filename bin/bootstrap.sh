@@ -92,8 +92,12 @@ render_template() {
 echo "[1/8] .claude/rules/"
 mkdir -p "$PROJECT_PATH/.claude/rules"
 
-# session-protocol + commit-discipline + session-memory + security-principles her zaman
-UNIVERSAL_FILES=(session-protocol.md commit-discipline.md session-memory.md security-principles.md)
+# Tum evrensel kurallar her zaman kopyalanir
+UNIVERSAL_FILES=(
+  session-protocol.md session-memory.md commit-discipline.md security-principles.md
+  coding-discipline.md response-style.md before-major-change.md file-size-discipline.md
+  plan-first.md error-handling.md test-discipline.md todo-verification.md agent-usage.md
+)
 [[ "$INCLUDE_TURKISH" == "true" ]] && UNIVERSAL_FILES+=(turkish-ui.md)
 
 for f in "${UNIVERSAL_FILES[@]}"; do
