@@ -14,3 +14,5 @@ node_modules/
 docs/sunum/_icons/
 dist/
 docs/sunum/_icons_red/
+docs/sunum/package.json
+docs/sunum/package-lock.json
