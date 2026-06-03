@@ -1,0 +1,9 @@
+# Toplu guncellenecek projeler — her satir bir proje yolu (# ile yorum).
+# bash bin/update-all.sh ile islenir. Template kurulu olmayan/yol olmayan satirlar atlanir.
+#
+# Ornek (kendi projelerinle degistir):
+# /d/Dev/reporthub
+# /d/Dev/fifo
+# /d/Dev/operax
+# /d/Dev/sqlcli
+# /d/Dev/sqlserver-mcp-server

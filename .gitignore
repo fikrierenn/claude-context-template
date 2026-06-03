@@ -6,3 +6,11 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Eski kod dump cop dosyalari (template degil)
+TUM_PROJE_KODLARI.txt
+kodlari_topla_v2.bat
+node_modules/
+docs/sunum/_icons/
+dist/
+docs/sunum/_icons_red/
