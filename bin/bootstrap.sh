@@ -97,6 +97,7 @@ UNIVERSAL_FILES=(
   session-protocol.md session-memory.md commit-discipline.md security-principles.md
   coding-discipline.md response-style.md before-major-change.md file-size-discipline.md
   plan-first.md error-handling.md test-discipline.md todo-verification.md agent-usage.md
+  performance.md
 )
 [[ "$INCLUDE_TURKISH" == "true" ]] && UNIVERSAL_FILES+=(turkish-ui.md)
 
@@ -129,10 +130,13 @@ fi
 # --- 2. hooks/ ---
 echo "[2/8] .claude/hooks/"
 mkdir -p "$PROJECT_PATH/.claude/hooks"
-for h in session-start.sh pre-commit-antipattern.sh post-commit-journal.sh; do
-    cp "$TEMPLATES/.claude/hooks/$h" "$PROJECT_PATH/.claude/hooks/$h"
-    chmod +x "$PROJECT_PATH/.claude/hooks/$h"
-    echo "  + hooks/$h (executable)"
+# Tum hook dosyalari (.sh + .ps1) kopyalanir — settings.json hangilerini aktif edecegini belirler
+for hf in "$TEMPLATES"/.claude/hooks/*.sh "$TEMPLATES"/.claude/hooks/*.ps1; do
+    [ -f "$hf" ] || continue
+    h=$(basename "$hf")
+    cp "$hf" "$PROJECT_PATH/.claude/hooks/$h"
+    [[ "$h" == *.sh ]] && chmod +x "$PROJECT_PATH/.claude/hooks/$h"
+    echo "  + hooks/$h"
 done
 
 # --- 3. agents/ ---
@@ -307,7 +311,7 @@ echo "  $PROJECT_PATH/TODO.md"
 echo "  $PROJECT_PATH/.gitignore (merged)"
 echo "  $PROJECT_PATH/.claude/settings.json"
 echo "  $PROJECT_PATH/.claude/rules/*.md (${#UNIVERSAL_FILES[@]} universal$([[ "$STACK" != "none" ]] && echo " + stack: $STACK"))"
-echo "  $PROJECT_PATH/.claude/hooks/{session-start,pre-commit-antipattern,post-commit-journal}.sh"
+echo "  $PROJECT_PATH/.claude/hooks/*.sh + *.ps1 (session-start, git-guard, antipattern, config-guard, journal...)"
 echo "  $PROJECT_PATH/.claude/agents/commit-splitter.md"
 echo "  $PROJECT_PATH/.claude/skills/session-handoff/SKILL.md"
 echo "  $PROJECT_PATH/docs/CONTEXT_MANAGEMENT.md"

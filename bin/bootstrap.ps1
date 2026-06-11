@@ -98,7 +98,8 @@ Ensure-Dir "$ProjectPath/.claude/rules"
 $universalFiles = @(
     'session-protocol.md','session-memory.md','commit-discipline.md','security-principles.md',
     'coding-discipline.md','response-style.md','before-major-change.md','file-size-discipline.md',
-    'plan-first.md','error-handling.md','test-discipline.md','todo-verification.md','agent-usage.md'
+    'plan-first.md','error-handling.md','test-discipline.md','todo-verification.md','agent-usage.md',
+    'performance.md'
 )
 if ($IncludeTurkish) { $universalFiles += 'turkish-ui.md' }
 foreach ($f in $universalFiles) {
@@ -138,9 +139,10 @@ if (-not $Update) {
 # --- 2. .claude/hooks/ ---
 Write-Host "[2/8] .claude/hooks/" -ForegroundColor Green
 Ensure-Dir "$ProjectPath/.claude/hooks"
-foreach ($h in @('session-start.sh','pre-commit-antipattern.sh','post-commit-journal.sh')) {
-    Copy-Item -Path "$TemplatesDir/.claude/hooks/$h" -Destination "$ProjectPath/.claude/hooks/$h" -Force
-    Write-Host "  + hooks/$h"
+# Tum hook dosyalari (.sh + .ps1) kopyalanir — settings.json hangilerini aktif edecegini belirler
+Get-ChildItem -Path "$TemplatesDir/.claude/hooks" -File | Where-Object { $_.Extension -in '.sh','.ps1' } | ForEach-Object {
+    Copy-Item -Path $_.FullName -Destination "$ProjectPath/.claude/hooks/$($_.Name)" -Force
+    Write-Host "  + hooks/$($_.Name)"
 }
 
 # --- 3. .claude/agents/ ---
@@ -283,7 +285,7 @@ Write-Host "  $ProjectPath/TODO.md"
 Write-Host "  $ProjectPath/.gitignore (merged)"
 Write-Host "  $ProjectPath/.claude/settings.json"
 Write-Host "  $ProjectPath/.claude/rules/*.md ($($universalFiles.Count) universal$(if ($Stack -ne 'none') {" + stack: $Stack"}))"
-Write-Host "  $ProjectPath/.claude/hooks/{session-start,pre-commit-antipattern,post-commit-journal}.sh"
+Write-Host "  $ProjectPath/.claude/hooks/*.sh + *.ps1 (session-start, git-guard, antipattern, config-guard, journal...)"
 Write-Host "  $ProjectPath/.claude/agents/commit-splitter.md"
 Write-Host "  $ProjectPath/.claude/skills/session-handoff/SKILL.md"
 Write-Host "  $ProjectPath/docs/CONTEXT_MANAGEMENT.md"

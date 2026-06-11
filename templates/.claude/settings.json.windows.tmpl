@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash {{PROJECT_PATH_FWD}}/.claude/hooks/session-start.sh"
+            "command": "powershell -NoProfile -File {{PROJECT_PATH}}/.claude/hooks/session-start.ps1"
           }
         ]
       }
@@ -16,11 +16,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash {{PROJECT_PATH_FWD}}/.claude/hooks/pre-bash-git-guard.sh"
+            "command": "powershell -NoProfile -File {{PROJECT_PATH}}/.claude/hooks/pre-bash-git-guard.ps1"
           },
           {
             "type": "command",
-            "command": "bash {{PROJECT_PATH_FWD}}/.claude/hooks/pre-commit-antipattern.sh"
+            "command": "powershell -NoProfile -File {{PROJECT_PATH}}/.claude/hooks/pre-commit-antipattern.ps1"
           }
         ]
       },
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash {{PROJECT_PATH_FWD}}/.claude/hooks/pre-config-protection.sh"
+            "command": "powershell -NoProfile -File {{PROJECT_PATH}}/.claude/hooks/pre-config-protection.ps1"
           }
         ]
       }
