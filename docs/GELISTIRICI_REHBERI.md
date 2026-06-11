@@ -38,6 +38,14 @@
 | Değişikliği gerçekten çalıştırıp doğrula | `/verify` | skill |
 | Çok kaynaklı araştırma raporu | `/deep-research <soru>` | skill |
 | CLAUDE.md'yi güncelle | `/revise-claude-md` | skill |
+| Kod yazmadan önce adım adım plan | `/plan <açıklama>` | komut |
+| Ara durumu güvenli kaydet (WIP) | `/checkpoint` | komut |
+| Build hatasını sistematik çöz | `/build-fix` | komut |
+| Test coverage analizi + eksik test | `/test-coverage` | komut |
+| Branch'ten PR aç (commit + push + gh) | `/pr` | komut |
+| Dokümantasyonu kodla senkronla | `/update-docs` | komut |
+| TDD ile yeni feature | "tdd-guide çağır" / `tdd-workflow` skill | agent + skill |
+| Yan görev — ana akışı bozmadan | `/aside <görev>` | komut |
 
 ---
 
@@ -99,7 +107,44 @@ Skill = belirli bir iş akışının reçetesi. `/<ad>` ile veya tablo­daki do�
 | **Kullanma** | Basit evet/hayır, tek doğru cevaplı, stakes'siz sorular. Zaten onaylı planlar. |
 | **Döndürür** | Council Verdict: uzlaşılan/çatışan noktalar, yakalanan blind spot'lar, net öneri + ilk adım. |
 
-### 2.4 Yerleşik (built-in) skill'ler
+### 2.4 ECC'den portlanan skill'ler (katalog — ihtiyaca göre kur)
+
+ECC (github.com/affaan-m/ECC, MIT) deposundan uyarlandı. Bootstrap kurmaz; §9'daki gibi kopyalanır.
+
+**Süreç / disiplin:**
+
+| Skill | Ne yapar |
+|---|---|
+| `tdd-workflow` | Test-önce geliştirme reçetesi — %80+ coverage, unit/integration/E2E. |
+| `verification-loop` | "Bitti" demeden önce kanıt döngüsü: build + test + smoke + diff incele. |
+| `git-workflow` | Branch/commit/merge akış reçetesi. |
+| `github-ops` | gh CLI ile issue/PR/release operasyonları. |
+| `coding-standards` | Dil-bağımsız kod standartları çerçevesi. |
+| `search-first` | Kod yazmadan önce mevcut pattern'i ara — tekerlek yeniden icat etme. |
+| `codebase-onboarding` | Tanımadığın repo'ya sistematik giriş haritası. |
+| `architecture-decision-records` | ADR yazım reçetesi (`docs/ADR/` ile uyumlu). |
+| `strategic-compact` | Context şişince ne zaman/nasıl compact — karar rehberi. |
+| `context-budget` | Token bütçesi yönetimi, context israfını azaltma. |
+| `prompt-optimizer` | Prompt'u net görev tanımına dönüştürme. |
+| `production-audit` | Production-hazırlık denetimi (config, log, hata, güvenlik). |
+| `security-scan` | `.claude/` konfigürasyon güvenlik denetimi (Critical/High/Medium/Info). |
+
+**Teknik pattern:**
+
+| Skill | Ne yapar |
+|---|---|
+| `api-design` | REST/RPC API tasarım kuralları. |
+| `backend-patterns` | Servis katmanı, repository, queue, cache pattern'leri. |
+| `frontend-patterns` | React/Next.js uygulama-seviyesi pattern'ler. |
+| `database-migrations` | Zero-downtime migration (expand-contract). `sql-migration-writer`'ı tamamlar. |
+| `deployment-patterns` | CI/CD, rollback, feature flag stratejileri. |
+| `docker-patterns` | Dockerfile/compose best practice. |
+| `e2e-testing` | Playwright E2E reçetesi. |
+| `dotnet-patterns` | .NET servis/DI/EF pattern'leri. |
+| `python-patterns` | Python idiom + proje yapısı. |
+| `python-testing` | pytest reçetesi. |
+
+### 2.5 Yerleşik (built-in) skill'ler
 
 Bu skill'ler Claude Code ile gelir, her projede kullanılabilir:
 
@@ -159,6 +204,31 @@ Agent = izole bağlamda çalışan subagent. Çoğu **proaktif** — Claude doğ
 
 **Doğru optimizer seçimi:** .NET projesi → `code-optimizer-dotnet`. Next.js/TS projesi → `code-optimizer`.
 
+### 3.5 Planlama & Geliştirme (ECC'den portlandı)
+
+| Agent | Ne yapar | Ne zaman |
+|---|---|---|
+| `planner` | Karmaşık feature/refactor için detaylı uygulama planı (adım + bağımlılık + risk). | Tier 3 iş başlarken, `/plan` ile. |
+| `architect` | Sistem-seviyesi tasarım: trade-off analizi, ADR şablonu, ölçeklenme. `code-architect`'i tamamlar (o feature-blueprint üretir). | Mimari karar gereken işlerde. |
+| `build-error-resolver` | Build/compile hatasını sistematik çözer — minimal diff. | Build kırmızıyken, `/build-fix` ile. |
+| `refactor-cleaner` | Dead code temizliği, güvenli refactor. | `/refactor-clean` ile. |
+| `tdd-guide` | Test-önce geliştirme koçu — red/green/refactor döngüsü. | Yeni feature TDD ile yazılırken. |
+| `e2e-runner` | Playwright E2E test koşumu + rapor. | UI değişikliği sonrası. |
+| `performance-optimizer` | Profiling akışı, Lighthouse/Web Vitals, memory leak, DB/network optimizasyonu. | Ölçülmüş performans sorununda. |
+| `doc-updater` | Dokümantasyonu kodla senkronlar. | `/update-docs` ile. |
+| `docs-lookup` | Kütüphane dokümantasyonu araştırır (Context7 MCP varsa onu kullanır). | Bilinmeyen API/kütüphane kullanırken. |
+| `database-reviewer` | Şema, index, query, migration denetimi. | Migration/şema değişikliğinde. |
+
+### 3.6 Dil-özel reviewer'lar (ECC'den portlandı)
+
+| Agent | Stack |
+|---|---|
+| `csharp-reviewer` | C# / .NET — async, LINQ, DI, EF denetimi |
+| `typescript-reviewer` | TS/JS — tip güvenliği, React/Next.js kuralları dahil |
+| `python-reviewer` | Python — idiom, tip, güvenlik |
+
+> Genel `code-reviewer` her projede çalışır; dil-özel reviewer ek derinlik ister isen kurulur.
+
 ---
 
 ## 4. Slash Komutları
@@ -172,6 +242,15 @@ Komut = sen `/<ad>` yazarsın, Claude tanımlı akışı işletir.
 | `/css-check` | CSS/Tailwind tasarım tutarlılığı + kalite denetimi. | — |
 | `/review-pr` | Specialized agent'larla kapsamlı PR incelemesi. | `<PR#>` |
 | `/feature-dev` | Codebase anlama + mimari odaklı rehberli feature geliştirme. | `<açıklama>` |
+| `/full-scan` | Tüm denetim agent'larını paralel koşturur. | — |
+| `/plan` | Gereksinimleri netleştir + riskleri çıkar + fazlı plan; **onay almadan kod yazmaz**. PRD dosyası da alır. | `[açıklama \| x.prd.md]` |
+| `/checkpoint` | Güvenli ara kayıt: hızlı doğrulama + WIP commit. | `[mesaj]` |
+| `/build-fix` | Build hatalarını tespit + sistematik çöz (minimal diff). | — |
+| `/refactor-clean` | Dead code temizliği + güvenli refactor akışı. | — |
+| `/test-coverage` | Coverage raporu + kritik eksik testleri yaz. | — |
+| `/update-docs` | README/docs'u kodla senkronla. | — |
+| `/pr` | Commit + push + gh ile PR aç; plan artefaktlarını PR gövdesine bağlar. | `[base-branch]` |
+| `/aside` | Ana akışı bozmadan küçük yan görev yap, sonra geri dön. | `<görev>` |
 
 > Komut ile agent farkı: komut bir akışı başlatır (içinde birden çok agent çağırabilir); agent tek izole görev yapar.
 
@@ -199,6 +278,22 @@ Hook'ları **sen tetiklemezsin** — olaylar tetikler. Bilmen yeterli.
 - **Tetik:** Başarılı `git commit` sonrası.
 - **Yapar:** `docs/journal/YYYY-MM-DD.md`'ye commit hash + subject + dosya listesi append.
 
+### 5.4 `pre-bash-git-guard` — PreToolUse(Bash) *(ECC'den uyarlandı)*
+
+- **Tetik:** Her Bash komutu öncesi; sadece git komutlarını inceler.
+- **Bloklar:** `--no-verify` / `git commit -n` / `core.hooksPath=` override (hook bypass) · `git push --force` (`--force-with-lease` serbest) · `git reset --hard` · `git clean -f` · `git checkout/restore .`
+- **Amaç:** `commit-discipline.md`'deki zararlı komut listesini hook seviyesinde zorlar — Claude kullanıcı onayı almadan bu komutları çalıştıramaz.
+- **Bypass (onay sonrası):** `CLAUDE_GITGUARD_SKIP=1 <komut>`. `.sh` + `.ps1` çift platform.
+
+### 5.5 `pre-config-protection` — PreToolUse(Edit|Write) *(ECC'den uyarlandı)*
+
+- **Tetik:** Her Edit/Write öncesi; sadece linter/formatter config dosyalarını inceler.
+- **Bloklar:** Mevcut `.eslintrc*`, `prettier*`, `biome.json`, `ruff.toml`, `.editorconfig`, `.stylelintrc*`, `.markdownlint*` değişikliği. Yeni config oluşturma serbest; `pyproject.toml` bilerek kapsam dışı.
+- **Amaç:** Agent lint hatasını config gevşeterek değil kaynak kodu düzelterek geçsin.
+- **Bypass (onay sonrası):** `CLAUDE_CONFIGGUARD_SKIP=1`. `.sh` + `.ps1` çift platform.
+
+> Yeni hook'lar da pre-commit-antipattern gibi **varsayılan pasif** kurulur (bootstrap PreToolUse bloğunu çıkarır). Aktif etmek: `-EnablePreCommitHook` veya `settings.json` elle.
+
 ---
 
 ## 6. Kurallar
@@ -222,13 +317,14 @@ Hook'ları **sen tetiklemezsin** — olaylar tetikler. Bilmen yeterli.
 | `test-discipline.md` | "Bitti" demeden test çalıştır · build ≠ test · regression test yaz. |
 | `todo-verification.md` | TODO iddiasını canlı kodla doğrula, sonra fix · stale-claim yakala. |
 | `agent-usage.md` | Subagent delegasyonu + model katmanlama (haiku/sonnet/opus) · salt-okuma. |
+| `performance.md` | Önce ölç · N+1 · cache invalidation · bundle boyutu · O(n²) farkındalığı. *(ECC'den uyarlandı)* |
 | `turkish-ui.md` | UI metni Türkçe + UTF-8 · kod İngilizce. (`--no-turkish` kapatır.) |
 
 ### Stack-özel (`stacks/<ad>/`)
 
-- `dotnet-mvc/` → csharp / razor / sql / js conventions
-- `nodejs-typescript/` → ts conventions
-- `python-generic/` → python conventions
+- `dotnet-mvc/` → csharp / razor / sql / js conventions **+ csharp-patterns / csharp-testing / csharp-security** *(ECC)*
+- `nodejs-typescript/` → ts conventions **+ ts-patterns / ts-testing / ts-security** *(ECC)*
+- `python-generic/` → python conventions **+ python-patterns / python-testing / python-security / python-fastapi** *(ECC)*
 - `ai-powered/` → AI/LLM konvansiyonları (model seçimi, maliyet takibi, Zod validasyon, retry)
 
 ### Proje-özel (`project/`, sen doldurursun)
@@ -291,7 +387,7 @@ pwsh D:\Dev\claude-context-template\bin\bootstrap.ps1 `
   -Stack dotnet-mvc      # nodejs-typescript | python-generic | none
 ```
 
-Kurar: universal + stack rules · 3 hook · commit-splitter agent · session-handoff + plan-tracker skill · settings.json · CONTEXT_MANAGEMENT.md · journal/ADR klasörü · CLAUDE.md + TODO.md şablonu.
+Kurar: universal + stack rules · tüm hook dosyaları (git-guard + config-guard dahil, PreToolUse pasif default) · commit-splitter agent · session-handoff + plan-tracker skill · settings.json · CONTEXT_MANAGEMENT.md · journal/ADR klasörü · CLAUDE.md + TODO.md şablonu.
 
 ### Güncelleme (template iyileşti → projelere yay)
 ```powershell

@@ -52,6 +52,21 @@ Sonuç: `cd yeni-proje && claude` — **her oturum başı otomatik hook**, son 3
 
 ---
 
+## v1.3 Yeni Özellikler (11 Haziran 2026) — ECC Portu
+
+[ECC](https://github.com/affaan-m/ECC) (MIT) deposundaki generic özellikler template kataloğuna uyarlandı:
+
+- **13 agent** — planner, architect, build-error-resolver, tdd-guide, refactor-cleaner, performance-optimizer, e2e-runner, doc-updater, docs-lookup, database-reviewer + csharp/typescript/python reviewer'ları.
+- **23 skill** — tdd-workflow, verification-loop, git-workflow, github-ops, search-first, codebase-onboarding, strategic-compact, context-budget, security-scan, api-design, backend/frontend-patterns, database-migrations, docker/deployment-patterns, e2e-testing, dotnet/python pattern'leri vb.
+- **8 komut** — `/plan`, `/checkpoint`, `/build-fix`, `/refactor-clean`, `/test-coverage`, `/update-docs`, `/pr`, `/aside`.
+- **2 hook (sh+ps1)** — `pre-bash-git-guard` (hook bypass + tehlikeli git komutları bloğu), `pre-config-protection` (linter config gevşetme bloğu).
+- **11 kural** — evrensel `performance.md` + 10 stack kuralı (Türkçeye çevrildi).
+- Bootstrap: hook kopyalama dinamik, tüm `.sh`/`.ps1` kurulur.
+
+Katalog detayı: [`docs/GELISTIRICI_REHBERI.md`](docs/GELISTIRICI_REHBERI.md). ECC-altyapısına bağımlı parçalar (instinct, hookify, loop, sessions CLI) bilinçli port edilmedi.
+
+---
+
 ## v1.1 Yeni Özellikler (22 Nisan 2026)
 
 ReportHub pilot oturumunun öğrendikleri template'e taşındı:
