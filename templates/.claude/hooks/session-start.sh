@@ -40,15 +40,40 @@ if [ -d docs/journal ]; then
     fi
 fi
 
-echo "### Kritik dosyalar / kurallar"
-[ -f docs/CONTEXT_MANAGEMENT.md ] && echo "- Baglam yonetimi: docs/CONTEXT_MANAGEMENT.md"
-[ -f docs/00-INDEX.md ] && echo "- Konu indeksi: docs/00-INDEX.md"
-[ -d .claude/rules ] && {
-    for f in .claude/rules/session-protocol.md \
-             .claude/rules/session-memory.md \
-             .claude/rules/commit-discipline.md; do
-        [ -f "$f" ] && echo "- $f"
-    done
-}
+# Statik kod sagligi sinyalleri
+echo "### Kod sagligi sinyalleri (statik)"
+new_http=$(grep -rn "new HttpClient()" --include="*.cs" 2>/dev/null | wc -l | tr -d ' ')
+[ "$new_http" -gt 0 ] && echo "- Antipattern: new HttpClient(): $new_http"
+
+empty_catch=$(grep -rn "catch\s*(.*)\s*{[[:space:]]*}" --include="*.cs" 2>/dev/null | wc -l | tr -d ' ')
+[ "$empty_catch" -gt 0 ] && echo "- Bos catch: $empty_catch"
+
+ex_msg=$(grep -rn "ex\.Message" --include="*.cs" 2>/dev/null | wc -l | tr -d ' ')
+[ "$ex_msg" -gt 0 ] && echo "- ex.Message sizma riski: $ex_msg"
+
+inline_style=$(grep -rn 'style="' --include="*.cshtml" --include="*.html" 2>/dev/null | wc -l | tr -d ' ')
+[ "$inline_style" -gt 0 ] && echo "- Statik inline style: $inline_style olusum (utility class'a tasi)"
+
+echo ""
+
+# Memory sistemi var mi?
+if [ -d "$(dirname "$REPO")/../.claude/projects" ]; then
+    echo "### Memory sistemi"
+    echo "- Detay icin: memory/MEMORY.md"
+    echo ""
+fi
+
+echo "---"
+echo "## CLAUDE — ILK YANIT ZORUNLU FORMAT"
+echo ""
+echo "Kullanicinin ilk mesajina cevap vermeden once asagidaki ozeti ver:"
+echo ""
+echo "  **[UNCOMMITTED: $count dosya]** $([ "$count" -gt 15 ] && echo '⚠️ ESIK ASILDI' || echo '✓')"
+echo "  **HIGH acik:** [TODO.md'den HIGH/CRITICAL maddeleri]"
+echo "  **Oncelik:** [TODO Faz 0'dan ilk 1-2 madde]"
+echo "  Ne yapiyoruz?"
+echo ""
+echo "Bu ozeti VERMEDEN kullanicinin sorusunu yanitlama."
+echo "---"
 
 exit 0

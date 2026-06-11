@@ -115,6 +115,29 @@ Hacim eşiği: 3+ saat veya 20+ dosya değişti → DETAYLI yaz.
 - 400+ satır → bildirim ver, eski kayıtlar arşive.
 - Aynı konu iki yerde olmasın.
 
+### Adim 4.9 — Compliance Scan (ZORUNLU — kod yazıldıysa)
+
+Bu oturumda commit edilen veya uncommitted kod varsa tek mesajda paralel agent:
+
+```
+Agent(code-reviewer)         — kural uyumu + bug
+Agent(silent-failure-hunter) — exception / silent catch / log eksik
+Agent(security-reviewer)     — güvenlik
+Agent(general-purpose)       — inline style / secret tarama
+```
+
+Scope: `git diff HEAD~N..HEAD --name-only` (bu oturumdaki commit'ler) + uncommitted.
+
+- **CRITICAL/HIGH** → handoff'tan önce fix et + commit et, sonra devam
+- **MEDIUM/LOW** → journal'da "bilinen borç" olarak kaydet, sonra handoff
+- **Bulgu yok** → devam
+
+Override: kullanıcı "tarama yapma" derse bypass.
+
+### Adim 4.95 — Memory Güncelle
+
+Bu oturumda öğrenilen feedback/karar/proje durumu memory'ye yazıldıysa `memory/MEMORY.md` index'ini güncelle.
+
 ### Adim 5 — Journal + TODO OTOMATIK commit
 
 ```bash
