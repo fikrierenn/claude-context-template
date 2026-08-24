@@ -1,9 +1,9 @@
 # Toplu guncellenecek projeler — her satir bir proje yolu (# ile yorum).
-# bash bin/update-all.sh ile islenir. Template kurulu olmayan/yol olmayan satirlar atlanir.
+# bash bin/update-all.sh ile islenir.
 #
-# Ornek (kendi projelerinle degistir):
-# /d/Dev/reporthub
-# /d/Dev/fifo
-# /d/Dev/operax
-# /d/Dev/sqlcli
-# /d/Dev/sqlserver-mcp-server
+# 2026-08-23: Bu dosya BOSTU. update-all.sh bu yuzden hic gercek bir projeye
+# yoneltilmedi; mekanizma kuruldu, ates hic almadi. Once uc proje ile baslıyoruz —
+# hepsi degil. Uc proje calisirsa genisletilir.
+/d/Dev/BkmArgus
+/d/Dev/Operax
+/d/Dev/reporthub

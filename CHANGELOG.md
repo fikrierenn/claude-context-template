@@ -1,51 +1,70 @@
-# Değişiklik Günlüğü
+# Changelog
 
-Template sürüm geçmişi. Ekibe dağıtım/güncelleme bu listeye dayanır.
-Sürümleme: MINOR = yeni kural/skill/stack · PATCH = içerik iyileştirme · MAJOR = kırıcı değişim.
+Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
-## [1.3.0] — 2026-06-11
+## [1.4.0] - 2026-08-23
 
-ECC (github.com/affaan-m/ECC, MIT) deposu tarandı; generic kullanılabilir tüm özellikler template kataloğuna uyarlandı. ECC-altyapısına bağımlı parçalar (instinct, hookify, loop, sessions CLI, agentshield, node hook runtime) bilinçli dışarıda bırakıldı.
-
-### Eklendi
-- **13 yeni agent:** `planner`, `architect`, `build-error-resolver`, `doc-updater`, `e2e-runner`, `performance-optimizer`, `refactor-cleaner`, `tdd-guide`, `database-reviewer`, `docs-lookup` + dil-özel reviewer'lar (`csharp-reviewer`, `typescript-reviewer`, `python-reviewer`).
-- **23 yeni skill:** süreç (tdd-workflow, verification-loop, git-workflow, github-ops, coding-standards, search-first, codebase-onboarding, architecture-decision-records, strategic-compact, context-budget, prompt-optimizer, production-audit, security-scan) + teknik pattern (api-design, backend-patterns, frontend-patterns, database-migrations, deployment-patterns, docker-patterns, e2e-testing, dotnet-patterns, python-patterns, python-testing).
-- **8 yeni komut:** `/plan`, `/checkpoint`, `/build-fix`, `/refactor-clean`, `/test-coverage`, `/update-docs`, `/pr`, `/aside`. (`/plan` + `/pr` template'in `plans/NN-*.md` kuralına hizalandı.)
-- **2 yeni hook (sh + ps1 çift platform):** `pre-bash-git-guard` (--no-verify / hooksPath bypass + force-push / reset --hard / clean -f bloğu) ve `pre-config-protection` (mevcut linter/formatter config gevşetme bloğu). Settings şablonlarına bağlandı; pre-commit-antipattern gibi pasif default.
-- **1 yeni evrensel kural:** `performance.md` (önce ölç, N+1, cache invalidation, bundle, karmaşıklık).
-- **10 yeni stack kuralı (Türkçeye çevrildi):** dotnet-mvc `csharp-{patterns,testing,security}` · nodejs-typescript `ts-{patterns,testing,security}` · python-generic `python-{patterns,testing,security,fastapi}`.
-
-### Değişti
-- Bootstrap hook kopyalama dinamikleşti: `templates/.claude/hooks/` altındaki tüm `.sh` + `.ps1` dosyaları kurulur (hardcoded 3'lü liste kalktı).
-- Bootstrap evrensel kural listesine `performance.md` eklendi.
-- `GELISTIRICI_REHBERI.md` kataloğu yeni agent/skill/komut/hook/kurallarla genişletildi.
-
-## [1.2.0] — 2026-06-03
+Sablon 11 Haziran'dan 23 Agustos'a kadar **0 commit** aldi. Ayni donemde
+projeler .claude/ altina 100'un uzerinde commit atti (pusula 48, Operax 35,
+reporthub 28, BkmArgus 6). Sebep mimari degildi — `_universal`/`stacks`/`project`
+ayrimi dogruydu, bootstrap calisiyordu. Sebep **geri akis yolunun olmamasiydi**:
+iyilestirme isin yapildigi yerde doguyor, merkeze donemiyor, merkez geride
+kaliyor, geride kalinca `update` projeleri GERIYE alacagi icin kimse
+calistirmiyor. Bu surum o dongunun eksik ayagini ekliyor.
 
 ### Eklendi
-- 4 yeni evrensel kural: `todo-verification`, `test-discipline`, `agent-usage`, `error-handling`.
-- Bootstrap artık **14 evrensel kuralın tümünü** kopyalıyor (önceden yalnızca 4'ünü).
-- Yazılımcı dökümantasyonu: `GELISTIRICI_REHBERI`, `PROJE_OZEL_KAVRAM`, `PROJE_OZEL_ORNEK_SENARYO`, `PROJE_OZEL_OLUSTURMA`.
-- Görsel PDF rehber seti: acemi + seviye + desktop + chat + cowork + eğitim sunumu.
-- `LEADER_PLAYBOOK.md` — ekibe dağıtma/yönetme rehberi.
-- `VERSION` + `CHANGELOG.md` — sürüm takibi.
-- `bin/update-all.sh` — kayıtlı tüm projeleri toplu güncelleme.
 
-### Değişti
-- Multi-project proje-adı hardcode'u tamamen kaldırıldı → tek `docs/journal/YYYY-MM-DD.md` (generic, tekil repo).
-- `session-handoff`, `commit-splitter`, hook'lar, plan şablonları generic'leştirildi.
+- **`bin/harvest.sh`** — ters yon. Projelerde olgunlasan yetenegi sablona tasir.
+  - `--scan` neyin geride kaldigini listeler (yayginlik + sapma)
+  - `--diff <dosya> <proje>` farki gosterir
+  - `--promote <dosya> --from <proje> --to <hedef>` terfi ettirir
+  - Siniflandirmayi (universal/stack/local) **makine yapmaz**; yayginlik olcer, oneri verir, karari insan verir.
+  - `projects.txt` bossa `D:\Dev` altinda `.claude/` olan projeleri otomatik kesfeder.
 
-### Kaldırıldı
-- Proje-adı bulaşmış stray root kurallar (`rules/{commit-discipline,plan-first,session-memory,session-protocol,sql-server-conventions}.md`).
+- **`_universal/evidence-discipline.md`** — olc, dogrula ya da "DOGRULANMADI" de.
+  Alt-ajan ciktisi kanit degildir. (Tarama: 8 hedef projenin **hicbirinde** yoktu.)
 
-## [1.1.0] — 2026-04-22
+- **`_universal/work-protocol.md`** — Danis → Yap → Kontrol Ettir → Smoke.
+  (8 projeden 7'sinde yoktu.)
 
-### Eklendi
-- Koşulsuz hook kuralı (`session-protocol`), pre-commit antipattern hook, post-commit journal hook.
-- `commit-splitter` subagent, Faz 0/1/2/3 TODO formatı, USAGE + PATTERNS dökümanları.
-- `.gitignore` otomatik merge.
+- **`_universal/footprint-ladder.md`** — yeni yetenek en dar basamakta.
 
-## [1.0.0] — başlangıç
+- **`_universal/skills/cati-degerlendirme`** — dis bir catiyi (ABP, XAF, Orchard,
+  Aspire, Clean Architecture sablonlari…) inceleyip ondan ne alinacagina karar
+  verme danismani. Kopya olcumu, cati/kutuphane/sablon ayrimi, aktif tuketici
+  kosulu, mekanizma-esleme ayrimi, strangler goc modeli.
 
-### Eklendi
-- İlk template: 3 katman ayrımı, evrensel kurallar, stack kuralları (dotnet-mvc/nodejs-typescript/python-generic), bootstrap.ps1/.sh, session-handoff skill, CONTEXT_MANAGEMENT anayasa.
+- **`_universal/skills/surum-disiplini`** — paket surumleme ve degisiklik gunlugu.
+  SemVer karari, CHANGELOG bakimi, public API yuzeyi izleme
+  (`Microsoft.CodeAnalysis.PublicApiAnalyzers`), sinsi kirici degisiklikler.
+
+- **`hooks/pre-edit-advisor-gate.sh`** — bir alana oturumdaki ILK dokunusu
+  **BLOKLAR**, hangi danismana danisilacagini soyler.
+
+- **`hooks/pre-commit-review-gate.sh`** — staged dosyalara gore zorunlu
+  denetcileri hesaplar; mesajda `[reviewed: ...]` ya da
+  `[review-skipped: <gerekce>]` yoksa commit'i **BLOKLAR**.
+
+### Onemli — hook'lar esleme dosyasi ISTER
+
+Iki hook da **mekanizma**dir; hangi yolun hangi danismana/denetciye gittigi
+**projeye ozeldir** ve sync EDILMEZ. Her projede su iki dosya olusturulmali:
+
+```
+.claude/advisor-map.conf    alan::desen1,desen2::danisman::gerekce
+.claude/review-map.conf     etiket::grep-deseni::gerekce
+```
+
+Esleme dosyasi yoksa hook sessizce gecer (bloklamaz). Bu bilincli: yanlis
+danismani isaret etmektense hic isaret etmemek yeglenir.
+
+Gerekce olculdu: hook'lar once BkmArgus'un kendi danismanlarini gövdeye gömülü
+tasiyordu. Operax'a tasindiginda orada o danismanlar yok — kapi bloklayip **var
+olmayan** bir danismani isaret ediyordu.
+
+### Duzeltildi
+
+- **`projects.txt` bostu** — tum satirlar yorumdu, `update-all.sh` hic gercek bir
+  projeye yoneltilmemisti. Uc proje ile dolduruldu (hepsi degil; uc proje
+  calisirsa genisletilir).
+
