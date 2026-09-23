@@ -100,7 +100,7 @@ Kod İngilizce, **yorum ve UI metni Türkçe**. Kapı yorumlara ve dizelere bile
 
 | Dosya | Ne |
 |---|---|
-| `.claude/turkce-kapi.json` | `{"kapsam":["src","tests"],"alan_adlari":["UrunAdi"],"tabanli_kokler":["legacy"],"dosya_adi_istisnalari":[],"uzantilar":[".cs",".razor",".js",".py",".ps1",".sql"]}` — `uzantilar` yoksa süpürme yalnız .cs/.razor (1.7.0, opt-in) |
+| `.claude/turkce-kapi.json` | `{"kapsam":["src","tests"],"alan_adlari":["UrunAdi"],"tabanli_kokler":["legacy"],"dosya_adi_istisnalari":[],"uzantilar":[".cs",".razor",".js",".py",".ps1",".sql"],"bicim":true,"bilesen":{"onekler":["btn","form","view"]}}` — `uzantilar` yoksa süpürme yalnız .cs/.razor (1.7.0); `bicim`/`bilesen` yoksa o katmanlar kapalı (1.8.0, opt-in) |
 | `.claude/kod-sozcukleri.ek.txt` | deponuzun **alan** sözcükleri, satır başına bir tane |
 | `.claude/turkce-taban.json` | devralınmış borcu dondurmak (çırcır): `{"dosyalar":{"legacy/X.cs":12}}` |
 

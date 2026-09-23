@@ -2,6 +2,27 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.8.0] - 2026-09-24
+
+ADLANDIRMA STANDARDININ İKİ "NİYET" SATIRI KAPIYA BAĞLANDI.
+
+naming-conventions.md §5 zorlama tablosunda §2 (biçim) ve §3 (bileşen) "YOK — yazılacak" duruyordu.
+
+### Eklendi (opt-in — varsayılan kapalı, mevcut tüketiciler kırılmaz)
+- `"bicim": true` — bildirilen adın dile göre biçimi: C# PascalCase (özel alan `_camel`), Python snake/UPPER/Pascal(sınıf),
+  JS camel/Pascal/UPPER, PowerShell `Verb-Noun` + Pascal/camel, SQL Pascal (+ PK_/IX_/FK_ kısıt önekleri).
+- `"bilesen": {"onekler": [...]}` — CSS/DOM bileşen adları: `.css` seçicileri, `.html` class/id/for, `.js/.mjs` içindeki
+  class/id DİZELERİ (el(), $('#'), classList, querySelector, getElementById, className, class="…"). Kurallar: kebab-case,
+  ilk parça tip öneki (varsayılan küme `btn form view field tab card badge alert list table row cell chip filter modal
+  overlay toast nav header footer section panel menu icon label input select text link img grid col page app`) ya da
+  durum `is-/has-`, `-btn/-dugme/-buton` soneki yasak, parçalar ak listede. Hex renk ve CSS sözde sınıfları atlanır.
+- `.css/.html` dosyaları argüman kipinde hedef olabilir; yalnız bileşen katmanıyla taranır.
+
+### Ölçüm (bkm-magaza, iki katman açık)
+- Biçim: tüm kodda **0** bulgu (kod zaten biçime uygun; sentetik sabotaj: `getCount`/`BAD_NAME` C#, `LoadData`/`data_reader` Python yakalandı).
+- Bileşen: styles.css 111 · index.html 27 · app.js 85 → harita 1145 → **1328 bulgu / 44 dosya**; `guncelle-btn` (sonek), `btnDevice` (kebab değil), `filtre-alan` (önek + ak liste), `update_button` yakalandı; `btn-scan`, `btn-primary`, `is-active`, `#view-search` geçti; hex renk `#a69d91` atlandı.
+- Kapalıyken regresyon: sayılar 1.7.2 ile aynı.
+
 ## [1.7.2] - 2026-09-24
 
 TEST ADI KURALIN DIŞINDA — ÖLÇÜLDÜ.

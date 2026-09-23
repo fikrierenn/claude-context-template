@@ -40,6 +40,9 @@ KAPININ ÜÇ KATMANI (Solum'un ayrımı + V-19):
   • AK LİSTE (V-19) — bildirilen adlardaki her sözcük dağarcıkta mı? Eksikliği
     İNSANA SORAR: yanlış pozitifin bedeli bir satır, yanlış negatifin bedeli
     görünmeyen bir ihlal.
+  ⚠ 1.8.0 (24.09.2026): BİÇİM ve BİLEŞEN katmanları (opt-in: ayar "bicim": true, "bilesen": {"onekler": […]}) —
+    naming-conventions.md §2/§3'ün kapısı: dil başına case; CSS/DOM adı kebab + tip öneki + ak liste, -btn soneki yasak.
+    .css/.html yalnız bileşen katmanıyla taranır (UI metni Türkçe harf doludur, tanımlayıcı katmanı oraya girmez).
   ⚠ 1.7.2 (24.09.2026): TEST METODU ADI taranmaz, gövdesi taranır — Solum ölçümü: 4087 bulgunun %78'i test
     adıydı; test adı bir iddiadır, insan mesajıdır (Türkçe kalır). Sınır ölçülebilir işaretten: test özniteliği /
     `def test_*`. Ayrıca REHBER: ek ak liste (ürün adı) adımı kapıdan ÖNCE gelir — ilk koşumda en sık bulgu ürünün
@@ -164,6 +167,18 @@ TABANLI_KOKLER = tuple(AYAR.get("tabanli_kokler", []))   # circir yalniz burada;
 #   Argüman kipinde (kanca dosya verir) desteklenen her uzantı işlenir; süpürmede yalnız bu liste —
 #   yoksa mevcut tüketicilerin (Vardiya, dashboard) süpürmesi bir gecede yeni bulgularla kırılırdı.
 SUPURME_UZANTILARI = tuple(AYAR.get("uzantilar", [".cs", ".cshtml", ".razor"]))
+# ── 1.8.0 (24.09.2026): BİÇİM ve BİLEŞEN katmanları — OPT-IN, naming-conventions.md §2/§3'ün kapısı ──────────
+#   "bicim": true                       → bildirilen adın dile göre biçimi (C# PascalCase, Python snake_case, JS camelCase,
+#                                          PowerShell Verb-Noun, SQL PascalCase) denetlenir
+#   "bilesen": {"onekler": [...]}       → .css seçicileri ve .html/.js/.mjs içindeki class/id dizeleri: kebab-case,
+#                                          İngilizce (ak liste), İLK parça tip öneki (btn form view …) ya da durum (is/has),
+#                                          -btn/-dugme/-buton soneki YASAK. Özel önek listesi verilmezse varsayılan küme.
+#   Varsayılan KAPALI: mevcut tüketicilerin kapısı bir gecede yeni sınıf bulguyla kırılmaz (1.7.0 uzantı kararıyla aynı).
+BICIM_ACIK = bool(AYAR.get("bicim", False))
+BILESEN_AYAR = AYAR.get("bilesen")            # None = kapalı
+BILESEN_ONEKLERI = set((BILESEN_AYAR or {}).get("onekler") or
+    "btn form view field tab card badge alert list table row cell chip filter modal overlay toast nav header footer section "
+    "panel menu icon label input select text link img grid col page app".split()) | {"is", "has"}
 
 # ⚠ TABAN TÜKETİCİDE DURUR, MERKEZDE DEĞİL. Donmuş borç o deponun gerçeğidir;
 #   merkeze konsaydı bir deponun borcu ötekinin kapısını gevşetirdi.
@@ -341,7 +356,8 @@ DIL_PROFILLERI = {
     ".py": dict(yorum=YORUM_PY, dize=DIZE_PY, anahtar=set("""def class return if elif else for while in not and or is None True
         False import from as with try except finally raise lambda yield pass break continue global nonlocal assert del print self
         cls args kwargs main""".split()),
-        bildirim=[(re.compile(r"\b(?:def|class)\s+(\w+)"), False),
+        bildirim=[(re.compile(r"\bclass\s+(\w+)"), False),                  # sıra 0 = sınıf (PascalCase)
+                  (re.compile(r"\bdef\s+(\w+)"), False),                    # sıra 1 = fonksiyon (snake_case)
                   (re.compile(r"\bdef\s+\w+\s*\(([^)]*)\)"), True),
                   (re.compile(r"^\s*(\w+)\s*(?::[^=\n]+)?=(?!=)", re.M), False),
                   (re.compile(r"\bfor\s+(\w+)\s+in\b"), False),
@@ -368,6 +384,7 @@ DIL_PROFILLERI = {
 DIL_PROFILLERI[".mjs"] = DIL_PROFILLERI[".cjs"] = DIL_PROFILLERI[".ts"] = DIL_PROFILLERI[".js"]
 DIL_PROFILLERI[".psm1"] = DIL_PROFILLERI[".ps1"]
 DESTEKLENEN_UZANTILAR = tuple(DIL_PROFILLERI)
+BILESEN_UZANTILARI = (".css", ".html", ".htm")      # yalnız bileşen katmanı tarar (1.8.0)
 
 
 def profil_bul(yol: Path) -> dict | None:
@@ -487,6 +504,8 @@ def ihlaller(yol: Path) -> list[tuple[int, str, str]]:
     #   kalan HTML parçalarını koddan ayırmak güvenilir değil. Razor'da yalnız
     #   KELİME listesi aranır (tanımlayıcı adları). C#'ta ikisi de aranır.
     razor = yol.suffix.lower() in (".cshtml", ".razor")
+    if yol.suffix.lower() in BILESEN_UZANTILARI:
+        return []                              # .css/.html: yalnız bileşen katmanı (UI metni Türkçe harf doludur)
     ham = io.open(yol, encoding="utf-8-sig", errors="replace").read()
     bulgular: list[tuple[int, str, str]] = []
 
@@ -574,6 +593,142 @@ def bilinmeyen_sozcukler(yol: Path, dagarcik: set) -> list:
     return bulgular
 
 
+# ── BİÇİM KATMANI (1.8.0) ─────────────────────────────────────────────────────
+# Bildirilen adın biçimi dile uymalı. Yalnız bildirim desenlerinin yakaladığı adlar (ak liste katmanıyla aynı yüzey).
+# Sınırlar bilerek: C# alanı `_camel` serbest; PS değişkeni Pascal ya da camel (param/yerel ayrımı desenle güvenilir değil);
+# SQL kısıt önekleri PK_/IX_/FK_/DF_/UQ_/CK_ serbest; tek harf ve sayı-eki serbest. Test adları zaten maskeli.
+import re as _re
+PASCAL = _re.compile(r"^[A-Z][A-Za-z0-9]*$")
+CAMEL = _re.compile(r"^[a-z][A-Za-z0-9]*$")
+SNAKE = _re.compile(r"^_{0,2}[a-z][a-z0-9_]*$")
+UPPER = _re.compile(r"^_{0,2}[A-Z][A-Z0-9_]*$")
+VERB_NOUN = _re.compile(r"^[A-Z][a-z]+-[A-Z][A-Za-z0-9]+$")
+SQL_KISIT = _re.compile(r"^(PK|IX|FK|DF|UQ|CK)_")
+
+
+def bicim_ihlali(ad: str, uzanti: str, desen_sira: int) -> str | None:
+    """None = uygun; aksi hâlde beklenen biçim metni."""
+    if len(ad) <= 1 or ad.isdigit():
+        return None
+    if uzanti in (".cs", ".razor"):
+        return None if (PASCAL.match(ad) or _re.match(r"^_[a-z]\w*$", ad)) else "PascalCase (C# tür/üye; özel alan _camelCase)"
+    if uzanti == ".py":
+        if desen_sira == 0:                            # class
+            return None if PASCAL.match(ad) else "PascalCase (Python sınıf)"
+        if desen_sira == 1:                            # def
+            return None if SNAKE.match(ad) else "snake_case (Python fonksiyon)"
+        return None if (SNAKE.match(ad) or UPPER.match(ad)) else "snake_case (değişken) ya da UPPER_SNAKE (sabit)"
+    if uzanti in (".js", ".mjs", ".cjs", ".ts"):
+        return None if (CAMEL.match(ad) or PASCAL.match(ad) or UPPER.match(ad) or ad.startswith("$")) else "camelCase (JS) / PascalCase (sınıf) / UPPER_SNAKE (sabit)"
+    if uzanti in (".ps1", ".psm1"):
+        if "-" in ad:
+            return None if VERB_NOUN.match(ad) else "Verb-Noun (PowerShell fonksiyon: Get-Item)"
+        return None if (PASCAL.match(ad) or CAMEL.match(ad) or UPPER.match(ad)) else "PascalCase param / camelCase yerel (alt çizgi yok)"
+    if uzanti == ".sql":
+        return None if (PASCAL.match(ad) or SQL_KISIT.match(ad)) else "PascalCase (SQL tablo/kolon/yordam; kısıt PK_/IX_/FK_ öneki)"
+    return None
+
+
+def bicim_bulgulari(yol: Path) -> list[tuple[int, str, str]]:
+    if not BICIM_ACIK:
+        return []
+    uzanti = yol.suffix.lower(); profil = profil_bul(yol)
+    if profil is None or uzanti == ".cshtml":
+        return []
+    ham = io.open(yol, encoding="utf-8-sig", errors="replace").read()
+    temiz, _ = soyutla(ham, razor=(uzanti == ".razor"), profil=profil)
+    temiz = test_adlarini_maskele(temiz, uzanti)
+    desenler = [(d, False) for d in BILDIRIM_DESENLERI] if profil["bildirim"] is None else profil["bildirim"]
+    satirlar = ham.splitlines(); bulgular = []; gorulen = set()
+    for sira, (desen, param_listesi) in enumerate(desenler):
+        for m in desen.finditer(temiz):
+            adlar = _parametre_adlari(m.group(1)) if param_listesi else [m.group(1)]
+            satir_no = temiz[:m.start()].count(chr(10)) + 1
+            for ad in adlar:
+                if ad.lower() in (CS_ANAHTAR | profil["anahtar"]) or ad in gorulen or ad == "TestCase":
+                    continue
+                sebep = bicim_ihlali(ad, uzanti, sira)
+                if sebep:
+                    gorulen.add(ad)
+                    metin = satirlar[satir_no - 1].strip()[:90] if satir_no <= len(satirlar) else ""
+                    bulgular.append((satir_no, metin, f"biçim: '{ad}' → {sebep}"))
+    return bulgular
+
+
+# ── BİLEŞEN KATMANI (1.8.0) — CSS sınıfı / DOM id / data-* ───────────────────────────────────────
+# naming-conventions.md §3: kebab-case · İngilizce (ak liste) · ilk parça TİP ÖNEKİ ya da durum (is-/has-) · -btn/-dugme
+# soneki yasak. Kaynaklar: .css seçicileri; .html class="…"/id="…"; .js/.mjs class/id DİZELERİ (el('tag','sınıf'),
+# $('#id'), classList.add('x'), querySelector('.x'/'#x'), getElementById('x'), className = '…'). Dizeler bilerek
+# taranır — burada dize bir tanımlayıcıdır. HTML/CSS/JS'te başka dize taranmaz.
+KEBAB = _re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
+HEX_RENK = _re.compile(r"^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$|^[0-9a-fA-F]{8}$")
+YASAK_SONEK = ("-btn", "-dugme", "-buton", "-button")
+CSS_SECICI = _re.compile(r"(?<![\w-])([.#])([A-Za-z_][\w-]*)")
+HTML_OZNITELIK = _re.compile(r'\b(?:class|id|for)\s*=\s*"([^"]+)"')
+JS_BILESEN = [
+    _re.compile(r"\bel\(\s*'[a-z0-9]+'\s*,\s*'([^']*)'"),
+    _re.compile(r"\$\(\s*'#([\w-]+)'"),
+    _re.compile(r"classList\.(?:add|remove|toggle|contains|replace)\(\s*'([^']*)'"),
+    _re.compile(r"querySelector(?:All)?\(\s*'[.#]([\w-]+)"),
+    _re.compile(r"getElementById\(\s*'([\w-]+)'"),
+    _re.compile(r"className\s*=\s*'([^']*)'"),
+    _re.compile(r'\b(?:class|id)="([^"]+)"'),          # JS içindeki HTML şablon parçaları
+]
+CSS_SOZDE = {"hover", "focus", "active", "root", "before", "after", "not", "first-child", "last-child", "nth-child",
+             "disabled", "checked", "empty", "focus-visible", "focus-within", "visited", "link", "target", "placeholder"}
+
+
+def _bilesen_adlari(yol: Path, ham: str) -> list[tuple[int, str]]:
+    uzanti = yol.suffix.lower(); adlar = []
+    def ekle(m_start, adlar_metni):
+        satir_no = ham[:m_start].count(chr(10)) + 1
+        for a in adlar_metni.split():
+            adlar.append((satir_no, a))
+    if uzanti == ".css":
+        temiz = _re.sub(r"/\*.*?\*/", lambda m: chr(10) * m.group(0).count(chr(10)), ham, flags=_re.S)
+        for m in CSS_SECICI.finditer(temiz):
+            ad = m.group(2)
+            if m.group(1) == "#" and HEX_RENK.match(ad):
+                continue                       # renk, seçici değil
+            if ad in CSS_SOZDE or ad.startswith("-"):
+                continue
+            ekle(m.start(), ad)
+    elif uzanti in (".html", ".htm"):
+        for m in HTML_OZNITELIK.finditer(ham):
+            ekle(m.start(), m.group(1))
+    elif uzanti in (".js", ".mjs", ".cjs", ".ts"):
+        for desen in JS_BILESEN:
+            for m in desen.finditer(ham):
+                ekle(m.start(), m.group(1))
+    return adlar
+
+
+def bilesen_bulgulari(yol: Path, dagarcik: set) -> list[tuple[int, str, str]]:
+    if BILESEN_AYAR is None or yol.suffix.lower() not in (".css", ".html", ".htm", ".js", ".mjs", ".cjs", ".ts"):
+        return []
+    ham = io.open(yol, encoding="utf-8-sig", errors="replace").read()
+    satirlar = ham.splitlines(); bulgular = []; gorulen = set()
+    for satir_no, ad in _bilesen_adlari(yol, ham):
+        if not ad or ad in gorulen or ad.startswith("{") or ad.startswith("$"):
+            continue
+        gorulen.add(ad)
+        metin = satirlar[satir_no - 1].strip()[:90] if satir_no <= len(satirlar) else ""
+        sebepler = []
+        if not KEBAB.match(ad):
+            sebepler.append("kebab-case değil")
+        if ad.endswith(YASAK_SONEK):
+            sebepler.append("tip eki SONDA (btn-… biçiminde başa)")
+        parcalar = ad.replace("_", "-").split("-")
+        if KEBAB.match(ad) and parcalar[0] not in BILESEN_ONEKLERI:
+            sebepler.append(f"ilk parça tip öneki değil ('{parcalar[0]}'; izinli: {' '.join(sorted(BILESEN_ONEKLERI))[:60]}…)")
+        yabanci = [p for p in parcalar if p and not p.isdigit() and p.lower() not in dagarcik and p.lower() not in ALAN_ADLARI_KUCUK]
+        if yabanci:
+            sebepler.append("ak listede YOK: " + ", ".join(f"'{p}'" for p in yabanci[:3]))
+        if sebepler:
+            bulgular.append((satir_no, metin, f"bileşen '{ad}': " + " · ".join(sebepler)))
+    return bulgular
+
+
 # ── BAYRAKLAR (1.7.0) ─────────────────────────────────────────────────────────
 # --tabansiz : tabanı YOK say — "dokunulan dosya tamamen temiz olmalı" kuralı için (bkm-magaza, GMY 24.09:
 #              "dokundukça o dosyadaki her şeyi düzelt"). Kanca staged dosyaları bu bayrakla verir; taban
@@ -584,7 +739,7 @@ HEPSI = "--hepsi" in BAYRAKLAR      # bulguların tamamını bas (harita/toplu �
 ARGUMANLAR = [a for a in sys.argv[1:] if not a.startswith("--")]
 hedefler: list[Path] = []
 if ARGUMANLAR:
-    hedefler = [Path(a) for a in ARGUMANLAR if Path(a).exists() and Path(a).suffix.lower() in DESTEKLENEN_UZANTILAR]
+    hedefler = [Path(a) for a in ARGUMANLAR if Path(a).exists() and Path(a).suffix.lower() in DESTEKLENEN_UZANTILAR + BILESEN_UZANTILARI]
 else:
     ATLANAN = {"obj", "bin", "node_modules", ".git", "dist", "www"}
     for k in KAPSAM:
@@ -629,7 +784,7 @@ toplam = 0
 dondurulan = 0      # tabanin ALTINDA ya da ESIT kalan (borc, yeni ihlal degil)
 gevseyen = []       # taban DUSMUS: tabani sikistirma firsati
 for p in sorted(hedefler):
-    b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK)
+    b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK) + bicim_bulgulari(p) + bilesen_bulgulari(p, DAGARCIK)
     rel = p.relative_to(KOK).as_posix() if str(p).startswith(str(KOK)) else p.as_posix()
     izin = 0 if TABANSIZ else (TABAN.get(rel, 0) if tabanli_mi(p) else 0)
 

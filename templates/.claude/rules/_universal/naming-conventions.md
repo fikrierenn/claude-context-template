@@ -45,7 +45,7 @@ hatalar olmasın, standartlarımız oluşmalı"* — yeni proje bu dosyayı `boo
 - **Tip ÖNEKİ**, sonek değil: `btn-scan`, `form-code`, `view-product`, `field-email`, `tab-devices`, `card-shelf`,
   `badge-campaign`, `alert-amber`, `list-results`, `table-devices`, `row-device`, `chip-filter`, `modal-cover`, `toast-update`.
   Kapalı önek kümesi: `btn form view field tab card badge alert list table row cell chip filter modal overlay toast nav header footer section`.
-  Tüketici ek önek tanımlarsa `.claude/turkce-kapi.json` → `"bilesen_onekleri"`.
+  Tüketici önek kümesini `.claude/turkce-kapi.json` → `"bilesen": {"onekler": [...]}` ile verir (boş liste = varsayılan küme).
 - **Değişken (variant) ayrı sınıf:** `btn-primary`, `btn-secondary`, `btn-danger`, `btn-small` — eleman adına yapışmaz
   (`guncelle-btn` ✗, `birincil-btn` ✗ → `btn-update btn-primary`).
 - **Durum ayrı sınıf:** `is-active`, `is-hidden`, `is-empty`, `is-loading`, `has-error` (`stoklu`/`yok`/`acik` ✗).
@@ -74,7 +74,9 @@ ile eski tel adı, görünüm/eşanlamlı kolon), istemci turu biter, sonra kalk
 |---|---|---|
 | §1 tanımlayıcı İngilizce (C#, Razor, JS, Python, PowerShell, SQL) | `tools/turkce_tanimlayici_denetimi.py` — Türkçe harf · Türkçe kök · **ak liste** (`tools/kod-sozcukleri.txt` + tüketici ek listesi); `--tabansiz` ile "dokunulan dosya tamamen temiz" | **VAR** (1.7.0) |
 | §1 argo okunuşlu sözcük | ak liste bu sözcükleri **içermez**; ekleyen çıkarır | VAR (sözlük kuralı) |
-| §2 biçim (case) · §3 bileşen öneki/kebab · §4 dosya/rota/JSON | aynı araca **biçim** ve **bileşen** profilleri | **YOK — yazılacak** (`docs/TUKETICI-REHBERI.md` yol haritası). Gelene kadar gözle; bu satır kapı gelince güncellenir |
+| §2 biçim (case) | `turkce_tanimlayici_denetimi.py` ayar `"bicim": true` — bildirilen adın dile göre biçimi | **VAR** (1.8.0, opt-in) |
+| §3 bileşen adı (kebab · tip öneki · -btn yasak · ak liste) | aynı araç, ayar `"bilesen": {"onekler": […]}` — .css seçicileri, .html class/id, .js class/id dizeleri | **VAR** (1.8.0, opt-in) |
+| §4 dosya adı · rota · JSON alanı · env · git dalı | — | **YOK** — gözle; bu satır kapı gelince güncellenir |
 | Yorum/UI Türkçe, ASCII sadeleştirme yok | araç yorumlara bilerek dokunmaz; ASCII kapısı denendi, yanlış pozitif yüzünden reddedildi (bkm-magaza D-011) | gözle |
 
 Kapısı olmayan satır **kural değil niyettir** — bu tabloda "YOK" yazan her satır için kapı gelmeden

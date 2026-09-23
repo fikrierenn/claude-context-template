@@ -3076,3 +3076,8 @@ violation
 watching
 with
 wrapping
+# ── 1.8.0 (24.09): bileşen adlarında çıkan İngilizce sözcükler ──
+shelf
+logo
+brand
+dot
