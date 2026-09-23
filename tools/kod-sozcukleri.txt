@@ -2854,3 +2854,5 @@ word
 quietly
 dry
 dir
+proc
+clean
