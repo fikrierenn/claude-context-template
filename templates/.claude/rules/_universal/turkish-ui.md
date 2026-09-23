@@ -6,7 +6,7 @@ _Türkçe UI'lı projelerde aktif. İngilizce projeye bootstrap ederken `--no-tu
 
 | Alan | Dil |
 |---|---|
-| Kod (class, method, variable) | İngilizce |
+| Kod (class, method, variable) | İngilizce — biçim, bileşen adı, dosya/rota/JSON kuralları: `naming-conventions.md` |
 | SQL table/column | İngilizce |
 | UI metni (view, label, button, toast) | **Türkçe** (UTF-8) |
 | CLAUDE.md / TODO.md / docs/ | Türkçe |

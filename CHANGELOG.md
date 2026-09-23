@@ -2,6 +2,26 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.7.1] - 2026-09-24
+
+ADLANDIRMA STANDARDI TEK YERDE.
+
+GMY (bkm-magaza): "bileşen isimlendirmesi de standart olmalı — biri btn-okut olurken diğeri guncelle-btn,
+birisi guncelle_buton olmamalı; bu tüm isimlendirmeler için geçerli; bu kurallar template tarafında olmalı;
+yeni projelerde böyle hatalar olmasın." Ölçüm: bkm-magaza'da 202 bileşen adının 111'i Türkçe, 28'i camelCase
+id, buton eki 1 önek / 6 sonek.
+
+### Eklendi
+- `templates/.claude/rules/_universal/naming-conventions.md` (19. evrensel kural): dil · dil başına TEK biçim
+  (C#/JS/Python/PowerShell/SQL/CSS) · bileşen adı (kebab, TİP ÖNEKİ, değişken ve durum ayrı sınıf) · dosya/dizin/
+  rota/JSON/env/git · sözleşme değişimi (çift yaşatma) · argo okunuşlu sözcük yasağı · **zorlama tablosu** —
+  hangi satırı hangi kapı tutuyor; "YOK" yazan satır niyettir, kural değil.
+- `turkish-ui.md` kod satırı yeni kurala işaret eder.
+
+### Yol haritası (kapı YOK — yazılacak)
+- Araca **biçim** profili (dil başına case denetimi) ve **bileşen** profili (.css seçicileri + .html/.js class/id
+  dizeleri: kebab + ak liste + önek politikası `bilesen_onekleri`). Gelene kadar §2-§4 gözle.
+
 ## [1.7.0] - 2026-09-24
 
 TURKCE TANIMLAYICI KAPISI TUM KODU GORUYOR.

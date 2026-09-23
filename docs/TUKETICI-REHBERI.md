@@ -11,7 +11,7 @@
 
 | Ne | Durum |
 |---|---|
-| `_universal` 18 kural kanonik | ✅ |
+| `_universal` 19 kural kanonik (24.09: `naming-conventions.md` eklendi) | ✅ |
 | Türkçe tanımlayıcı kapısı merkezde | ✅ |
 | `bootstrap --reference` kipi (Aşama 2) | ✅ **var — ve artık VARSAYILAN** |
 | 37 deponun göçü (Aşama 3) | ❌ yapılmadı — depo başına, kendi oturumunda |
