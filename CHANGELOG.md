@@ -2,6 +2,60 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.6.0] - 2026-09-23
+
+ASAMA 2 — KOPYA KIPI VARSAYILAN OLMAKTAN CIKTI.
+
+1.5.0 tek merkezi kurdu ama kapisi yoktu: bugun kurulan yeni bir depo yine 18 kural
+kopyasi alir ve dogdugu anda 171'inci sapma adayi olurdu. Bu surum o kapiyi koyuyor.
+
+### Degisti — KIRICI
+
+- **`bootstrap.sh` ve `bootstrap.ps1` varsayilani artik REFERANS.** Kural dosyalari
+  KOPYALANMAZ; `CLAUDE.md`'ye hangi kurallarin gecerli oldugunu ADIYLA SAYAN bir
+  isaretci blogu yazilir (olculmus referans uygulama `bkm-magaza/CLAUDE.md` deseni:
+  yol vermek "bir yerlerde var" der, LISTE vermek "sunlar seni baglar" der).
+- **`--copy` / `-Copy` hala var ama GEREKCE ISTER** (`--reason` / `-Reason`).
+  Gerekcesiz kopya reddedilir (cikis 1) ve gerekce `CLAUDE.md`'ye islenir — bir yil
+  sonra okuyan "bayat mi bilerek mi" diye sormak zorunda kalmasin diye.
+
+### Eklendi
+
+- **`bin/_merkez_blok.py`** — isaretci blogunu CLAUDE.md'ye yazan/tazeleyen yardimci.
+  Idempotent (blok varsa DEGISTIRILIR). Ayri dosya olmasinin sebebi olculdu: blok
+  metni backtick, tirnak ve Turkce karakter tasiyor ve heredoc'a gomulunce kacis
+  katmanlari eriyip kodu bozdu (DEVIR §7 ilk tuzagi).
+- **Referans kipinde YEREL kural baglantilari merkeze cevrilir.** Sablonun CLAUDE.md'si
+  metin icinde `.claude/rules/session-protocol.md` gibi yerel yollara baglanti veriyor;
+  o dosyalar kopyalanmadigi icin baglantilar bosluga giderdi — ve okuyan "kural yok"
+  demez, baglantiya TIKLAMAZ ve kurali hic okumaz.
+- **`--update` / `-Update` kipinde isaretci TAZELENIR** — bayat bir kural listesi,
+  listenin olmamasindan beterdir (okuyan onu guncel sanir).
+
+### Duzeltildi
+
+- **`durum.sh` REFERANS tespiti Asama 2'nin sonucunu GOREMIYORDU.** Desen yalniz
+  `../<depo>/.claude/rules` bicimini taniyordu; merkezin kanonik yolunda arada
+  `templates/` var. Yani `bootstrap --reference` ile kurulan depo "REFERANS" degil
+  "-" gorunurdu: kapinin olctugu sey, olcmesi gereken sey degildi.
+- **`python3` bu makinede YOK** (yalniz `python`) ve kod `python3` diyordu — ilgili
+  adim SESSIZCE atlaniyordu. Artik komut cozumleniyor (`python3`/`python`/`py`), VE
+  referans kipinde blok yazilamazsa kurulum SERT HATA verir (cikis 2). Gerekce:
+  o durumda kural dosyasi da yok, isaretci de yok — geriye KURALSIZ ama "kuruldu"
+  gorunen bir depo kalir.
+- `bootstrap.ps1` artik **UTF-8 BOM'lu** (DEVIR §7 ikinci tuzagi: BOM'suz UTF-8 bir
+  Turkce .ps1'i PS 5.1 ANSI okur).
+- Bitis ozeti kipe gore dogru konusuyor (eskiden referans kipinde de "15 universal
+  kopyalandi" diyordu).
+
+### Sinandi
+
+Yedi kosum, ikisi sabotaj: gerekcesiz `--copy` RET · varsayilan referans (kural
+kopyalanmadi, 22 kural adiyla listelendi) · `durum.sh` REFERANS goruyor · `--copy
+--reason` kopyaladi ve gerekceyi yazdi · **python yokken referans kipi KOSAMADI(2)
+verdi** · PowerShell iki kipte de calisti · baglanti duzeltmesi sonrasi sarkan yerel
+kural baglantisi 0.
+
 ## [1.5.0] - 2026-09-23
 
 TEK MERKEZ (Asama 1 — `docs/MIMARI-KARARI-2026-09-23.md`). 1.4.0 geri akis yolunu

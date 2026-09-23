@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Yeni projeye Claude bağlam yönetimi şablonunu kurar.
@@ -51,7 +51,10 @@ param(
     [switch]$EnablePreCommitHook,
     [switch]$NoGitignoreMerge,
     [switch]$Update,
-    [switch]$Force
+    [switch]$Force,
+    [switch]$Reference,
+    [switch]$Copy,
+    [string]$Reason = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -60,6 +63,26 @@ $TemplateRoot = Split-Path -Parent $PSScriptRoot
 $TemplatesDir = Join-Path $TemplateRoot 'templates'
 
 if (-not (Test-Path $ProjectPath)) { throw "ProjectPath bulunamadi: $ProjectPath" }
+
+# --- TUKETIM KIPI (Asama 2, 23.09.2026) ---
+# VARSAYILAN ARTIK REFERANS. 39 depoda 170 sapmis kural olculdu ve sapmasi SIFIR
+# olan tek depo, kopyalamayan depo. Kopya kipi VARSAYILAN OLMAKTAN CIKTI.
+$script:Kip = 'reference'
+if ($Copy) { $script:Kip = 'copy' }
+if ($Copy -and -not $Reason) {
+    throw @"
+-Copy kipi GEREKCE ister: -Copy -Reason "<neden>"
+
+  Kopya dogdugu anda ikinci bir gercek olur ve merkez her ilerlediginde bayatlar.
+  Olculdu (23.09.2026): 39 depo, 170 sapmis kural; sapmasi sifir olan tek depo
+  kopyalamayan depo.
+
+  Gerekce CLAUDE.md'ye islenecek ve bir yil sonra okuyan 'bayat mi bilerek mi'
+  diye sormak zorunda kalmayacak. Kopya gerekmiyorsa bayragi kaldir:
+  varsayilan zaten referans.
+"@
+}
+$MerkezYol = $TemplateRoot
 if (-not $ProjectName) {
     $ProjectName = Split-Path -Leaf $ProjectPath
     Write-Host "ProjectName belirlenmedi, kullaniliyor: $ProjectName" -ForegroundColor Yellow
@@ -89,6 +112,115 @@ function Copy-Template {
 
 function Ensure-Dir { param([string]$Path); if (-not (Test-Path $Path)) { New-Item -ItemType Directory -Path $Path -Force | Out-Null } }
 
+function Write-MerkezBlok {
+    <#
+    CLAUDE.md'ye MERKEZ BLOGUNU yazar (varsa tazeler).
+
+    NEDEN PYTHON CAGIRMIYOR: bash tarafi `bin/_merkez_blok.py`'yi cagiriyor, burada
+    ise mantik YERELDIR. Olculdu (23.09.2026): bu Windows makinesinde `python3`
+    YOK, yalniz `python` var — yani PowerShell tarafini python'a bagalamak, kurulumu
+    python'un en az guvenilir oldugu platformda kirilgan yapardi. Bedeli: blok
+    ekleme mantigi iki yerde. Bilerek odendi ve buraya yazildi.
+
+    Blok baslikTAN HEMEN SONRA durur. Idempotent: blok varsa DEGISTIRILIR.
+    #>
+    param(
+        [Parameter(Mandatory=$true)][string]$Hedef,
+        [Parameter(Mandatory=$true)][string]$Blok,
+        [string]$Merkez = '',
+        [string[]]$Kurallar = @()
+    )
+
+    if (-not (Test-Path $Hedef)) { return }
+
+    $ham = Get-Content -Path $Hedef -Raw -Encoding UTF8
+    $desen = '(?s)<!-- merkez-bildirimi -->.*?<!-- /merkez-bildirimi -->\r?\n?'
+
+    if ($ham -match $desen) {
+        $yeni = [regex]::Replace($ham, $desen, ($Blok -replace '\$', '$$$$') + "`n", 1)
+    } else {
+        # CRLF'li dosyada satir bolme CR birakir; once onu at.
+        $satirlar = @($ham -replace "`r`n", "`n" -split "`n")
+        if ($satirlar.Count -gt 0 -and $satirlar[0].StartsWith('#')) {
+            # Baslik ilk satirda KALIR, blok ondan SONRA gelir.
+            $bas  = @($satirlar[0])
+            $kalan = @()
+            if ($satirlar.Count -gt 1) { $kalan = @($satirlar[1..($satirlar.Count-1)]) }
+            $yeni = (($bas + @('', $Blok) + $kalan) -join "`n")
+        } else {
+            $yeni = ((@($Blok, '') + $satirlar) -join "`n")
+        }
+    }
+
+    # Referans kipinde YEREL kural baglantilari merkeze cevrilir: o dosyalar
+    # kopyalanmadi ve sarkan baglanti, okuyani kurali HIC okumamaya goturur.
+    if ($Merkez -and $Kurallar.Count -gt 0) {
+        foreach ($ad in $Kurallar) {
+            $yeni = $yeni.Replace(".claude/rules/$ad", "$Merkez/templates/.claude/rules/_universal/$ad")
+        }
+    }
+
+    # UTF-8 BOM'LU yazilir. DEVIR SS7: BOM'suz UTF-8 bir .md'yi PS 5.1 ANSI okur ve
+    # Turkce karakterler bozulur; ayni tuzak .ps1'de parse hatasina kadar gider.
+    $utf8Bom = New-Object System.Text.UTF8Encoding($true)
+    [System.IO.File]::WriteAllText($Hedef, $yeni, $utf8Bom)
+    Write-Host "  + CLAUDE.md merkez blogu ($script:Kip kipi, $($Kurallar.Count) kural sayildi)"
+}
+
+function Invoke-MerkezBlok {
+    <#
+    Blok METNINI kurar ve Write-MerkezBlok'a verir.
+    Metin literal here-string ile kurulur (@'...'@): backtick PowerShell'in kacis
+    karakteridir ve markdown kod isaretleri backtick'tir — interpolasyonlu string
+    kullanilsaydi her backtick tek tek kacirilmak zorunda kalirdi. Yer tutucular
+    sonradan .Replace ile doldurulur, boylece hic kacis yok.
+    #>
+    param([Parameter(Mandatory=$true)][string]$Hedef)
+
+    $BT = [char]96
+    $liste = ''
+    foreach ($f in $script:UniversalFiles) {
+        $liste += '> - ' + $BT + $script:MerkezYol + '/templates/.claude/rules/_universal/' + $f + $BT + "`n"
+    }
+    foreach ($f in $script:StackFiles) {
+        $liste += '> - ' + $BT + $script:MerkezYol + '/templates/.claude/rules/stacks/' + $script:StackAdi + '/' + $f + $BT + "`n"
+    }
+
+    if ($script:Kip -eq 'copy') {
+        $sablon = @'
+<!-- merkez-bildirimi -->
+> **KURALLAR KOPYALANDI — bu BİLİNÇLİ bir karardır.**
+> Gerekçe: {GEREKCE}
+> Kanonik merkez: {BT}{MERKEZ}{BT}
+>
+> Kopya, merkez ilerlediği gün bayatlar ve bunu kimse görmez. Sapmayı ölçmek için:
+> {BT}bash {MERKEZ}/bin/durum.sh{BT}
+<!-- /merkez-bildirimi -->
+'@
+    } else {
+        $sablon = @'
+<!-- merkez-bildirimi -->
+> **KURALLAR BU DEPODA DEĞİL.** Kopyalamak yerine işaret ediyoruz — kopyalanan
+> kural bayatlar ve iki gerçek doğar. Kanonik merkez: {BT}{MERKEZ}{BT}
+>
+> **Oturum başı — ZORUNLU.** Bu depoda geçerli kurallar şunlardır ve kod yazmadan
+> önce okunur:
+{LISTE}>
+> Yerel kural yazmak meşrudur — ama **gerekçesi dosyanın ilk satırlarında yazılı
+> olur**, yoksa bir yıl sonra 'bayat mı bilerek mi' sorusu doğar.
+<!-- /merkez-bildirimi -->
+'@
+    }
+
+    $blok = $sablon.Replace('{BT}', $BT).Replace('{MERKEZ}', $script:MerkezYol).Replace('{GEREKCE}', $script:Gerekce).Replace('{LISTE}', $liste).TrimEnd()
+
+    $kurallar = @()
+    if ($script:Kip -eq 'reference') { $kurallar = $script:UniversalFiles }
+    Write-MerkezBlok -Hedef $Hedef -Blok $blok -Merkez $script:MerkezYol -Kurallar $kurallar
+}
+
+
+
 $fwdPath = ($ProjectPath -replace '\\','/')
 
 # --- 1. .claude/rules/ ---
@@ -102,19 +234,37 @@ $universalFiles = @(
     'performance.md'
 )
 if ($IncludeTurkish) { $universalFiles += 'turkish-ui.md' }
-foreach ($f in $universalFiles) {
-    Copy-Item -Path "$TemplatesDir/.claude/rules/_universal/$f" -Destination "$ProjectPath/.claude/rules/$f" -Force
-    Write-Host "  + rules/$f"
-}
 
+$script:MerkezYol = $MerkezYol
+$script:Gerekce   = $Reason
+$script:StackAdi  = $Stack
+$stackFiles = @()
 if ($Stack -ne 'none') {
     $stackDir = "$TemplatesDir/.claude/rules/stacks/$Stack"
     if (Test-Path $stackDir) {
-        Get-ChildItem -Path $stackDir -Filter '*.md' | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination "$ProjectPath/.claude/rules/$($_.Name)" -Force
-            Write-Host "  + rules/$($_.Name) (stack: $Stack)"
-        }
+        $stackFiles = @(Get-ChildItem -Path $stackDir -Filter '*.md' | ForEach-Object { $_.Name })
     }
+}
+
+$script:UniversalFiles = $universalFiles
+$script:StackFiles     = $stackFiles
+
+if ($script:Kip -eq 'copy') {
+    foreach ($f in $universalFiles) {
+        Copy-Item -Path "$TemplatesDir/.claude/rules/_universal/$f" -Destination "$ProjectPath/.claude/rules/$f" -Force
+        Write-Host "  + rules/$f (KOPYA)"
+    }
+    foreach ($f in $stackFiles) {
+        Copy-Item -Path "$TemplatesDir/.claude/rules/stacks/$Stack/$f" -Destination "$ProjectPath/.claude/rules/$f" -Force
+        Write-Host "  + rules/$f (KOPYA, stack: $Stack)"
+    }
+    Write-Host "  ! KOPYA kipi: $($universalFiles.Count + $stackFiles.Count) dosya kopyalandi." -ForegroundColor Yellow
+    Write-Host "    Merkez ilerledigi gun bunlar bayatlar ve kimse fark etmez."
+    Write-Host "    Gerekce CLAUDE.md'ye yazildi: $Reason"
+} else {
+    Write-Host "  (REFERANS kipi - kural dosyasi KOPYALANMADI)" -ForegroundColor Cyan
+    Write-Host "    $($universalFiles.Count) evrensel + $($stackFiles.Count) stack kurali merkezden okunacak."
+    Write-Host "    Kanonik yol: $MerkezYol/templates/.claude/rules/"
 }
 
 if (-not $Update) {
@@ -180,6 +330,13 @@ if (-not (Test-Path $settingsDst) -or $Force) {
 }
 
 # --- 6. .gitignore merge ---
+# --Update kipinde CLAUDE.md yeniden uretilmez ama merkez blogu TAZELENIR:
+# gecerli kural listesi degismis olabilir ve bayat bir liste, listenin olmamasindan
+# beterdir (okuyan onu guncel sanir).
+if ($Update -and (Test-Path "$ProjectPath/CLAUDE.md")) {
+    Invoke-MerkezBlok -Hedef "$ProjectPath/CLAUDE.md"
+}
+
 Write-Host "[6/8] .gitignore" -ForegroundColor Green
 $giDst = "$ProjectPath/.gitignore"
 if (-not (Test-Path $giDst)) {
@@ -268,6 +425,8 @@ if (-not $Update) {
         Write-Host "  = CLAUDE.md (mevcut, atlandi - -Force ile uzerine yaz)" -ForegroundColor Yellow
     }
 
+    Invoke-MerkezBlok -Hedef $claudeDst
+
     $todoDst = "$ProjectPath/TODO.md"
     if (-not (Test-Path $todoDst) -or $Force) {
         Copy-Template -Src "$TemplatesDir/TODO.md.tmpl" -Dst $todoDst -Replacements @{ 'PROJECT_NAME' = $ProjectName }
@@ -284,7 +443,12 @@ Write-Host "  $ProjectPath/CLAUDE.md"
 Write-Host "  $ProjectPath/TODO.md"
 Write-Host "  $ProjectPath/.gitignore (merged)"
 Write-Host "  $ProjectPath/.claude/settings.json"
-Write-Host "  $ProjectPath/.claude/rules/*.md ($($universalFiles.Count) universal$(if ($Stack -ne 'none') {" + stack: $Stack"}))"
+if ($script:Kip -eq 'copy') {
+    Write-Host "  $ProjectPath/.claude/rules/*.md ($($universalFiles.Count) universal$(if ($Stack -ne 'none') {" + stack: $Stack"}) - KOPYA)"
+} else {
+    Write-Host "  $ProjectPath/.claude/rules/project/*.md (yalnizca proje-yerel)"
+    Write-Host "  $($universalFiles.Count + $stackFiles.Count) kural MERKEZDEN okunuyor - CLAUDE.md'de adiyla listeli"
+}
 Write-Host "  $ProjectPath/.claude/hooks/*.sh + *.ps1 (session-start, git-guard, antipattern, config-guard, journal...)"
 Write-Host "  $ProjectPath/.claude/agents/commit-splitter.md"
 Write-Host "  $ProjectPath/.claude/skills/session-handoff/SKILL.md"

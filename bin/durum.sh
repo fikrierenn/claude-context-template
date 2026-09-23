@@ -63,7 +63,13 @@ for d in "$DEV"/*/; do
 
   model="KOPYA"
   if [ "$((ayni+sapma))" = "0" ]; then
-    if [ -f "$d/CLAUDE.md" ] && grep -qE '\.\./[A-Za-z0-9_-]+/\.claude/rules|kurallar.*komsu|KURALLAR BU DEPODA DEGIL|KURALLAR BU DEPODA DEĞİL' "$d/CLAUDE.md" 2>/dev/null; then
+    # ⚠ DESEN GENISLETILDI (Asama 2, 23.09.2026). Eski hali yalniz
+    # `../<depo>/.claude/rules` bicimini taniyordu; merkezin kanonik yolu ise
+    # `../<merkez>/templates/.claude/rules/...` — yani ARADA `templates/` var ve
+    # eski desen onu KACIRIYORDU. Olculdu: bootstrap --reference ile kurulan bir
+    # depo "REFERANS" degil "-" gorunurdu, yani Asama 2'nin sonucu kendi olcum
+    # aracinda GORUNMEZDI. Kapinin olctugu sey, olcmesi gereken sey degildi.
+    if [ -f "$d/CLAUDE.md" ] && grep -qE 'merkez-bildirimi|templates/\.claude/rules|\.\./[A-Za-z0-9_-]+/\.claude/rules|kurallar.*komsu|KURALLAR BU DEPODA DEGIL|KURALLAR BU DEPODA DEĞİL|KURALLAR ARTIK MERKEZDE' "$d/CLAUDE.md" 2>/dev/null; then
       model="REFERANS"; t_referans=$((t_referans+1))
     else
       model="-"

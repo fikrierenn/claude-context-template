@@ -13,8 +13,24 @@
 |---|---|
 | `_universal` 18 kural kanonik | ✅ |
 | Türkçe tanımlayıcı kapısı merkezde | ✅ |
-| `bootstrap --reference` kipi (Aşama 2) | ❌ yok — göç **elle** yapılır |
+| `bootstrap --reference` kipi (Aşama 2) | ✅ **var — ve artık VARSAYILAN** |
 | 37 deponun göçü (Aşama 3) | ❌ yapılmadı — depo başına, kendi oturumunda |
+
+### Yeni depo kuruyorsan
+
+```bash
+bash ../claude-context-template/bin/bootstrap.sh --path <yol> --name <ad> --stack <stack>
+```
+
+Kural dosyası **kopyalanmaz**; `CLAUDE.md`'ne hangi kuralların geçerli olduğu **adıyla**
+yazılır. Gerçekten kopya gerekiyorsa (hava boşluğu, merkeze erişimsiz makine):
+
+```bash
+bash ../claude-context-template/bin/bootstrap.sh --path <yol> --copy --reason "<neden>"
+```
+
+Gerekçesiz `--copy` **reddedilir**, ve verilen gerekçe `CLAUDE.md`'ye işlenir.
+Windows: `bin/bootstrap.ps1` aynı sözleşmeyi taşır (`-Copy -Reason`).
 
 ⚠ Bu depo Aşama 2'de **`Norma`** adını alacak. Bu yüzden yolu deponuzda **tek bir yere**
 yazın (`CLAUDE.md` oturum-başı bölümü). Her kancaya gömerseniz ad değiştiğinde hepsini

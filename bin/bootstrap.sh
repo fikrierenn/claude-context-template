@@ -7,6 +7,21 @@ set -e
 
 TEMPLATE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATES="$TEMPLATE_ROOT/templates"
+# Tuketicinin CLAUDE.md'sine yazilacak yol. Mutlak yol yazilir: goreli yol
+# (`../<merkez>`) yalniz kardes dizinde dogru olur ve sessizce yanlis yere isaret eder.
+MERKEZ_YOL="$TEMPLATE_ROOT"
+KOK_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Python komutu makineye gore degisir. OLCULDU (23.09.2026): bu makinede `python3`
+# YOK, yalniz `python` var — ve kod `python3` diyordu, yani ilgili adim SESSIZCE
+# atlaniyordu. Referans kipinde bu felakettir: kural dosyasi kopyalanmaz VE isaretci
+# yazilmaz, geriye KURALSIZ bir depo kalir ve "kuruldu" gorunur.
+PY_CMD=""
+for c in python3 python py; do
+    if command -v "$c" >/dev/null 2>&1 && "$c" -c "import sys; sys.exit(0 if sys.version_info[0]==3 else 1)" 2>/dev/null; then
+        PY_CMD="$c"; break
+    fi
+done
 
 PROJECT_PATH=""
 PROJECT_NAME=""
@@ -16,6 +31,15 @@ ENABLE_PRECOMMIT_HOOK="false"   # greenfield projede kod yok, antipattern tarama
 UPDATE_MODE="false"
 FORCE="false"
 MERGE_GITIGNORE="true"
+
+# --- TUKETIM KIPI (Asama 2, 23.09.2026) ---------------------------------
+# VARSAYILAN ARTIK REFERANS. Gerekce olculdu: 39 depoda 170 sapmis kural var ve
+# sapmasi SIFIR olan tek depo, kopyalamayan depo. Kopya modelinde sapma hem
+# kacinilmaz hem gorunmezdir; merkez her ilerlediginde tum kopyalar bayatlar.
+# Bu satirin kendisi Asama 2'nin ta kendisidir: kopya kipi VARSAYILAN OLMAKTAN
+# CIKAR. Isteyene hala acik, ama ACIKCA istenmeli ve GEREKCESI yazilmali.
+KIP="reference"
+KOPYA_GEREKCE=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -27,6 +51,9 @@ while [[ $# -gt 0 ]]; do
         --no-gitignore-merge) MERGE_GITIGNORE="false"; shift ;;
         --update)  UPDATE_MODE="true"; shift ;;
         --force)   FORCE="true"; shift ;;
+        --reference) KIP="reference"; shift ;;
+        --copy)    KIP="copy"; shift ;;
+        --reason)  KOPYA_GEREKCE="$2"; shift 2 ;;
         -h|--help)
             cat <<EOF
 Kullanım:
@@ -36,6 +63,10 @@ Stack:
   dotnet-mvc | nodejs-typescript | python-generic | none
 
 Seçenekler:
+  --reference                Kuralları KOPYALAMA, merkeze işaret et (VARSAYILAN)
+  --copy --reason "<neden>"  Kuralları kopyala. Gerekçe ZORUNLU ve CLAUDE.md'ye yazılır.
+                             (Kopya doğduğu anda ikinci bir gerçek olur; 39 depoda
+                              ölçülen 170 sapmanın kaynağı budur.)
   --no-turkish               Türkçe UI kuralını ekleme (default: ekler)
   --enable-precommit-hook    settings.json'da pre-commit antipattern hook'u AKTİF et
                              (default: pasif — greenfield'de gürültü yapar)
@@ -61,6 +92,24 @@ EOF
 done
 
 [[ -z "$PROJECT_PATH" ]] && { echo "ERROR: --path gerekli" >&2; exit 1; }
+
+# KOPYA KIPI GEREKCE ISTER. Gerekcesiz kopya, bir yil sonra "bayat mi bilerek mi"
+# sorusunu yeniden dogurur — 39 deponun 170 sapmasinin her biri bu sorunun
+# cevapsiz kalmis halidir.
+if [[ "$KIP" == "copy" && -z "$KOPYA_GEREKCE" ]]; then
+    cat >&2 <<'EOF'
+ERROR: --copy kipi GEREKCE ister: --copy --reason "<neden>"
+
+  Kopya dogdugu anda ikinci bir gercek olur ve merkez her ilerlediginde bayatlar.
+  Olculdu (23.09.2026): 39 depo · 170 sapmis kural · sapmasi sifir olan tek depo,
+  kopyalamayan depo.
+
+  Gercekten kopya gerekiyorsa sebebini yaz; CLAUDE.md'ye islenecek ve bir yil
+  sonra okuyan "bayat mi bilerek mi" diye sormak zorunda kalmayacak.
+  Kopya gerekmiyorsa bayragi kaldir: varsayilan zaten --reference.
+EOF
+    exit 1
+fi
 [[ ! -d "$PROJECT_PATH" ]] && { echo "ERROR: $PROJECT_PATH bulunamadı" >&2; exit 1; }
 [[ -z "$PROJECT_NAME" ]] && PROJECT_NAME="$(basename "$PROJECT_PATH")"
 
@@ -88,6 +137,90 @@ render_template() {
     printf '%s' "$content" > "$dst"
 }
 
+# ---------------------------------------------------------------------------
+# CLAUDE.md'ye MERKEZ BLOGU yazar (varsa tazeler).
+#
+# NEDEN ADIYLA SAYIYOR: "kurallar komsuda" demek yetmez — olculmus referans
+# uygulama (`bkm-magaza/CLAUDE.md`) hangi kurallarin gecerli oldugunu TEK TEK
+# sayar. Yol vermek "bir yerlerde var" der; liste vermek "sunlar seni baglar" der.
+# Ikincisi okunur, birincisi okunmaz.
+#
+# ISARETCI BLOGU: <!-- merkez-bildirimi --> ... <!-- /merkez-bildirimi -->
+# Ayni isaretciyi `durum.sh` REFERANS tespiti icin ariyor; degistirirsen orayi da
+# degistir (iki yerde duran tek gercek — bilerek, cunku biri bash biri rapor).
+# ---------------------------------------------------------------------------
+merkez_blogu_yaz() {
+    local hedef="$1"
+    [[ -f "$hedef" ]] || return 0
+
+    # TERS BOLU YOK — bilerek. Bu fonksiyonun ilk iki surumu heredoc uzerinden
+    # yazildi ve `$'\n'` ile `\`` dizileri eriyip bozuldu (DEVIR §7 ilk tuzak:
+    # "heredoc \\ -> \"). Cozum kacis katmani eklemek degil, kacisa ihtiyac
+    # duymamak: satir sonu ve backtick birer DEGISKEN.
+    local NL="
+"
+    local BT='`'
+
+    local liste="" f
+    for f in "${UNIVERSAL_FILES[@]}"; do
+        liste+="> - ${BT}${MERKEZ_YOL}/templates/.claude/rules/_universal/${f}${BT}${NL}"
+    done
+    for f in "${STACK_FILES[@]}"; do
+        liste+="> - ${BT}${MERKEZ_YOL}/templates/.claude/rules/stacks/${STACK}/${f}${BT}${NL}"
+    done
+
+    local blok
+    if [[ "$KIP" == "copy" ]]; then
+        blok="<!-- merkez-bildirimi -->
+> **KURALLAR KOPYALANDI — bu BİLİNÇLİ bir karardır.**
+> Gerekçe: ${KOPYA_GEREKCE}
+> Kanonik merkez: ${BT}${MERKEZ_YOL}${BT}
+>
+> Kopya, merkez ilerlediği gün bayatlar ve bunu kimse görmez. Sapmayı ölçmek için:
+> ${BT}bash ${MERKEZ_YOL}/bin/durum.sh${BT}
+<!-- /merkez-bildirimi -->"
+    else
+        blok="<!-- merkez-bildirimi -->
+> **KURALLAR BU DEPODA DEĞİL.** Kopyalamak yerine işaret ediyoruz — kopyalanan
+> kural bayatlar ve iki gerçek doğar. Kanonik merkez: ${BT}${MERKEZ_YOL}${BT}
+>
+> **Oturum başı — ZORUNLU.** Bu depoda geçerli kurallar şunlardır ve kod yazmadan
+> önce okunur:
+${liste}>
+> Yerel kural yazmak meşrudur — ama **gerekçesi dosyanın ilk satırlarında yazılı
+> olur**, yoksa bir yıl sonra 'bayat mı bilerek mi' sorusu doğar.
+<!-- /merkez-bildirimi -->"
+    fi
+
+    # Referans kipinde yerel kural baglantilarini da merkeze cevirt (kopya kipinde
+    # dosyalar YERINDE oldugu icin baglantilar dogru; dokunulmaz).
+    local kural_csv=""
+    if [[ "$KIP" == "reference" ]]; then
+        local k
+        for k in "${UNIVERSAL_FILES[@]}"; do kural_csv+="${k},"; done
+    fi
+
+    if [[ -z "$PY_CMD" ]] || ! "$PY_CMD" "${KOK_BIN}/_merkez_blok.py" "$hedef" "$blok" "$MERKEZ_YOL" "$kural_csv"; then
+        if [[ "$KIP" == "reference" ]]; then
+            cat >&2 <<'EOF'
+
+KOŞAMADI: merkez bloğu CLAUDE.md'ye YAZILAMADI (python3 bulunamadı).
+
+  REFERANS kipinde bu ÖLÜMCÜLDÜR: kural dosyaları kopyalanmadı, işaretçi de
+  yazılamadı — geriye HİÇBİR KURALI OLMAYAN ama "kuruldu" görünen bir depo kalır.
+  Sessizce devam etmek, bu ekosistemin en pahalı hata sınıfıdır.
+
+  Çözüm: python3 kur, ya da bilerek kopya al:
+      --copy --reason "<neden>"
+EOF
+            exit 2
+        fi
+        echo "  ! merkez bloğu yazılamadı — CLAUDE.md'ye ELLE ekle" >&2
+        return 0
+    fi
+    echo "  + CLAUDE.md merkez bloğu (${KIP} kipi, $(( ${#UNIVERSAL_FILES[@]} + ${#STACK_FILES[@]} )) kural sayıldı)"
+}
+
 # --- 1. rules/ ---
 echo "[1/8] .claude/rules/"
 mkdir -p "$PROJECT_PATH/.claude/rules"
@@ -101,16 +234,30 @@ UNIVERSAL_FILES=(
 )
 [[ "$INCLUDE_TURKISH" == "true" ]] && UNIVERSAL_FILES+=(turkish-ui.md)
 
-for f in "${UNIVERSAL_FILES[@]}"; do
-    cp "$TEMPLATES/.claude/rules/_universal/$f" "$PROJECT_PATH/.claude/rules/$f"
-    echo "  + rules/$f"
-done
-
+STACK_FILES=()
 if [[ "$STACK" != "none" && -d "$TEMPLATES/.claude/rules/stacks/$STACK" ]]; then
     for f in "$TEMPLATES/.claude/rules/stacks/$STACK"/*.md; do
-        cp "$f" "$PROJECT_PATH/.claude/rules/$(basename "$f")"
-        echo "  + rules/$(basename "$f") (stack: $STACK)"
+        [[ -f "$f" ]] && STACK_FILES+=("$(basename "$f")")
     done
+fi
+
+if [[ "$KIP" == "copy" ]]; then
+    for f in "${UNIVERSAL_FILES[@]}"; do
+        cp "$TEMPLATES/.claude/rules/_universal/$f" "$PROJECT_PATH/.claude/rules/$f"
+        echo "  + rules/$f (KOPYA)"
+    done
+    for f in "${STACK_FILES[@]}"; do
+        cp "$TEMPLATES/.claude/rules/stacks/$STACK/$f" "$PROJECT_PATH/.claude/rules/$f"
+        echo "  + rules/$f (KOPYA, stack: $STACK)"
+    done
+    echo "  ! KOPYA kipi: $((${#UNIVERSAL_FILES[@]} + ${#STACK_FILES[@]})) dosya kopyalandi."
+    echo "    Merkez ilerledigi gun bunlar bayatlar ve kimse fark etmez."
+    echo "    Gerekce CLAUDE.md'ye yazildi: $KOPYA_GEREKCE"
+else
+    echo "  (REFERANS kipi — kural dosyasi KOPYALANMADI)"
+    echo "    ${#UNIVERSAL_FILES[@]} evrensel + ${#STACK_FILES[@]} stack kurali merkezden okunacak."
+    echo "    Kanonik yol: $TEMPLATE_ROOT/templates/.claude/rules/"
+    echo "    CLAUDE.md'ye hangi kurallarin gecerli oldugu ADIYLA yazilacak."
 fi
 
 if [[ "$UPDATE_MODE" != "true" ]]; then
@@ -163,7 +310,7 @@ if [[ ! -f "$SETTINGS_DST" || "$FORCE" == "true" ]]; then
     # Pre-commit hook pasif ise ilgili bloğu kaldır (greenfield default)
     if [[ "$ENABLE_PRECOMMIT_HOOK" != "true" ]]; then
         # Basit sed: PreToolUse bloğunu komple kaldır
-        python3 -c "
+        ${PY_CMD:-python3} -c "
 import json, sys
 with open('$SETTINGS_DST') as f: d = json.load(f)
 d.get('hooks', {}).pop('PreToolUse', None)
@@ -175,6 +322,13 @@ with open('$SETTINGS_DST', 'w') as f: json.dump(d, f, indent=2)
     fi
 else
     echo "  = settings.json (mevcut — elle merge et, yeni hook kayıtlarını ekle)"
+fi
+
+# --update kipinde CLAUDE.md yeniden uretilmez ama merkez blogu TAZELENIR:
+# gecerli kural listesi degismis olabilir ve bayat bir liste, listenin olmamasindan
+# beterdir (okuyan onu guncel sanir).
+if [[ "$UPDATE_MODE" == "true" && -f "$PROJECT_PATH/CLAUDE.md" ]]; then
+    merkez_blogu_yaz "$PROJECT_PATH/CLAUDE.md"
 fi
 
 # --- 6. .gitignore merge ---
@@ -290,6 +444,7 @@ uv run <entry>
     else
         echo "  = CLAUDE.md (mevcut, atlandı — --force ile üzerine yaz)"
     fi
+    merkez_blogu_yaz "$CLAUDE_DST"
 
     TODO_DST="$PROJECT_PATH/TODO.md"
     if [[ ! -f "$TODO_DST" || "$FORCE" == "true" ]]; then
@@ -310,7 +465,12 @@ echo "  $PROJECT_PATH/CLAUDE.md"
 echo "  $PROJECT_PATH/TODO.md"
 echo "  $PROJECT_PATH/.gitignore (merged)"
 echo "  $PROJECT_PATH/.claude/settings.json"
-echo "  $PROJECT_PATH/.claude/rules/*.md (${#UNIVERSAL_FILES[@]} universal$([[ "$STACK" != "none" ]] && echo " + stack: $STACK"))"
+if [[ "$KIP" == "copy" ]]; then
+  echo "  $PROJECT_PATH/.claude/rules/*.md (${#UNIVERSAL_FILES[@]} universal$([[ "$STACK" != "none" ]] && echo " + stack: $STACK") — KOPYA)"
+else
+  echo "  $PROJECT_PATH/.claude/rules/project/*.md (yalnizca proje-yerel)"
+  echo "  $(( ${#UNIVERSAL_FILES[@]} + ${#STACK_FILES[@]} )) kural MERKEZDEN okunuyor — CLAUDE.md'de adiyla listeli"
+fi
 echo "  $PROJECT_PATH/.claude/hooks/*.sh + *.ps1 (session-start, git-guard, antipattern, config-guard, journal...)"
 echo "  $PROJECT_PATH/.claude/agents/commit-splitter.md"
 echo "  $PROJECT_PATH/.claude/skills/session-handoff/SKILL.md"
