@@ -2845,3 +2845,12 @@ entitlement
 new
 privileged
 unmapped
+# ── 1.7.1 ek (24.09): bkm-magaza araç çevirisinde eksik çıkan İngilizce sözcükler ──
+folded
+obtained
+age
+recall
+word
+quietly
+dry
+dir
