@@ -40,6 +40,8 @@ KAPININ ÜÇ KATMANI (Solum'un ayrımı + V-19):
   • AK LİSTE (V-19) — bildirilen adlardaki her sözcük dağarcıkta mı? Eksikliği
     İNSANA SORAR: yanlış pozitifin bedeli bir satır, yanlış negatifin bedeli
     görünmeyen bir ihlal.
+  ⚠ 1.8.1 (24.09.2026): `sozlesme_adlari` — JSON alanı / kolon / rota gibi SÖZLEŞME olan Türkçe adlar kapıdan
+    BORÇ olarak geçer (alan adı değil; sözleşme İngilizceye geçince satır silinir, kapı yeniden yakalar).
   ⚠ 1.8.0 (24.09.2026): BİÇİM ve BİLEŞEN katmanları (opt-in: ayar "bicim": true, "bilesen": {"onekler": […]}) —
     naming-conventions.md §2/§3'ün kapısı: dil başına case; CSS/DOM adı kebab + tip öneki + ak liste, -btn soneki yasak.
     .css/.html yalnız bileşen katmanıyla taranır (UI metni Türkçe harf doludur, tanımlayıcı katmanı oraya girmez).
@@ -187,6 +189,15 @@ TABAN_DOSYASI = KOK / ".claude" / "turkce-taban.json"
 # Alan adları (ürün/şirket adı — çevrilmez) tüketiciden gelir; merkezde
 # gömülü bir `Vardiya`/`Bkm` listesi başka depoda anlamsızdır.
 ALAN_ADLARI = set(AYAR.get("alan_adlari", []))
+# ── SÖZLEŞME ADLARI (1.8.1, 24.09.2026) — alan adı DEĞİL, BORÇ ────────────────────────────────
+# İstemciye/DB'ye görünen Türkçe adlar (JSON alanı `stokAdi`, kolon `KullaniciAdi`, rota parçası) kod değiştirilerek
+# çevrilemez: eski istemci kırılır (naming-conventions §4: sözleşme değişimi çift yaşatma + istemci turu ister).
+# Bu adlar `sozlesme_adlari` ile kapıdan GEÇER ama alan adından ayrı tutulur: (1) süpürme sonunda sayısı basılır,
+# (2) yeni sözleşme adı eklemek bilinçli bir karardır (listeye satır), (3) sözleşme İngilizceye geçince satır silinir
+# ve kapı eski adı yeniden yakalar. bkm-magaza ölçümü: ön yüz tamamen çevrildikten sonra kalan 11 bulgunun 9'u
+# JSON sözleşmesiydi (`stokAdi` ×6, `mailDurum` ×3) — tanımlayıcı değil, tel adı.
+SOZLESME_ADLARI = set(AYAR.get("sozlesme_adlari", []))
+ALAN_ADLARI |= SOZLESME_ADLARI
 ALAN_ADLARI_KUCUK = {a.lower() for a in ALAN_ADLARI}   # ak liste katmanı küçük harf karşılaştırır
 DOSYA_ADI_ISTISNALARI = set(AYAR.get("dosya_adi_istisnalari", []))
 
@@ -336,6 +347,9 @@ YORUM_PY  = re.compile(r"#[^\n]*")
 YORUM_PS  = re.compile(r"<#.*?#>|#[^\n]*", re.S)
 YORUM_SQL = re.compile(r"--[^\n]*|/\*.*?\*/", re.S)
 DIZE_JS   = re.compile(r'`(?:[^`\\]|\\.)*`|"(?:[^"\\\n]|\\.)*"|\'(?:[^\'\\\n]|\\.)*\'', re.S)
+# JS regex literali de dize gibi soyutlanır (1.8.1): `/yönetici/` deseni 'tanımlayıcıda Türkçe harf' diye yanlış pozitif
+# veriyordu (bkm-magaza testleri, 7 bulgu). Bölme işaretiyle karışmasın: yalnız ( , = : [ ! & | ? { } ; sonrası ya da satır başı.
+REGEX_JS  = re.compile(r"(?:(?<=[(,=:\[!&|?{};>])|^)(\s*)/(?![/*])(?:\\.|\[[^\]\n]*\]|[^/\\\n\[])+/[gimsuyd]*", re.M)
 DIZE_PY   = re.compile(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'|"(?:[^"\\\n]|\\.)*"|\'(?:[^\'\\\n]|\\.)*\'')
 DIZE_PS   = re.compile(r'@"[\s\S]*?"@|@\'[\s\S]*?\'@|"(?:[^"`\n]|`.)*"|\'(?:[^\'\n]|\'\')*\'', re.S)
 DIZE_SQL  = re.compile(r"N?'(?:[^']|'')*'")
@@ -481,6 +495,8 @@ def soyutla(metin: str, razor: bool, profil: dict | None = None):
     dize = (profil or {}).get("dize", DIZE)
     metin = yorum.sub(_satir_koru, metin)
     metin = dize.sub(_satir_koru, metin)
+    if dize is DIZE_JS:
+        metin = REGEX_JS.sub(lambda m: m.group(1) + _satir_koru(m), metin)
     if not razor:
         return metin, set()
     kod_satir = _kod_blok_satirlari(metin)
@@ -818,4 +834,5 @@ if gevseyen:
     for rel, izin, simdi in gevseyen[:5]:
         print(f"       · {rel}: {izin} → {simdi}")
 print(f"Denetim geçti · {len(hedefler)} dosya · ak liste {len(DAGARCIK)} sözcük · "
-      f"dondurulmuş borç {dondurulan} bulgu ({len(TABAN)} dosya)")
+      f"dondurulmuş borç {dondurulan} bulgu ({len(TABAN)} dosya)"
+      + (f" · sözleşme adı {len(SOZLESME_ADLARI)} (borç: tel/kolon adı, İngilizceye geçince listeden silinir)" if SOZLESME_ADLARI else ""))

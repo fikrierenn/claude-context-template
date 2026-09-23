@@ -2,6 +2,15 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.8.1] - 2026-09-24
+
+### Eklendi
+- Ayar `"sozlesme_adlari": [...]` — istemciye/DB'ye görünen Türkçe SÖZLEŞME adları (JSON alanı, kolon, rota parçası)
+  kapıdan BORÇ olarak geçer; alan adından ayrı: süpürme özeti sayısını basar, sözleşme İngilizceye geçince satır
+  silinir ve kapı eski adı yeniden yakalar. bkm-magaza: ön yüz tamamen çevrildikten sonra kalan bulguların çoğu
+  `stokAdi`/`mailDurum`/`kullaniciAdi` gibi tel adlarıydı — tanımlayıcı değil.
+- Sözlük: ön yüz bileşen turunun İngilizce sözcükleri (muted, heading, freshness, suggestion, velocity, …).
+
 ## [1.8.0] - 2026-09-24
 
 ADLANDIRMA STANDARDININ İKİ "NİYET" SATIRI KAPIYA BAĞLANDI.

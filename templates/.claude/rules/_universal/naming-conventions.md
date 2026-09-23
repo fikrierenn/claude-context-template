@@ -65,6 +65,8 @@ hatalar olmasın, standartlarımız oluşmalı"* — yeni proje bu dosyayı `boo
 | Git dalı | `tip/kısa-kebab` | `feat/device-sessions` |
 | Test adı | okunur cümle; dil serbest (Türkçe cümle olabilir) | `Firma_gecisi_cihazi_dusurmez` |
 
+**Sözleşme adları kapıda:** `.claude/turkce-kapi.json` → `"sozlesme_adlari"` — Türkçe kalan tel/kolon adları BORÇ olarak geçer, alan adı değildir; İngilizceye geçince satır silinir (1.8.1).
+
 **Sözleşmeler (istemciye/DB'ye görünen ad) değişince:** eski ad bir sürüm **çift** yaşar (çift rota, `[JsonPropertyName]`
 ile eski tel adı, görünüm/eşanlamlı kolon), istemci turu biter, sonra kalkar. Sözleşmeyi sessizce değiştirmek yasak.
 

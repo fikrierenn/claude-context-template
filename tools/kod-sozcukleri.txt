@@ -3081,3 +3081,43 @@ shelf
 logo
 brand
 dot
+# ── 1.8.0 ek (24.09): bkm-magaza ön yüz bileşen turu ──
+muted
+heading
+loading
+freshness
+suggestion
+suggestions
+frame
+months
+velocity
+disconnected
+username
+stand
+island
+depot
+blue
+amber
+requests
+questions
+me
+sub
+im
+chips
+aborter
+# ── 1.8.0 ek 2 (24.09): ön yüz turu ──
+filters
+extras
+corrected
+authors
+buttons
+explode
+enlarge
+elem
+# ── 1.8.1 ek (24.09) ──
+blobs
+images
+ns
+book
+peak
+cacheable
