@@ -46,7 +46,14 @@ for d in "$DEV"/*/; do
       [ -f "$f" ] || continue
       n="$(basename "$f")"
       if [ -f "$EVREN/$n" ]; then
-        if cmp -s "$f" "$EVREN/$n"; then ayni=$((ayni+1)); else sapma=$((sapma+1)); fi
+        # ⚠ SATIR SONU YOKSAYILIR (23.09.2026). Eskiden `cmp -s` idi: Windows'ta
+        # core.autocrlf ile checkout edilen bir kopya, ICERIGI AYNI olsa bile
+        # "sapmis" sayilirdi — kapi kendi kor noktasini miras alir sinifi.
+        # OLCULDU: bugun 169 sapmanin SIFIRI salt satir-sonu kaynakli, yani bu
+        # degisiklik sayiyi DEGISTIRMIYOR. Yine de dogru olcut budur; aksi halde
+        # yarin bir depo checkout edildiginde sayi sebepsiz siser.
+        if diff -q --strip-trailing-cr "$f" "$EVREN/$n" >/dev/null 2>&1
+        then ayni=$((ayni+1)); else sapma=$((sapma+1)); fi
       else
         yerel=$((yerel+1))
       fi
@@ -69,6 +76,45 @@ done
 
 echo
 echo "TOPLAM: $t_depo depo · ayni $t_ayni · SAPMA $t_sapma · yerel $t_yerel · referans modeli $t_referans depo"
+
+# ---------------------------------------------------------------------------
+# MERKEZIN KENDI SAGLIGI — evrensel katmanda proje adi var mi?
+# NEDEN (olculdu 23.09.2026, bir tuketici bildirdi): `work-protocol.md` bes ayri
+# yerde bir tuketicinin ajan adlarini tasiyordu, `footprint-ladder.md` bir baska
+# depoyu aniyordu. `harvest --promote` ciktisindaki "iceriği PROJE-BAGIMSIZ hale
+# getir" adimi iki kez atlanmisti. Somut zarar: baska bir depo o kurali okuyup
+# VAR OLMAYAN ajanlari cagirmaya calisir ve "danistim" sanir.
+# Depo adlari kok dizinden turetilir, yani yeni depo listeye kendiliginden girer.
+#
+# ⚠ BU KAPININ NE YAKALAMADIGI — YAZILI OLMASI SART (yoksa "temiz" yanlis guven verir):
+#   Yalniz TEKNIK BAGLAMDAKI ad yakalanir: `ad-`, `/ad`, `\ad`, `ad/`, `` `ad` ``.
+#   Yani `bkmargus-sp-first` ve `D:\Dev\pusula` yakalanir; duz cumle icindeki
+#   "pusula'dan uyarlandi" YAKALANMAZ.
+#   SEBEP OLCULDU: ilk surum duz metne de bakiyordu ve `ajan` adli depo yuzunden
+#   `agent-usage.md`'de 7 bulgunun 7'si YANLIS POZITIF cikti ("ajan" siradan bir
+#   Turkce sozcuk). Bu depo ayni sinifta bir kapiyi zaten olcup SILMISTI
+#   (7 bulgunun 6'si yanlis pozitif) — gerekce: yanlis pozitif BASTIRMA ogretir,
+#   ve bastirma kurali ikinci kez oldurur. Dar ve dogru > genis ve gurultulu.
+# ---------------------------------------------------------------------------
+depo_adlari=""
+for d in "$DEV"/*/; do
+  ad="$(basename "$d")"
+  case "$ad" in claude-context-template) continue ;; esac
+  [ ${#ad} -ge 4 ] || continue
+  depo_adlari="${depo_adlari}${depo_adlari:+|}${ad}"
+done
+if [ -n "$depo_adlari" ]; then
+  DESEN="[\`/\\]($depo_adlari)|($depo_adlari)[-/\\\`]"
+  sizinti=$(grep -roEil "$DESEN" "$EVREN" 2>/dev/null | wc -l)
+  echo
+  if [ "$sizinti" = "0" ]; then
+    echo "MERKEZ SAGLIGI: _universal proje adi tasimiyor · TEMIZ"
+  else
+    echo "MERKEZ SAGLIGI: _universal icinde PROJE ADI gecen $sizinti dosya — evrensel katman"
+    echo "                proje-bagimsiz olmali. Tuketici var olmayan seyi cagirir:"
+    grep -roEin "$DESEN" "$EVREN" 2>/dev/null | sed 's|^|                  |' | head -10
+  fi
+fi
 echo
 echo "Sapmanin sebebi bu tablodan GORUNMEZ (bayat mi, bilerek mi). Siradaki adim:"
 echo "  bash bin/harvest.sh --diff <dosya> <proje>   tek dosyanin farki"

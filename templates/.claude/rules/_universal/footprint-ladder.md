@@ -1,6 +1,6 @@
 # Footprint Ladder — Yeni Yetenek En Dar Basamakta
 
-_pusula'dan uyarlandı (Hermes "narrow waist"). `paths:` yok — compact sonrası da geçerli._
+_Hermes "narrow waist" uyarlaması. `paths:` yok — compact sonrası da geçerli._
 
 ## Temel İlke
 
@@ -30,7 +30,7 @@ _pusula'dan uyarlandı (Hermes "narrow waist"). `paths:` yok — compact sonras�
 - ❌ Tek-kullanımlık iş için yeni skill/agent → mevcut akışta inline çöz.
 - ❌ "İleride lazım olur" diye geniş soyutlama (bkz. `coding-discipline.md` simplicity-first, Plan 34 UDF dersi: Volume/Weight için hardcode kolon yerine UDF).
 - ❌ **Skill/agent yaratmadan önce mevcut listeyi kontrol ETMEMEK** → aynı isim/işlev dup. Yeni skill/agent ÖNCESİ available-skills listesine (proje `.claude/skills/` + global + plugin) ve `.claude/agents/`'a bak; aynısı varsa GENİŞLET, yaratma.
-- ❌ Dış repodan/başka projeden "esin" diye BkmArgus'ta zaten olanı tekrar kurmak → önce mevcut rule/skill ile kıyasla (örn. file-size-discipline zaten `csharp-conventions.md`'de var).
+- ❌ Dış repodan/başka projeden "esin" diye **bu depoda zaten olanı** tekrar kurmak → önce mevcut rule/skill ile kıyasla (örn. dosya boyutu kuralı hem `_universal` hem stack katmanında olabilir; ikisini birden yazma).
 
 ## İlişkili
 - `.claude/rules/coding-discipline.md` — simplicity-first (aynı damar).

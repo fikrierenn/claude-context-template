@@ -11,14 +11,20 @@
 
 İş bir danışman alanına giriyorsa, üretmeden önce eşleşen danışmana danış (`advisor-skills.md` kataloğu):
 
-- SP / migration / şema → **`bkmargus-sp-first`** · **`sql-migration-writer`**
-- ETL / `rpt.*` snapshot / veri kalitesi → **`bkmargus-etl`**
-- AI katmanı: prompt, skill, sağlayıcı zinciri, maliyet → **`bkmargus-ai-worker`**
-- Risk skorlama / eşik / eskalasyon → **`bkmargus-risk-model`**
-- Denetim süreci / DÖF yaşam döngüsü / SLA modelleme → **`denetim-surec-danismani`** (agent)
-- Veri tutarsızlığı/anomali tespiti, bulgu üretimi, AI denetçi → **`bkmargus-tespit`**
-- Ekran akışı / UX / boş durum / hata geri bildirimi → **`screen-ux-standard`**
-- BKM kurumsal DB keşfi (DerinSIS*, BKMDATA) → **`bkm-db-explorer`**
+⚠ **Katalog PROJE-YERELDİR.** Aşağısı bir *şablon*: alanları kendi deponun danışman
+adlarıyla doldur ve karşılığı olmayan satırı **sil**. Var olmayan bir danışmanı çağırmak,
+danışmadan üretmekten kötüdür — "danıştım" sanılır.
+(Ölçülmüş: bu liste 23.09.2026'ya kadar bir tüketicinin ajan adlarını taşıyordu —
+`harvest --promote` çıktısındaki *"içeriği proje-bağımsız hale getir"* adımı atlanmıştı.
+Bir başka tüketici bunu okuyup var olmayan ajanları çağırmaya kalkardı.)
+
+- SP / migration / şema → *(deponun şema danışmanı)* · **`sql-migration-writer`**
+- ETL / snapshot / veri kalitesi → *(deponun ETL danışmanı)*
+- AI katmanı: prompt, skill, sağlayıcı zinciri, maliyet → *(deponun AI danışmanı)*
+- Alan-özel modelleme (risk, fiyat, skor…) → *(deponun alan danışmanı)*
+- Süreç/yaşam döngüsü modelleme → *(deponun süreç danışmanı)*
+- Ekran akışı / UX / boş durum / hata geri bildirimi → *(deponun UX standardı)*
+- Kurumsal veritabanı keşfi → *(deponun DB keşif danışmanı)*
 - Yeni mimari/yön kararı, yüksek belirsizlik → **`llm-council`** · **`code-architect`** (agent)
 
 Danışman çıktısı = çerçeve/ölçüt (dayatmaz); kararı **gerekçeyle** sen verirsin. Danışılmadan yapılan ETL/AI/risk/denetim işi **eksik** sayılır.
