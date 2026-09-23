@@ -2,6 +2,80 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.5.0] - 2026-09-23
+
+TEK MERKEZ (Asama 1 — `docs/MIMARI-KARARI-2026-09-23.md`). 1.4.0 geri akis yolunu
+ekledi ama bir ay sonra yakinsama olmadi: sebep eksik ayak degil, **iki merkez**
+olmasiydi. Ekosistemin en olgun kapisi sablonda degil bir TUKETICIDE (`pusula`)
+duruyordu; `bkm-magaza` kurallar icin sablonu degil onu isaret ediyordu. Bu surum
+o kapiyi merkeze aliyor ve sablonun kendi bayat kurallarini kapatiyor.
+
+Olcum degismedi (39 depo · SAPMA 158 · referans 1) — tuketici deposuna dokunulmadi.
+SAPMA'nin dusmesi Asama 3'un isi ve depo basina, kendi oturumunda yapilir.
+
+### Eklendi
+
+- **`tools/turkce_tanimlayici_denetimi.py` + `tools/kod-sozcukleri.txt`** — pusula'dan
+  terfi. Uc katmanli kapi: Turkce harf taramasi + ASCII kara liste + AK LISTE.
+  Yorumlari ve dizeleri BILEREK taramaz (onlar Turkce olmali).
+  - Kok artik CAGIRANIN yerinden bulunur (`.git`/`.claude` yukari arama ya da
+    `TURKCE_KAPI_KOK`). ⚠ Terfide duzeltilen en kritik sey: eski `__file__.parent.parent`
+    merkeze tasininca kapinin SABLONU taramasina yol acardi — sessizce yesil.
+  - Projeye bagli ne varsa tuketiciye tasindi: `.claude/turkce-kapi.json` (kapsam,
+    alan adlari), `.claude/kod-sozcukleri.ek.txt` (deponun kendi sozcukleri),
+    `.claude/turkce-taban.json` (donmus borc).
+  - Alti kosumla sinandi, her biri sabotaj + geri alma ile.
+- **`docs/ASAMA-1-TEK-MERKEZ-2026-09-23.md`** — 12 sapmanin tek tek siniflandirmasi
+  (bayat mi / bilerek mi), GMY kararlari, Asama 3 recetesi.
+- **`harvest.sh` `tools` kategorisi** — kapilar `.claude/` altinda degil depo kokunde
+  durur ve harvest onlari HIC gormuyordu; ilk terfi bu yuzden elle yapildi.
+
+### Degisti
+
+- **`_universal/test-discipline.md`** — YAZILI KURAL ≠ UYGULANAN KURAL (on olculmus
+  vaka) + davranissal kontrat > snapshot. Sablon bayatti.
+- **`_universal/error-handling.md`** — "Reddet mi, Say mi?" dogrulama siniri olcutu
+  (celiski→reddet, eksiklik→say) + merkezi hata siniflandirici.
+- **`_universal/commit-discipline.md`** — commit → TODO `[x]` ayni anda · kirmizi kip
+  geri alirken yasak liste NIYETE bakmaz (`reset --hard` vakasi).
+- **`_universal/todo-verification.md`** — yeni madde acmadan once dup-grep.
+- **`stacks/dotnet-mvc/csharp-conventions.md`** — `partial class` sifir-risk split +
+  Blazor `.razor` code-behind nuansi. (`_universal`'a DEGIL: icerik .NET'e bagli.)
+- **`harvest.sh` esigi KALDIRILDI** — "5+ depo → _universal adayi" oneri uretmeyi
+  birakti. Olculdu: esigi gecen 8 dosyanin 4'u stack kuralidir; en yaygin dordu
+  (9/8/8/7 depo) zaten evrensel degil. Esik, scriptin kendi basligiyla celisiyordu.
+- **`_universal/footprint-ladder.md`** — icindeki proje adi sizintisi temizlendi.
+- Cekirdek ak listeden 4 proje/alan adi cikarildi (`solum`, `vardiya`, `vrd`, `mizan`) —
+  kanonik liste proje adi tasimaz.
+
+### Duzeltildi (ayni gun, tuketici olcumleriyle)
+
+- **`_universal` proje adi tasiyordu** — `work-protocol.md` bes ayri yerde bir
+  tuketicinin ajan adlarini (`bkmargus-*`), `footprint-ladder.md` bir baska depoyu
+  aniyordu. Temizlendi. Somut zarar: baska bir depo o kurali okuyup VAR OLMAYAN
+  ajanlari cagirmaya calisir ve "danistim" sanir.
+- **`durum.sh`'a MERKEZ SAGLIGI kapisi** — `_universal`'da proje adi taramasi.
+  Sabotajla sinandi. Dar tutuldu (yalniz teknik baglamdaki ad): genis surum `ajan`
+  adli depo yuzunden 7 bulgunun 7'sini yanlis pozitif verdi.
+- **`durum.sh` artik `diff --strip-trailing-cr`** kullaniyor (`cmp -s` degil).
+  ⚠ Olculdu: bugunku 169 sapmanin SIFIRI satir-sonu kaynakli, yani sayi DEGISMIYOR.
+  Olcutun dogru olmasi bugun fark yaratmasindan bagimsizdir.
+- **Tuketicilere birakilan bildirim dosyalari** (39 depo) ASCII sadelestirilmis Turkce
+  iceriyordu — `turkish-ui.md:18` ihlali, ustelik karisik. Duzgun Turkceye cevrildi ve
+  ureteci kendi ciktisini sinar hale getirildi.
+- **"BAYATLAYAN" etiketi "AYRISMIS"a cevrildi.** Iki tuketici bagimsiz olarak olctu:
+  bes dosyanin besinde de IKI YONDE fark var. "Bayat" sanip silmek, yerelde olgunlasan
+  kurali ekosistemden sessizce yok eder. Bildirim artik uc kova gosteriyor.
+
+### Bilinen — kapanmadi
+
+- `session-protocol.md` ve `agent-usage.md` iki yonlu sapiyor (her iki tarafta da
+  otekinde olmayan olgun icerik var); terfi karari bekliyor.
+- Depo adi `Norma` olacak ama **Asama 2'de**, `bootstrap --reference` ile ayni commit'te.
+  Adi degistirip davranisi birakmak kozmetiktir.
+- `bin/projects.txt` 3 depo iceriyor; `harvest --scan` yalniz onlari tarar, `durum.sh`
+  ise 39'unu kesfeder. Iki olcum araci ayni paydayi kullanmiyor.
+
 ## [1.4.0] - 2026-08-23
 
 Sablon 11 Haziran'dan 23 Agustos'a kadar **0 commit** aldi. Ayni donemde
