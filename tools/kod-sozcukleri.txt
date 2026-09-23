@@ -2856,3 +2856,7 @@ dry
 dir
 proc
 clean
+# ── 1.7.2 (24.09): Solum süpürmesinde çıkan İngilizce sözcükler ──
+chart
+board
+href

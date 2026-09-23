@@ -40,6 +40,10 @@ KAPININ ÜÇ KATMANI (Solum'un ayrımı + V-19):
   • AK LİSTE (V-19) — bildirilen adlardaki her sözcük dağarcıkta mı? Eksikliği
     İNSANA SORAR: yanlış pozitifin bedeli bir satır, yanlış negatifin bedeli
     görünmeyen bir ihlal.
+  ⚠ 1.7.2 (24.09.2026): TEST METODU ADI taranmaz, gövdesi taranır — Solum ölçümü: 4087 bulgunun %78'i test
+    adıydı; test adı bir iddiadır, insan mesajıdır (Türkçe kalır). Sınır ölçülebilir işaretten: test özniteliği /
+    `def test_*`. Ayrıca REHBER: ek ak liste (ürün adı) adımı kapıdan ÖNCE gelir — ilk koşumda en sık bulgu ürünün
+    kendi adı çıkmasın (Solum: `Solum` 61 kez).
   ⚠ 1.7.0 (24.09.2026): DİL PROFİLLERİ — `.js/.mjs/.ts · .py · .ps1/.psm1 · .sql` de taranır
     (yorum/dize soyutlama + bildirim desenleri + anahtar sözcükler dile göre). Süpürmede OPT-IN:
     ayar `"uzantilar": [...]`; argüman kipinde desteklenen her uzantı işlenir. `--tabansiz` bayrağı
@@ -370,6 +374,37 @@ def profil_bul(yol: Path) -> dict | None:
     return DIL_PROFILLERI.get(yol.suffix.lower())
 
 
+# ── TEST METODU ADI TARANMAZ (1.7.2, 24.09.2026 — Solum ölçümü) ─────────────────────────────
+# Solum'da 381 dosya: 4087 bulgunun %78'i (2864) TEST METODU ADIydı; src/ yalnız %9. Bir test adı çağrılmaz,
+# tek okunduğu yer koşucu çıktısıdır — yani İNSAN MESAJI (yorum/UI sınıfı, Türkçe kalır; naming-conventions §4
+# "test adı okunur cümle, dil serbest"). 2864 gürültü bastırma öğretir, bastırma kuralı öldürür. Sınır NİYETTEN
+# değil ÖLÇÜLEBİLİR işaretten: C#'ta test özniteliği ([Fact]/[Theory]/[Test]/[TestMethod]…) taşıyan metodun ADI,
+# Python'da `def test_*` ADI yerine nötr `TestCase`/`test_case` konur; GÖVDE ve sınıf adı taranmaya devam eder.
+# JS/Pester testleri zaten dize (`it("…")`, `It "…"`), ayrıca iş gerekmez.
+TEST_OZNITELIK = re.compile(r"^\s*\[(?:Fact|Theory|Test|TestMethod|DataTestMethod|TestCase|InlineData|MemberData|ClassData|Trait|Category)\b")
+CS_METOT = re.compile(r"^(\s*(?:public|private|internal|protected)\s+(?:static\s+|async\s+|virtual\s+|override\s+)*[\w<>\[\],?.]+\s+)(\w+)(\s*\()")
+PY_TEST = re.compile(r"\bdef\s+test_\w+")
+
+
+def test_adlarini_maskele(temiz: str, uzanti: str) -> str:
+    if uzanti == ".py":
+        return PY_TEST.sub("def test_case", temiz)
+    if uzanti != ".cs":
+        return temiz
+    out, bekleyen = [], False
+    for satir in temiz.split("\n"):
+        if TEST_OZNITELIK.match(satir):
+            bekleyen = True; out.append(satir); continue
+        if bekleyen:
+            m = CS_METOT.match(satir)
+            if m:
+                satir = m.group(1) + "TestCase" + m.group(3) + satir[m.end():]; bekleyen = False
+            elif satir.strip():
+                bekleyen = False          # öznitelikten sonra başka bir şey geldi
+        out.append(satir)
+    return "\n".join(out)
+
+
 def _parametre_adlari(liste: str) -> list[str]:
     """`a, b = 1, *args, [tip]$Ad, x: int = 3` → ad listesi. Varsayılan/tip/yıkıcı kırpılır."""
     adlar = []
@@ -464,6 +499,7 @@ def ihlaller(yol: Path) -> list[tuple[int, str, str]]:
 
     satirlar = ham.splitlines()
     temiz_metin, kod_satir = soyutla(ham, razor, profil_bul(yol))
+    temiz_metin = test_adlarini_maskele(temiz_metin, yol.suffix.lower())
     temiz = temiz_metin.splitlines()
     for i, satir in enumerate(temiz, 1):
         if not satir.strip():
@@ -500,6 +536,7 @@ def bilinmeyen_sozcukler(yol: Path, dagarcik: set) -> list:
         return []   # .cshtml'de bildirim yok; markup adlarini taramak gurultu uretir
     ham = io.open(yol, encoding="utf-8-sig", errors="replace").read()
     temiz, kod_satir = soyutla(ham, razor=(uzanti == ".razor"), profil=profil)
+    temiz = test_adlarini_maskele(temiz, uzanti)
     # Dil desenleri (1.7.0): C#/Razor mevcut desenler; ötekiler profilden. Anahtar sözcükler dile göre.
     desenler = [(d, False) for d in BILDIRIM_DESENLERI] if profil["bildirim"] is None else profil["bildirim"]
     anahtar = CS_ANAHTAR | profil["anahtar"]

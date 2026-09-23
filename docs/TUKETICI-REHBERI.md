@@ -87,6 +87,11 @@ Kod İngilizce, **yorum ve UI metni Türkçe**. Kapı yorumlara ve dizelere bile
 2. **Araç yoksa ya da koşamazsa SARI uyarın**, sessizce geçmeyin. Sessiz geçen kapı,
    hiç olmayan kapıdan beterdir: çalışıyor *görünür*.
 3. Süpürme kipi istiyorsanız `.claude/turkce-kapi.json` yazın; yoksa kapı KOŞAMADI der.
+   ⚠ **Ek ak liste adımı KAPIDAN ÖNCE gelir:** ürün/şirket/şema adlarınızı (`Solum`, `Bkm`, `Vardiya`…) önce
+   `.claude/kod-sozcukleri.ek.txt`ye yazın. Ölçüldü (Solum, 24.09): ilk koşumda en sık bulgu ürünün kendi adıydı
+   (61 kez) — kapıya güven ilk koşumda kazanılır ya da kaybedilir.
+   ℹ Test metodu ADLARI taranmaz (1.7.2): `[Fact]`/`[Theory]`/`[Test]` özniteliği taşıyan metot ve `def test_*` adı
+   insan mesajıdır, Türkçe cümle olabilir; gövdesi ve sınıf adı taranır.
 4. **Dokunulan dosya tamamen temiz** kuralı için kancadan `--tabansiz` ile çağırın (1.7.0): taban yok
    sayılır, staged dosyada tek Türkçe ad BLOKLAR; dokunulmayan dosyaya bakılmaz. Taban yalnız süpürme/haritada
    borcu gösterir. `.js/.py/.ps1/.sql` dosyaları argüman kipinde otomatik desteklenir.

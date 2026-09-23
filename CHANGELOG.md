@@ -2,6 +2,20 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.7.2] - 2026-09-24
+
+TEST ADI KURALIN DIŞINDA — ÖLÇÜLDÜ.
+
+Solum kapıyı süpürdü: 381 dosya, 4087 bulgu, %78'i (2864) test metodu adı; gerçek üretim yüzeyi %9. Bir test adı
+çağrılmaz, tek okunduğu yer koşucu çıktısıdır — insan mesajı. 2864 gürültü bastırma öğretir, bastırma kuralı öldürür.
+
+### Degisti
+- `turkce_tanimlayici_denetimi.py`: test özniteliği (`[Fact]/[Theory]/[Test]/[TestMethod]/…`) taşıyan C# metodunun
+  ve Python `def test_*` fonksiyonunun ADI taranmaz (nötr yer tutucu), GÖVDESİ ve sınıf adı taranır. Ayar gerekmez;
+  sınır niyetten değil ölçülebilir işaretten. bkm-magaza test dosyaları: 175 → (aşağıda ölçüm) bulgu.
+- REHBER: "ek ak liste adımı kapıdan ÖNCE" (ürün adı ilk koşumda en sık bulgu olmasın — Solum: `Solum` 61 kez).
+- Çekirdek sözlük: `chart board href` (İngilizce; Solum süpürmesinde çıktı).
+
 ## [1.7.1] - 2026-09-24
 
 ADLANDIRMA STANDARDI TEK YERDE.
