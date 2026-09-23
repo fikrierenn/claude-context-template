@@ -2,6 +2,28 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.7.0] - 2026-09-24
+
+TURKCE TANIMLAYICI KAPISI TUM KODU GORUYOR.
+
+Kapı yalnız .cs/.razor tarıyordu. bkm-magaza ölçtü: bir gecede 9 Türkçe Python fonksiyonu
+(`katla`, `sikistir`, `son_ses_duzle`…) ve JS yardımcıları kapıdan sessizce geçti; GMY yakaladı
+("yenileri bile Türkçe yaptın"). Kural metni davranışı değiştirmez, kapı değiştirir.
+
+### Eklendi
+- `tools/turkce_tanimlayici_denetimi.py`: dil profilleri — `.js/.mjs/.cjs/.ts`, `.py`, `.ps1/.psm1`, `.sql`.
+  Her dil için yorum/dize soyutlama (Türkçe yorum ihlal DEĞİL), bildirim desenleri (ak liste yalnız
+  bildirilen ada bakar; parametre listeleri bölünür) ve anahtar sözcük kümesi.
+- `--tabansiz` bayrağı: taban yok sayılır → "dokunulan dosya tamamen temiz olmalı" kuralı kancadan zorlanır.
+- Ayar `"uzantilar"`: süpürmenin taradığı uzantılar. VARSAYILAN ESKİ KÜME (.cs/.cshtml/.razor) —
+  yeni diller OPT-IN, mevcut tüketicilerin süpürmesi kırılmaz. Argüman kipi desteklenen her uzantıyı işler.
+- Süpürme `node_modules/.git/dist/www` dizinlerini atlar.
+
+### Ölçüm (bkm-magaza, 24.09)
+- Eski davranış korunuyor: `.cs` kapsamı 512 → 512 bulgu (aynı).
+- `.py` dosyasında Türkçe yorum/dize 0 bulgu; `katla`/`sikistir` fonksiyonları yakalandı.
+- `.ps1` `<# #>` başlığı 0 bulgu (ilk denemede 3 yanlış pozitif veriyordu — soyutlama sebebi).
+
 ## [1.6.0] - 2026-09-23
 
 ASAMA 2 — KOPYA KIPI VARSAYILAN OLMAKTAN CIKTI.

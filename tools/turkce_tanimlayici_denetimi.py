@@ -40,6 +40,11 @@ KAPININ ÜÇ KATMANI (Solum'un ayrımı + V-19):
   • AK LİSTE (V-19) — bildirilen adlardaki her sözcük dağarcıkta mı? Eksikliği
     İNSANA SORAR: yanlış pozitifin bedeli bir satır, yanlış negatifin bedeli
     görünmeyen bir ihlal.
+  ⚠ 1.7.0 (24.09.2026): DİL PROFİLLERİ — `.js/.mjs/.ts · .py · .ps1/.psm1 · .sql` de taranır
+    (yorum/dize soyutlama + bildirim desenleri + anahtar sözcükler dile göre). Süpürmede OPT-IN:
+    ayar `"uzantilar": [...]`; argüman kipinde desteklenen her uzantı işlenir. `--tabansiz` bayrağı
+    tabanı yok sayar ("dokunulan dosya tamamen temiz"). İsteyen: bkm-magaza (bir gecede 9 Türkçe
+    Python fonksiyonu + JS yardımcıları kapıdan sessizce geçti — ölçüldü).
   ⚠ KÖR NOKTA KAPANDI (19.09): `.razor` uzantısı ne süpürmede vardı ne de
     razor sayılıyordu. Dashboard'ın 61 UI dosyası HİÇ bakılmamıştı; elle
     verilse C# gibi işlenip UI metnine Türkçe-harf taraması uygulanırdı.
@@ -150,6 +155,11 @@ AYAR = ayar_yukle()
 #   ekrana basiliyor.
 KAPSAM = AYAR.get("kapsam", [])
 TABANLI_KOKLER = tuple(AYAR.get("tabanli_kokler", []))   # circir yalniz burada; otekiler SIFIR tolerans
+# Süpürme kipinin taradığı uzantılar (1.7.0). VARSAYILAN ESKİ KÜME — yeni diller OPT-IN:
+#   {"uzantilar": [".cs", ".razor", ".js", ".mjs", ".py", ".ps1", ".sql"]}
+#   Argüman kipinde (kanca dosya verir) desteklenen her uzantı işlenir; süpürmede yalnız bu liste —
+#   yoksa mevcut tüketicilerin (Vardiya, dashboard) süpürmesi bir gecede yeni bulgularla kırılırdı.
+SUPURME_UZANTILARI = tuple(AYAR.get("uzantilar", [".cs", ".cshtml", ".razor"]))
 
 # ⚠ TABAN TÜKETİCİDE DURUR, MERKEZDE DEĞİL. Donmuş borç o deponun gerçeğidir;
 #   merkeze konsaydı bir deponun borcu ötekinin kapısını gevşetirdi.
@@ -296,6 +306,82 @@ def _satir_koru(m: re.Match) -> str:
 # `Toplam @VrdFormat…` gibi satırlarda UI metnini tanımlayıcı sandı.
 RAZOR_IFADE = re.compile(r"@[A-Za-z_][\w.]*(?:\([^)]*\))?")
 
+# ── DİL PROFİLLERİ (1.7.0, 24.09.2026 — bkm-magaza isteği: "tüm kodu tara") ──────
+# NEDEN: kapı yalnız .cs/.razor görüyordu; tüketicinin araçları (.py/.ps1), tarayıcı kodu (.js) ve
+# şema betikleri (.sql) hiç taranmıyordu — ölçüldü: bkm-magaza'da bir gecede 9 Türkçe Python
+# fonksiyonu ve JS yardımcıları kapıdan sessizce geçti. Her dil için üç şey gerekir: yorum ve dize
+# SOYUTLAMA (yoksa Türkçe yorum "ihlal" sayılır — ilk denemede .ps1 başlığı tam böyle yakalandı),
+# BİLDİRİM desenleri (ak liste yalnız bildirilen ada bakar) ve o dilin ANAHTAR sözcükleri.
+# ⚠ Bildirim deseni `params=True` ise grup bir PARAMETRE LİSTESİDİR: virgülle bölünür, varsayılan/tip kırpılır.
+YORUM_PY  = re.compile(r"#[^\n]*")
+YORUM_PS  = re.compile(r"<#.*?#>|#[^\n]*", re.S)
+YORUM_SQL = re.compile(r"--[^\n]*|/\*.*?\*/", re.S)
+DIZE_JS   = re.compile(r'`(?:[^`\\]|\\.)*`|"(?:[^"\\\n]|\\.)*"|\'(?:[^\'\\\n]|\\.)*\'', re.S)
+DIZE_PY   = re.compile(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'|"(?:[^"\\\n]|\\.)*"|\'(?:[^\'\\\n]|\\.)*\'')
+DIZE_PS   = re.compile(r'@"[\s\S]*?"@|@\'[\s\S]*?\'@|"(?:[^"`\n]|`.)*"|\'(?:[^\'\n]|\'\')*\'', re.S)
+DIZE_SQL  = re.compile(r"N?'(?:[^']|'')*'")
+_JS_AD = r"([A-Za-z_$][\w$]*)"
+DIL_PROFILLERI = {
+    ".cs":     dict(yorum=YORUM, dize=DIZE, bildirim=None, anahtar=set()),        # None = mevcut C# desenleri
+    ".razor":  dict(yorum=YORUM, dize=DIZE, bildirim=None, anahtar=set()),
+    ".cshtml": dict(yorum=YORUM, dize=DIZE, bildirim=None, anahtar=set()),
+    ".js": dict(yorum=YORUM, dize=DIZE_JS, anahtar=set("""function class const let var return if else for while do switch case
+        break continue new this extends super import export from default async await try catch finally throw typeof instanceof
+        void delete in of null undefined true false yield static get set constructor document window console module require""".split()),
+        bildirim=[(re.compile(r"\b(?:function|class)\s+" + _JS_AD), False),
+                  (re.compile(r"\b(?:const|let|var)\s+" + _JS_AD), False),
+                  (re.compile(r"\b(?:const|let|var)\s+\{([^}]*)\}\s*="), True),          # const { a, b } = …
+                  (re.compile(r"\bfunction\b[\w$\s]*\(([^)]*)\)"), True),                 # function f(a, b)
+                  (re.compile(r"\(([^()]*)\)\s*=>"), True),                               # (a, b) => …
+                  (re.compile(r"^\s*(?:async\s+)?" + _JS_AD + r"\s*\([^)]*\)\s*\{", re.M), False)]),  # method kısayolu
+    ".py": dict(yorum=YORUM_PY, dize=DIZE_PY, anahtar=set("""def class return if elif else for while in not and or is None True
+        False import from as with try except finally raise lambda yield pass break continue global nonlocal assert del print self
+        cls args kwargs main""".split()),
+        bildirim=[(re.compile(r"\b(?:def|class)\s+(\w+)"), False),
+                  (re.compile(r"\bdef\s+\w+\s*\(([^)]*)\)"), True),
+                  (re.compile(r"^\s*(\w+)\s*(?::[^=\n]+)?=(?!=)", re.M), False),
+                  (re.compile(r"\bfor\s+(\w+)\s+in\b"), False),
+                  (re.compile(r"\bas\s+(\w+)"), False)]),
+    ".ps1": dict(yorum=YORUM_PS, dize=DIZE_PS, anahtar=set("""function param begin process end if else elseif foreach for while
+        switch return try catch finally throw in exit true false null env args psscriptroot erroractionpreference lastexitcode
+        matches host error input pscmdlet myinvocation""".split()),
+        bildirim=[(re.compile(r"\bfunction\s+([\w-]+)"), False),
+                  (re.compile(r"\$([A-Za-z_]\w*)\s*=(?!=)"), False),
+                  (re.compile(r"\bforeach\s*\(\s*\$(\w+)"), False),
+                  (re.compile(r"\bparam\s*\(([\s\S]*?)\)\s*(?:\n|$)", re.M), True),
+                  (re.compile(r"^\s*\[[^\]]*\]\s*\$(\w+)", re.M), False)]),
+    ".sql": dict(yorum=YORUM_SQL, dize=DIZE_SQL, anahtar=set("""create table alter add drop index view procedure proc function
+        schema type declare select from where and or not null int bigint smallint tinyint bit nvarchar varchar nchar char datetime
+        datetime2 date time decimal numeric float real money varbinary binary uniqueidentifier xml text primary key constraint
+        default unique identity go begin end if exists insert update delete into values set as on join left right inner outer
+        order by group having top with nolock exec execute returns return case when then else max min sum count distinct
+        cast convert isnull coalesce dbo sys object_id""".split()),
+        bildirim=[(re.compile(r"\bCREATE\s+(?:OR\s+ALTER\s+)?(?:TABLE|VIEW|PROCEDURE|PROC|FUNCTION|INDEX|SCHEMA|TYPE|TRIGGER)\s+(?:[\w\[\]]+\.)*\[?(\w+)\]?", re.I), False),
+                  (re.compile(r"\bALTER\s+TABLE\s+[\w.\[\]]+\s+ADD\s+\[?(\w+)\]?", re.I), False),
+                  (re.compile(r"\bDECLARE\s+@(\w+)", re.I), False),
+                  (re.compile(r"^\s*\[?(\w+)\]?\s+(?:int|bigint|smallint|tinyint|bit|n?varchar|n?char|datetime2?|date|time|decimal|numeric|float|real|money|varbinary|binary|uniqueidentifier|xml|n?text|image)\b", re.I | re.M), False)]),
+}
+DIL_PROFILLERI[".mjs"] = DIL_PROFILLERI[".cjs"] = DIL_PROFILLERI[".ts"] = DIL_PROFILLERI[".js"]
+DIL_PROFILLERI[".psm1"] = DIL_PROFILLERI[".ps1"]
+DESTEKLENEN_UZANTILAR = tuple(DIL_PROFILLERI)
+
+
+def profil_bul(yol: Path) -> dict | None:
+    return DIL_PROFILLERI.get(yol.suffix.lower())
+
+
+def _parametre_adlari(liste: str) -> list[str]:
+    """`a, b = 1, *args, [tip]$Ad, x: int = 3` → ad listesi. Varsayılan/tip/yıkıcı kırpılır."""
+    adlar = []
+    for parca in liste.split(","):
+        parca = re.sub(r"=.*$", "", parca.strip())          # varsayılan değer
+        parca = re.sub(r"\[[^\]]*\]", " ", parca)           # [tip]
+        parca = re.sub(r":.*$", "", parca)                   # tip ipucu (py)
+        m = re.search(r"[$*]*([A-Za-z_]\w*)\s*$", parca)
+        if m:
+            adlar.append(m.group(1))
+    return adlar
+
 
 KOD_BLOK_BAS = re.compile(r"@(?:code|functions)\s*\{")
 
@@ -332,15 +418,17 @@ def _kod_blok_satirlari(metin: str) -> set:
     return satirlar
 
 
-def soyutla(metin: str, razor: bool):
+def soyutla(metin: str, razor: bool, profil: dict | None = None):
     """(temiz metin, @code gövde satırları) döner.
 
     Razor'da iki AYRI bölge vardır ve aynı muameleyi göremezler:
       • markup  — UI metni Türkçe OLMALI; yalnız `@Ifade` referansları koddur.
       • @code   — düpedüz C#; harf taraması dahil TAM denetim görür.
     """
-    metin = YORUM.sub(_satir_koru, metin)
-    metin = DIZE.sub(_satir_koru, metin)
+    yorum = (profil or {}).get("yorum", YORUM)
+    dize = (profil or {}).get("dize", DIZE)
+    metin = yorum.sub(_satir_koru, metin)
+    metin = dize.sub(_satir_koru, metin)
     if not razor:
         return metin, set()
     kod_satir = _kod_blok_satirlari(metin)
@@ -375,7 +463,7 @@ def ihlaller(yol: Path) -> list[tuple[int, str, str]]:
             break
 
     satirlar = ham.splitlines()
-    temiz_metin, kod_satir = soyutla(ham, razor)
+    temiz_metin, kod_satir = soyutla(ham, razor, profil_bul(yol))
     temiz = temiz_metin.splitlines()
     for i, satir in enumerate(temiz, 1):
         if not satir.strip():
@@ -407,10 +495,14 @@ def bilinmeyen_sozcukler(yol: Path, dagarcik: set) -> list:
       yanlis negatifin bedeli gorunmeyen bir ihlal.
     """
     uzanti = yol.suffix.lower()
-    if uzanti not in (".cs", ".razor"):
+    profil = profil_bul(yol)
+    if profil is None or uzanti == ".cshtml":
         return []   # .cshtml'de bildirim yok; markup adlarini taramak gurultu uretir
     ham = io.open(yol, encoding="utf-8-sig", errors="replace").read()
-    temiz, kod_satir = soyutla(ham, razor=(uzanti == ".razor"))
+    temiz, kod_satir = soyutla(ham, razor=(uzanti == ".razor"), profil=profil)
+    # Dil desenleri (1.7.0): C#/Razor mevcut desenler; ötekiler profilden. Anahtar sözcükler dile göre.
+    desenler = [(d, False) for d in BILDIRIM_DESENLERI] if profil["bildirim"] is None else profil["bildirim"]
+    anahtar = CS_ANAHTAR | profil["anahtar"]
     if uzanti == ".razor":
         # Ak liste yalniz @code GOVDESINE bakar: markup'ta bildirim yoktur ve
         # `@Ifade` referanslarini bildirim sanmak gurultu uretir.
@@ -420,20 +512,21 @@ def bilinmeyen_sozcukler(yol: Path, dagarcik: set) -> list:
 
     bulgular = []
     gorulen = set()
-    for desen in BILDIRIM_DESENLERI:
+    for desen, param_listesi in desenler:
         for m in desen.finditer(temiz):
-            ad = m.group(1)
-            if ad in CS_ANAHTAR:
-                continue
+            adlar = _parametre_adlari(m.group(1)) if param_listesi else [m.group(1)]
             satir_no = temiz[:m.start()].count(chr(10)) + 1
-            for w in SOZCUK_PARCA.findall(ad):
+            for ad in adlar:
+              if ad.lower() in anahtar:
+                continue
+              for w in SOZCUK_PARCA.findall(ad.replace("-", " ")):
                 wl = w.lower()
                 # ⚠ ALAN ADLARI BURADA DA GEÇERLİ (23.09.2026, sınamada yakalandı).
                 #   `alan_adlari` önce yalnız kara liste katmanında okunuyordu; ak
                 #   liste katmanı aynı adı "tanımıyorum" diye KIRIK veriyordu. Ayar
                 #   "serbest" diyor, kapı kırıyordu — yarım taşınmış soyutlama, hiç
                 #   taşınmamıştan kötüdür (`test-discipline` § yarım taşıma).
-                if len(wl) < 2 or wl.isdigit() or wl in CS_ANAHTAR or wl in dagarcik \
+                if len(wl) < 2 or wl.isdigit() or wl in anahtar or wl in dagarcik \
                         or wl in ALAN_ADLARI_KUCUK:
                     continue
                 if wl in gorulen:
@@ -444,18 +537,28 @@ def bilinmeyen_sozcukler(yol: Path, dagarcik: set) -> list:
     return bulgular
 
 
+# ── BAYRAKLAR (1.7.0) ─────────────────────────────────────────────────────────
+# --tabansiz : tabanı YOK say — "dokunulan dosya tamamen temiz olmalı" kuralı için (bkm-magaza, GMY 24.09:
+#              "dokundukça o dosyadaki her şeyi düzelt"). Kanca staged dosyaları bu bayrakla verir; taban
+#              yalnız süpürme/haritada borcu göstermeye yarar. Dokunulmayan dosyaya kimse bakmaz.
+BAYRAKLAR = {a for a in sys.argv[1:] if a.startswith("--")}
+TABANSIZ = "--tabansiz" in BAYRAKLAR
+HEPSI = "--hepsi" in BAYRAKLAR      # bulguların tamamını bas (harita/toplu çeviri için); varsayılan ilk 6
+ARGUMANLAR = [a for a in sys.argv[1:] if not a.startswith("--")]
 hedefler: list[Path] = []
-if len(sys.argv) > 1:
-    hedefler = [Path(a) for a in sys.argv[1:] if Path(a).exists()]
+if ARGUMANLAR:
+    hedefler = [Path(a) for a in ARGUMANLAR if Path(a).exists() and Path(a).suffix.lower() in DESTEKLENEN_UZANTILAR]
 else:
+    ATLANAN = {"obj", "bin", "node_modules", ".git", "dist", "www"}
     for k in KAPSAM:
-        for uzanti in ("*.cs", "*.cshtml", "*.razor"):
-            hedefler += [p for p in (KOK / k).rglob(uzanti)
-                         if "obj" not in p.parts and "bin" not in p.parts]
+        for uzanti in SUPURME_UZANTILARI:
+            hedefler += [p for p in (KOK / k).rglob("*" + uzanti)
+                         if not (ATLANAN & set(p.parts))]
 
 if not hedefler:
-    if len(sys.argv) > 1:
-        print("KOŞAMADI  verilen yolların hiçbiri yok — dosya adlarını kontrol et")
+    if ARGUMANLAR:
+        print("KOŞAMADI  verilen yolların hiçbiri yok ya da uzantısı desteklenmiyor "
+              f"({', '.join(DESTEKLENEN_UZANTILAR)}) — dosya adlarını kontrol et")
     elif not KAPSAM:
         # ⚠ AYARSIZ SÜPÜRME SESSİZ YEŞİL VERMEZ. Kapsamı boş bir kapı "0 bulgu,
         #   geçti" derse kurulu GÖRÜNÜR ama hiçbir şeye bakmıyordur.
@@ -491,7 +594,7 @@ gevseyen = []       # taban DUSMUS: tabani sikistirma firsati
 for p in sorted(hedefler):
     b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK)
     rel = p.relative_to(KOK).as_posix() if str(p).startswith(str(KOK)) else p.as_posix()
-    izin = TABAN.get(rel, 0) if tabanli_mi(p) else 0
+    izin = 0 if TABANSIZ else (TABAN.get(rel, 0) if tabanli_mi(p) else 0)
 
     if len(b) <= izin:
         # Taban ALTINDA ya da esit — bu bir BORC, yeni ihlal degil.
@@ -503,11 +606,11 @@ for p in sorted(hedefler):
     asim = b[izin:] if izin else b
     toplam += len(asim)
     print(f"\nKIRIK {_gosterim(p)}" + (f"  (taban {izin}, şimdi {len(b)})" if izin else ""))
-    for satir, metin, sebep in asim[:6]:
+    for satir, metin, sebep in (asim if HEPSI else asim[:6]):
         print(f"   satır {satir:>4}: {sebep}")
         if metin:
             print(f"              {metin}")
-    if len(asim) > 6:
+    if len(asim) > 6 and not HEPSI:
         print(f"   … {len(asim) - 6} bulgu daha")
 
 print()

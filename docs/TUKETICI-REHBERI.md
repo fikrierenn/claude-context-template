@@ -87,12 +87,15 @@ Kod İngilizce, **yorum ve UI metni Türkçe**. Kapı yorumlara ve dizelere bile
 2. **Araç yoksa ya da koşamazsa SARI uyarın**, sessizce geçmeyin. Sessiz geçen kapı,
    hiç olmayan kapıdan beterdir: çalışıyor *görünür*.
 3. Süpürme kipi istiyorsanız `.claude/turkce-kapi.json` yazın; yoksa kapı KOŞAMADI der.
+4. **Dokunulan dosya tamamen temiz** kuralı için kancadan `--tabansiz` ile çağırın (1.7.0): taban yok
+   sayılır, staged dosyada tek Türkçe ad BLOKLAR; dokunulmayan dosyaya bakılmaz. Taban yalnız süpürme/haritada
+   borcu gösterir. `.js/.py/.ps1/.sql` dosyaları argüman kipinde otomatik desteklenir.
 
 ### Tüketicide yaşayan dosyalar (hepsi isteğe bağlı)
 
 | Dosya | Ne |
 |---|---|
-| `.claude/turkce-kapi.json` | `{"kapsam":["src","tests"],"alan_adlari":["UrunAdi"],"tabanli_kokler":["legacy"],"dosya_adi_istisnalari":[]}` |
+| `.claude/turkce-kapi.json` | `{"kapsam":["src","tests"],"alan_adlari":["UrunAdi"],"tabanli_kokler":["legacy"],"dosya_adi_istisnalari":[],"uzantilar":[".cs",".razor",".js",".py",".ps1",".sql"]}` — `uzantilar` yoksa süpürme yalnız .cs/.razor (1.7.0, opt-in) |
 | `.claude/kod-sozcukleri.ek.txt` | deponuzun **alan** sözcükleri, satır başına bir tane |
 | `.claude/turkce-taban.json` | devralınmış borcu dondurmak (çırcır): `{"dosyalar":{"legacy/X.cs":12}}` |
 
