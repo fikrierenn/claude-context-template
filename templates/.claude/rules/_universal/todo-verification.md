@@ -5,6 +5,14 @@ _`paths:` yok — compact sonrası survive._
 
 ## Mutlak Kurallar
 
+0. **Yeni madde açmadan önce dup-grep.** Aynı konu/ID zaten var mı:
+   ```bash
+   grep -n "<ID ya da anahtar kelime>" TODO.md
+   ```
+   Varsa → mevcut maddeyi **güncelle**, yeni satır açma. Ölçülmüş: mükerrer maddeler
+   (aynı işin iki ayrı ID'yle iki kez açılması) tam olarak bu adım atlandığı için oluştu
+   ve ikisi ayrı ayrı "açık" göründüğü için iş iki kez planlandı.
+
 1. **TODO listesi bilgi değildir, hipotez tahtasıdır.** "Açık" yazısı bugün açık olduğunu kanıtlamaz; yazıldığı tarihte açıktı. Bugün de açık olduğunu kanıtlamak senin işin.
 
 2. **Action almadan önce file:line ile doğrula.** Madde `auth/login.ts:128 yetki kontrolü yok` diyorsa:

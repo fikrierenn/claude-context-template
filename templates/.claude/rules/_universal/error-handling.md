@@ -29,6 +29,44 @@ _Her stack'te geçerli ilke. `paths:` yok — compact sonrası survive._
 
 5. **Hata sınıflandırması tutarlı.** Projede hata kodu/aralığı veya tip hiyerarşisi varsa ona uy.
 
+## Reddet mi, Say mı? — Doğrulama Sınırının Ölçütü
+
+> Terfi: 23.09.2026. Bu ölçüt iki depoda bağımsız olgunlaştı (`dogrulama-siniri.md`
+> 4 depoda ayrı kural, ayrıca bir depoda bu dosyanın içine yazılmış) — merkeze alındı.
+
+Bir doğrulayıcı ne zaman **koşuyu durdurur**, ne zaman **raporlayıp devam eder**?
+
+**REDDET** — durum **ÇELİŞKİLİYSE**. İki doğru bilgi aynı anda tutamıyorsa.
+**SAY** — durum **EKSİKSE**. Bilgi doğru ama tam değil.
+
+Tek soru: *"bu iki şey aynı anda doğru olabilir mi?"* Olamazsa reddet.
+
+**Neden:** çelişki bir VERİ durumu değil, bir **KOD hatasıdır**. Çalıştırmaya devam etmek
+onu gizler — gizlenen kod hatası tam olarak "sessiz yanlış sonuç" sınıfıdır. Eksiklik ise
+meşru olabilir: kayıt son kapanan döneme kadar gelir, ötesi henüz yoktur; reddetmek doğru
+veriyi de atar.
+
+| Durum | Tanı | Karar |
+|---|---|---|
+| `net != brüt − indirim` | ikisi aynı anda doğru olamaz | **REDDET** |
+| Toplam ≠ parçaların toplamı | aritmetik çelişki | **REDDET** |
+| Türetilmiş sayı, kaynağın üstünde | tanım gereği imkânsız | **REDDET** |
+| Son dönemin verisi henüz işlenmemiş | henüz gelmemiş olabilir | **SAY** (`tam_mi: false` + uyarı) |
+| Beklenen eşi olmayan kayıt | boş olabilir | **SAY** ("teyit bekliyor") |
+| Gelecek döneme ait veri yok | gelecek | **SAY** (etiketli tahmin) |
+
+**Sınırın bittiği yer: eksiklik çelişkiye döndüğü an.** O an sayma — reddet ya da tamamla.
+
+## Hata Sınıflandırıcı — tip koda gömülmez
+
+"Gerçek exception" tipini çağrı yerine gömme; **merkezi bir sınıflandırıcıdan** sor
+(transient → retry+backoff, fatal → fail). Dağınık inline string-match yasak.
+
+- Retry yalnızca **transient** + **bounded** (en çok 2) + **her deneme loglanır**.
+- Bilinmeyen = transient sayılabilir ama yine bounded (sonsuz döngü yok).
+- Sınıflandırıcı tek dosyada yaşar; her dil tarafı kendi karşılığını tutar
+  (ör. `SqlErrorClassifier` / `_errors.py`), kural aynıdır.
+
 ## Anti-pattern
 
 1. `throw` ile business validation (beklenen sonucu exception yapma).

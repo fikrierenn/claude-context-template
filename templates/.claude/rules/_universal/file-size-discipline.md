@@ -35,6 +35,7 @@ Tek dosyada iç içe 5+ feature → merge conflict, test zorluğu, yeni gelişti
 - Tek sorumluluk başına dosya (örn: `userService.ts` → `userQueries.ts` + `userMutations.ts` + `userValidation.ts`)
 - Pure fonksiyonları utils'e çıkar
 - Class büyükse composition pattern
+- **Stack'e özgü sıfır-risk split teknikleri** (C# `partial class`, Blazor alt-bileşen) `stacks/dotnet-mvc/csharp-conventions.md` § Dosya Boyutu Disiplini
 
 **API Route / Controller:**
 - Handler logic'i servise taşı — route sadece auth + validation + response

@@ -18,6 +18,19 @@ paths:
 - Util/helper: 5+ public method varsa scope bazlı ayır.
 - **Mevcut büyük dosyalar** (legacy): TODO maddesi + ADR "Known debt" + faz planla. Touch ettikçe azaltmaya çalış.
 
+**`partial class` = sıfır-risk split (terfi 23.09.2026, ölçülmüş):** büyük servisi konuya
+göre iki dosyaya böl (`RefQueries.cs` + `RefQueries.Envanter.cs`, `public sealed partial
+class`). **Tip değişmez** → DI kaydı, çağıranlar, primary-ctor ve paylaşılan `const` aynı
+kalır; derleme bunu kanıtlar. Ölçülen vaka: 638 satır → 334 + 314, çağıran tarafta sıfır
+değişiklik.
+
+**Blazor `.razor` — KRİTİK nüans:**
+- `@code` içinde markup RenderFragment varsa (`__builder => { <div>… }`) → **`.razor.cs`
+  code-behind GEÇERSİZDİR**: düz C# Razor markup'ını derlemez (`error CS1525: '<'`).
+  Code-behind yalnız **saf C#** `@code` blokları için çalışır.
+- Büyük `.razor` bölmenin doğru yolu **alt-bileşen**dir (markup parçasını child `.razor`'a
+  çıkar), code-behind değil.
+
 **Snapshot (22 Nisan 2026):**
 - `AdminController.cs` 1736 satır — **anti-pattern**. TODO M-01 (Faz 2) service extraction.
 
