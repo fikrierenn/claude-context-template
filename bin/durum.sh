@@ -13,7 +13,12 @@
 #   -       kopya YOK (depo referans veriyor ya da o kurali kullanmiyor)
 #
 # Ve depo basina bir MODEL tahmini verir:
-#   KOPYA     .claude/rules altinda sablon kurallarinin kopyalari var
+#   KOPYA VAR .claude/rules altinda sablon kurallarindan EN AZ BIR kopya var.
+#             ⚠ ORAN DEMEK DEGILDIR. Eskiden "KOPYA" yaziyordu ve bir tuketici
+#             hakli olarak itiraz etti: kendi satiri `sapma 1 · yerel 12` idi,
+#             yani 13 kuralin 12'si o deponun KENDI kurali — "KOPYA" etiketi
+#             orani oldugundan buyuk gosteriyordu. Oran icin ayni/sapma/yerel
+#             sutunlarina bak; bu sutun yalnizca "kopya var mi" sorusunu yanitlar.
 #   REFERANS  kopya yok ama CLAUDE.md baska bir depodaki kurallara isaret ediyor
 #             (olculmus saglikli desen: bkm-magaza — 0 kopya, 1 bilincli yerel kural)
 #
@@ -33,7 +38,7 @@ echo
 printf '%-22s %6s %6s %6s %6s  %s\n' "depo" "ayni" "sapma" "yerel" "toplam" "model"
 printf '%-22s %6s %6s %6s %6s  %s\n' "----" "----" "-----" "-----" "------" "-----"
 
-t_ayni=0; t_sapma=0; t_yerel=0; t_depo=0; t_referans=0
+t_ayni=0; t_sapma=0; t_yerel=0; t_depo=0; t_referans=0; t_referans_bos=0
 for d in "$DEV"/*/; do
   ad="$(basename "$d")"
   [ "$ad" = "claude-context-template" ] && continue
@@ -61,7 +66,7 @@ for d in "$DEV"/*/; do
   fi
   toplam=$((ayni+sapma+yerel))
 
-  model="KOPYA"
+  model="KOPYA VAR"
   if [ "$((ayni+sapma))" = "0" ]; then
     # ⚠ DESEN GENISLETILDI (Asama 2, 23.09.2026). Eski hali yalniz
     # `../<depo>/.claude/rules` bicimini taniyordu; merkezin kanonik yolu ise
@@ -71,6 +76,9 @@ for d in "$DEV"/*/; do
     # aracinda GORUNMEZDI. Kapinin olctugu sey, olcmesi gereken sey degildi.
     if [ -f "$d/CLAUDE.md" ] && grep -qE 'merkez-bildirimi|templates/\.claude/rules|\.\./[A-Za-z0-9_-]+/\.claude/rules|kurallar.*komsu|KURALLAR BU DEPODA DEGIL|KURALLAR BU DEPODA DEĞİL|KURALLAR ARTIK MERKEZDE' "$d/CLAUDE.md" 2>/dev/null; then
       model="REFERANS"; t_referans=$((t_referans+1))
+      # Hic kurali olmayan depo da bu testi gecer. Ayri say: aksi halde
+      # "referans modeli N depo" satiri GOCU oldugundan buyuk gosterir.
+      [ "$toplam" = "0" ] && t_referans_bos=$((t_referans_bos+1))
     else
       model="-"
     fi
@@ -82,6 +90,15 @@ done
 
 echo
 echo "TOPLAM: $t_depo depo · ayni $t_ayni · SAPMA $t_sapma · yerel $t_yerel · referans modeli $t_referans depo"
+# ⚠ REFERANS SAYISI GOCU OLDUGUNDAN BUYUK GOSTEREBILIR — bilerek ayristiriliyor.
+# Bir depo "kopyasi yok + CLAUDE.md merkeze isaret ediyor" testini geciyorsa
+# REFERANS sayilir. Ama HIC KURALI OLMAYAN bir depo da bu testi gecer: o goc
+# etmis degildir, yalnizca hicbir zaman kopyalamamistir.
+# GERCEK GOC = kopyasi OLAN bir deponun kopyalari birakip isaretciye gecmesi.
+if [ "$t_referans_bos" -gt 0 ]; then
+  echo "       ⚠ bunun $t_referans_bos tanesinin HIC kurali yok — goc etmedi, hic kopyalamadi."
+  echo "         Gercek goc gostergesi: SAPMA'nin dusmesi ($t_sapma) — referans sayisinin artmasi degil."
+fi
 
 # ---------------------------------------------------------------------------
 # MERKEZIN KENDI SAGLIGI — evrensel katmanda proje adi var mi?
