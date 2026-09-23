@@ -124,6 +124,21 @@ kırılan bir kural yoktur, yalnızca "gereksiz görünen" bir satır vardır.
 yalnız bugün kırılmadığını kanıtlar. Tesadüfen doğru olan bir şey, bilerek doğru olan bir
 şeyle aynı görünür; ayıran tek şey **yanına yazılmış gerekçedir.**
 
+**KAYDIN YERİ, RİSKİN YERİ OLMALI.** Sebebi *bir yere* yazmak yetmez. Günlüğe, karar
+kaydına ya da envantere yazılmış bir gerekçe, o satırı düzeltmeye kalkan kişiye **ulaşmaz** —
+çünkü o kişi o belgeyi okumaz; elinde yalnız "gereksiz görünen" satır vardır.
+*Başka yerde belgelenmiş* ile *belgelenmemiş* aynı sonucu verir.
+
+> Ölçülmüş vaka: bir yapılandırma dosyasındaki alışılmadık yazımın gerekçesi deponun
+> günlüğünde **yazılıydı**; dosyanın kendisinde değildi. Kural uygulanınca gerekçe satırın
+> yanına taşındı — ölçümü, "düzeltmeyin" uyarısı ve **hangi koşulda kalkacağıyla** birlikte.
+
+**GEREKÇE UYDURULMAZ.** Bir korumanın gerçekten koruma mı yoksa alışkanlık mı olduğunu
+**ölçmeden** yanına gerekçe yazma. Uydurulmuş gerekçe, kayıtsız korumadan **kötüdür**:
+kayıtsız koruma yalnız görünmezdir, uydurulmuş gerekçe ise yanlış bir şeyi *doğrulanmış*
+gösterir ve sonraki kişi ona dayanarak karar verir. Ölçemiyorsan olduğu gibi yaz:
+*"bunun neden çalıştığı ölçülmedi."*
+
 Bu, `footprint-ladder`'ın *"mevcudu araştırmadan kaldırma"* maddesinin kanıt tarafıdır:
 kaldırmadan önce araştırmak ancak sebep **yazılıysa** işe yarar.
 
