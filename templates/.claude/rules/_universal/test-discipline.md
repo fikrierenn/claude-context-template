@@ -98,6 +98,35 @@ Aksi hâlde biri okunduğu için "okundu" bayrağı kalkar, "ölçemedim" uyarı
 **Alt-kural — kapı güvenileceği yerde kırılır.** Başkasının deposunda kırılan kapı, senin
 deponda KURULU olduğunun kanıtı değildir.
 
+## UYGULANAN ≠ YAZILI — aynı boşluğun ters yüzü
+
+> Terfi: 23.09.2026. Yukarıdaki kural *"yazılı ama kimse zorlamıyor"* der. Bu, tersidir:
+> **zorlanıyor ama kimse yazmamış.** Ve daha sinsidir, çünkü bugün her şey yeşildir.
+
+Bir koruma çalışıyor olabilir ve *koruma olduğu hiçbir yerde yazmıyor* olabilir. O hâlde
+onu **bir sonraki temizlik siler** — silen kişi bir şey kırdığını bilmez, çünkü ortada
+kırılan bir kural yoktur, yalnızca "gereksiz görünen" bir satır vardır.
+
+**SINAMA — tek soru:**
+
+> *"Bu satır yarın silinse ne kırılır, ve silen kişi bunu silmeden önce görür mü?"*
+> Cevap *"kırılır ama göremez"* ise, **sebebi satırın yanına yaz.**
+
+**Ölçülmüş vaka sınıfları (üçü ayrı depolarda, aynı gün):**
+
+| Fiilen koruyan şey | Neden kayıtsızdı | Silinseydi |
+|---|---|---|
+| Komut zincirinde `&&` (`;` değil) | alışkanlıkla seçilmişti, karar olarak değil | önceki adım başarısızken sonraki adım **cari dizinde** koşardı |
+| Yapılandırmadaki bir ad yazımı | "öylesine" öyleydi | derleme sessizce kırılırdı |
+| Bir muafiyet kaydı | dört gün "çalışıyor" göründü, çünkü hiç temiz derlenmedi | ilk temiz derlemede çıkardı |
+
+📐 **Doğru sonuç, kayıtsız sebep.** Yeşil bir koşum, sebebinin anlaşıldığını kanıtlamaz —
+yalnız bugün kırılmadığını kanıtlar. Tesadüfen doğru olan bir şey, bilerek doğru olan bir
+şeyle aynı görünür; ayıran tek şey **yanına yazılmış gerekçedir.**
+
+Bu, `footprint-ladder`'ın *"mevcudu araştırmadan kaldırma"* maddesinin kanıt tarafıdır:
+kaldırmadan önce araştırmak ancak sebep **yazılıysa** işe yarar.
+
 **Uygulama:** yeni bir kural yazarken aynı commit'te şu üçünden birini göster —
 (a) kuralı çiğneyeni yakalayan bir denetim/test/constraint, (b) kırmızı verdiği **ölçülmüş**
 bir koşum, (c) *"bunu bugün hiçbir şey yakalamıyor"* cümlesinin kuralın YANINA yazılması.
