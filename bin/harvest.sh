@@ -18,11 +18,17 @@
 #
 #   <hedef>: _universal | stacks/dotnet-mvc | stacks/nodejs-typescript
 #            | stacks/python-generic | stacks/ai-powered
+#            (kategori `tools` ise hedef yoksayilir: kapilar hep depo kokundeki
+#             tools/ altina gider, katman yok)
+#
+# KATEGORILER: rules · skills · agents · hooks · commands · tools
+#   `tools` = python/shell KAPILAR. `.claude` altinda degil, depo kokunde durur.
 #
 # SINIFLANDIRMAYI MAKINE YAPMAZ.
 # Bir kuralin "evrensel" olup olmadigi yargidir. Script yalnizca YAYGINLIK
-# olcer ve oneri yapar; karari insan verir. Yaygin olmak evrensel olmanin
-# kaniti degildir, yalnizca isaretidir.
+# OLCER — oneri URETMEZ (esik 23.09.2026'da kaldirildi: olculdu ki en yaygin
+# dosyalarin yarisi stack kuralidir). Yaygin olmak evrensel olmanin kaniti
+# degildir, yalnizca isaretidir; karari insan verir.
 
 set -uo pipefail
 
@@ -60,9 +66,26 @@ projeleri_bul() {
   fi
 }
 
+# Bir kategorinin PROJE tarafindaki dizini.
+# ⚠ `tools` .claude ALTINDA DEGIL, depo kokunde durur (23.09.2026'da eklendi).
+# Sebep olculdu: ekosistemin en olgun kapisi (`turkce_tanimlayici_denetimi.py`)
+# `tools/` altindaydi ve harvest onu HIC gormuyordu — yani "geri akis yolu var"
+# cumlesi kapilar icin YANLISTI ve ilk terfi ELLE yapilmak zorunda kaldi.
+proje_dizin() {
+  local kategori="$1" proje="$2"
+  case "$kategori" in
+    tools) echo "$proje/tools" ;;
+    *)     echo "$proje/.claude/$kategori" ;;
+  esac
+}
+
 # Sablonda bu dosya herhangi bir katmanda var mi? Varsa yolunu doner.
 sablonda_bul() {
   local kategori="$1" ad="$2" y
+  if [ "$kategori" = "tools" ]; then
+    [ -f "$KOK/tools/$ad" ] && { echo "$KOK/tools/$ad"; return 0; }
+    return 1
+  fi
   for y in "$SABLON/$kategori/_universal/$ad" \
            "$SABLON/$kategori/$ad" \
            "$SABLON/$kategori"/stacks/*/"$ad" \
@@ -85,22 +108,23 @@ tara() {
   echo
 
   local kategori
-  for kategori in rules skills agents hooks commands; do
+  for kategori in rules skills agents hooks commands tools; do
 
     # Tum projelerdeki dosya adlarini topla
     local gecici; gecici=$(mktemp)
     local p
     while IFS= read -r p; do
-      [ -d "$p/.claude/$kategori" ] || continue
+      local pdizin; pdizin=$(proje_dizin "$kategori" "$p")
+      [ -d "$pdizin" ] || continue
       # skill'ler klasor, digerleri dosya
       if [ "$kategori" = "skills" ]; then
         local s
-        for s in "$p/.claude/skills"/*/; do
+        for s in "$pdizin"/*/; do
           [ -f "$s/SKILL.md" ] && echo "$(basename "${s%/}")|$p"
         done
       else
         local f
-        for f in "$p/.claude/$kategori"/*; do
+        for f in "$pdizin"/*; do
           [ -f "$f" ] && echo "$(basename "$f")|$p"
         done
       fi
@@ -128,7 +152,7 @@ tara() {
             proje_yol="$pp/.claude/skills/$ad/SKILL.md"
             [ -f "$sablon_yol" ] || continue
           else
-            proje_yol="$pp/.claude/$kategori/$ad"
+            proje_yol="$(proje_dizin "$kategori" "$pp")/$ad"
           fi
           [ -f "$proje_yol" ] || continue
           cmp -s "$proje_yol" "$sablon_yol" || farkli=$((farkli+1))
@@ -139,9 +163,16 @@ tara() {
         oneri="--diff ile bak"
       else
         durum="SABLONDA YOK"
-        if   [ "$n" -ge 5 ]; then oneri="_universal adayi"
-        elif [ "$n" -ge 2 ]; then oneri="stacks/* adayi"
-        else                      oneri="yerel gorunuyor"
+        # ⚠ ESIK KALDIRILDI (23.09.2026, GMY karari — OLCUMLE).
+        # Onceki hali: 5+ depo -> "_universal adayi", 2+ -> "stacks/* adayi".
+        # Olculdu: esigi gecen 8 dosyanin 4'u STACK kuralidir (csharp-conventions
+        # 9 depo, razor-conventions 8, sql-conventions 7, phase-review-gate 6) —
+        # yani otomatik etiket ~yari yaniltiyordu. Ve bu, bu scriptin KENDI
+        # basligiyla celisiyordu: "Yaygin olmak evrensel olmanin KANITI degildir."
+        # Artik sayi verilir, sinif INSANA birakilir.
+        if   [ "$n" -ge 5 ]; then oneri="$n depo — sinifi SEN sec"
+        elif [ "$n" -ge 2 ]; then oneri="$n depo — sinifi SEN sec"
+        else                      oneri="1 depo — yerel gorunuyor"
         fi
       fi
 
@@ -176,11 +207,11 @@ fark() {
   [ -d "$proje" ] || { echo "HATA: proje bulunamadi: $2"; exit 1; }
 
   local kategori proje_yol=""
-  for kategori in rules skills agents hooks commands; do
+  for kategori in rules skills agents hooks commands tools; do
     if [ "$kategori" = "skills" ] && [ -f "$proje/.claude/skills/$ad/SKILL.md" ]; then
       proje_yol="$proje/.claude/skills/$ad/SKILL.md"; break
-    elif [ -f "$proje/.claude/$kategori/$ad" ]; then
-      proje_yol="$proje/.claude/$kategori/$ad"; kategori="$kategori"; break
+    elif [ -f "$(proje_dizin "$kategori" "$proje")/$ad" ]; then
+      proje_yol="$(proje_dizin "$kategori" "$proje")/$ad"; break
     fi
   done
   [ -n "$proje_yol" ] || { echo "HATA: '$ad' $proje icinde bulunamadi"; exit 1; }
@@ -212,11 +243,11 @@ terfi() {
   [ -d "$proje" ] || { echo "HATA: proje bulunamadi"; exit 1; }
 
   local kategori proje_yol="" dosya_adi="$ad"
-  for kategori in rules skills agents hooks commands; do
+  for kategori in rules skills agents hooks commands tools; do
     if [ "$kategori" = "skills" ] && [ -f "$proje/.claude/skills/$ad/SKILL.md" ]; then
       proje_yol="$proje/.claude/skills/$ad"; dosya_adi="$ad"; break
-    elif [ -f "$proje/.claude/$kategori/$ad" ]; then
-      proje_yol="$proje/.claude/$kategori/$ad"; break
+    elif [ -f "$(proje_dizin "$kategori" "$proje")/$ad" ]; then
+      proje_yol="$(proje_dizin "$kategori" "$proje")/$ad"; break
     fi
   done
   [ -n "$proje_yol" ] || { echo "HATA: '$ad' bulunamadi"; exit 1; }
@@ -225,6 +256,7 @@ terfi() {
   # hooks/commands katmansiz durur
   case "$kategori" in
     hooks|commands) hedef_dizin="$SABLON/$kategori" ;;
+    tools)          hedef_dizin="$KOK/tools" ;;   # kapilar kokte, templates/ altinda DEGIL
   esac
 
   mkdir -p "$hedef_dizin"
