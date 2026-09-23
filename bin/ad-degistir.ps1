@@ -23,10 +23,28 @@
 
 .EXAMPLE
     # D:\Dev'de (merkez deposunun ICINDE DEGIL) acilmis bir kabukta:
-    powershell -NoProfile -File D:\Dev\claude-context-template\bin\ad-degistir.ps1
+    powershell -NoProfile -ExecutionPolicy Bypass -File D:\Dev\claude-context-template\bin\ad-degistir.ps1
 
 .EXAMPLE
-    powershell -NoProfile -File .\bin\ad-degistir.ps1 -WhatIf   # kuru kosum
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\bin\ad-degistir.ps1 -WhatIf   # kuru kosum
+
+.NOTES
+    UYARI  -ExecutionPolicy Bypass SART ve orneklerde bilerek yazili. Bu makinede
+      calistirma politikasi imzasiz betigi engelliyor ve sonuc YANILTICI: betigin
+      KENDI on kontrolleri hic kosmaz, yani 'merkezin icinden kosuyorsun' uyarisini
+      GORMEZSIN — yalnizca SecurityError gorursun ve sebebi yanlis yerde ararsin.
+      Olculdu (23.09.2026, ilk kosum denemesi).
+      Bayrak SURECE ozeldir: makinenin politikasini DEGISTIRMEZ. Politikayi kalici
+      olarak gevsetmek bu betigin isi degildir.
+
+    UYARI  KILIDI TUTAN, O DIZINDE ACILMIS HER SUREC OLABILIR — kendi kabugun dahil.
+      Windows, bir surecin CALISMA DIZINI olan klasoru yeniden adlandirmaz.
+      TANI: dizin ICINDEKI bir alt klasor yeniden adlandirilabiliyor ama TEPE dizin
+      adlandirilamiyorsa, kilit bir DOSYA kilidi degil CWD kilididir.
+      Olculdu: merkez deposunda acilmis bir Claude oturumu kilidi tutar ve calisma
+      dizinini birakamaz (her komuttan sonra oraya geri sifirlanir). Terminali disari
+      almak YETMEDI; o oturumun kapanmasi gerekti.
+      Cozum: o dizinde acilmis TUM kabuklari ve oturumlari kapat, sonra kos.
 #>
 [CmdletBinding()]
 param(
