@@ -56,6 +56,20 @@ Deponuzda `.claude/rules/*.md` **kopyası** varsa o dosyalar kanonik **değildir
 | `_universal/footprint-ladder.md` | içindeki proje adı sızıntısı temizlendi |
 | `stacks/dotnet-mvc/csharp-conventions.md` | `partial class` sıfır-risk split · Blazor `.razor` nüansı |
 
+### ⚠ "Kanonik kuralı al" ≠ "o kural bu depoda bir şey değiştirir"
+
+Bir tüketici bunu ölçtü ve tablo öğretici (kendi deposunda, üç merkez kuralı için):
+
+| Kural | O depodaki gerçek karşılığı |
+|---|---|
+| `performance.md` | N+1 taraması **tek** yer buldu, `IMemoryCache` kullanımı **0** → bir TODO satırı, davranış değişikliği değil |
+| `error-handling.md` | **Gerçek değişiklik.** "REDDET / SAY" ölçütü mevcut ETL kapısını **bölüyor**: negatif stok fiziksel olarak imkânsız (çelişki → REDDET), eşleşmeyen kayıt gerçekten eksik (→ SAY). Plan gerektiriyor |
+| `test-discipline.md` | Otomatik test projesi yok → bugün uygulanacak yer **yok**, değeri gelecekte |
+
+Üçünden **biri** gerçekten bir şey değiştirdi. Referansa geçmek kuralları *geçerli*
+kılar; hangisinin bu depoda karşılığı olduğunu **ölçmek** ayrı iştir ve atlanırsa
+"18 kural aldık" cümlesi bir şey ifade etmez.
+
 ---
 
 ## 2. Türkçe tanımlayıcı kapısı — çağırın, kopyalamayın
