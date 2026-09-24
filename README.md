@@ -1,9 +1,9 @@
-# claude-context-template (→ Norma) — kuralların tek merkezi (v1.9.0)
+# claude-context-template (→ Norma) — kuralların tek merkezi (v1.9.1)
 
 **BKM'nin bütün depolarının doğuştan aldığı çalışma disiplini: 19 evrensel kural, kapılar ve ortak sözlük — tek yerde.**
 Kural bir depoya kopyalanmaz, işaret edilir; kopyalanan kural bayatlar ve iki gerçek doğar. Depo adı yakında **Norma** (Latince: ölçü, kural) olacak.
 
-*v1.9.0 · 19 kural · ak liste 3.075 sözcük · 37 tüketici depo.*
+*v1.9.1 · 19 kural · ak liste 3.075 sözcük · 37 tüketici depo.*
 
 ## Ne var
 

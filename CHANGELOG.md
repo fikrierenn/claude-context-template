@@ -2,6 +2,31 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.9.1] - 2026-09-24
+
+### Değişti (Solum çekinceleri — ölçümlü, GMY: "çekincelerini aktar, bu özellikleri de alsın geliştirsin")
+- **Kodlama ekseni üç SEVİYE oldu** — `"kodlama": {"karakter": "turkce" | "cp1254_disi" | "ascii"}`. 1.9.0'ın tek boolean'ı
+  (`ascii_kaynak`) Solum `src/`'de 209/209 dosyayı kırardı; Solum NamingTests ise 12 Türkçe harfe bakar ve sıfır bulur —
+  eşdeğer değildi. Ölçüm iki ayrı hasar sınıfı gösterdi: Türkçe harfler cp1254'te VAR ama UTF-8↔cp1254 uyumsuzluğunda
+  `Ba�ar�s�z` olur (`turkce` seviyesi = NamingTests birebir); `─ ⚠ → emoji BOM` cp1254'te YOK, konsola yazılınca
+  `UnicodeEncodeError` ile ÇÖKER (`cp1254_disi` seviyesi — NamingTests bunu görmezdi). `ascii` ikisinin birleşimi + fazlası.
+  `"ascii_kaynak": true` geriye uyumlu (= `ascii`). Geçersiz seviye → KOŞAMADI (2).
+- **Kodlamanın kendi kapsamı/uzantıları**: `"kodlama": {"kapsam": [...], "uzantilar": [...]}`; yoksa adlandırma kapsamı.
+  İki eksen iki ayrı soru sorar — Solum adlandırmayı yalnız `src/`'de tutar (tools/ 240 Türkçe tanımlayıcı borcu), kodlamayı
+  `tests/ tools/ .claude/hooks` a da yaymak ister. Kodlama bulguları adlandırma döngüsünden AYRILDI: kendi dosya kümesi, taban
+  (çırçır) yok, sıfır tolerans, `[kodlama:<seviye>]` etiketiyle basılır; özet satırı `kodlama[x] · N dosya · muaf M · bulgu B`.
+  Kodlama kapsamı boş → KOŞAMADI. Argüman kipinde (kanca) kodlama kapsamı dışındaki dosya denetlenmez.
+- **Muafiyet**: yol YA DA yalnız dosya adı (alt dizinler aranır; NamingTests biçimi); isteğe bağlı içerik işareti
+  `{"yol": "SolumUiText.cs", "icerir": "internal const string"}` — muafiyet "bu gerçekten ekran metni sabitleri dosyası"
+  iddiasıdır, işaret dosyada yoksa KIRIK (iş mantığı dosyasına Türkçe yorum yazıp listeye koyma kaçışı kapanır).
+- Bulgu metni aykırı karakterleri sayar: `─ U+2500×12 → U+2192×3` (ilk 5).
+- Sabotaj (13 vaka): turkce yalnız Türkçe harfli dosyayı kırar, `— ─ →` geçer · cp1254_disi `─ →` kırar, `—` ve Türkçe geçer ·
+  ascii_kaynak:true ikisini de kırar · geçersiz seviye KOŞAMADI · ayrı kapsamda tools/x.py yalnız kodlamada kırık ·
+  boş kodlama kapsamı KOŞAMADI · dosya adı + doğru icerir geçer · yanlış icerir KIRIK · gerekçesiz muaf KIRIK · yok dosya KIRIK ·
+  kanca kipi kapsam dışı dosyayı atlar, kapsam içini kırar · bkm-magaza --hepsi etkilenmedi.
+- Taşınmayan: NamingTests `PublicAPI.*.txt` taraması (analizöre özgü). Solum artık `karakter: "turkce"` ile paralel koşup
+  NamingTests'in iki testini silebilir.
+
 ## [1.9.0] - 2026-09-24
 
 ### Eklendi (Solum isteği — GMY: "NamingTests'i genel araca aktar, tüm repolar yararlansın")

@@ -212,10 +212,35 @@ DOSYA_ADI_ISTISNALARI = set(AYAR.get("dosya_adi_istisnalari", []))
 #   naming-conventions.md §18 (yorum/UI Türkçe, ASCII sadeleştirme yok) DEĞİŞMEZ: ayrı eksen, VARSAYILAN KAPALI. Açan depo
 #   muafiyeti BEYAN eder ve beyan ÖLÇÜLÜR: muaf dosya yoksa ya da ASCII dışı karakter taşımıyorsa KIRIK (bkm-magaza D-011'in
 #   'yanlış pozitif → red' sebebi böyle kapanır: listeye kaçış değil, iddia).
+#   1.9.1 (Solum ölçümü: "ascii" düzeyi Solum src'de 209/209 dosyayı kırardı; NamingTests 12 Türkçe harfe bakar, sıfır
+#   bulur — eşdeğer değildi). Üç SEVİYE, üç ayrı hasar sınıfı:
+#     "karakter": "turkce"      → çğıöşü ÇĞİÖŞÜ (NamingTests birebir eşdeğeri; UTF-8↔cp1254 uyumsuzluğunda `Ba�ar�s�z` olur)
+#     "karakter": "cp1254_disi" → Türkçe Windows kod sayfasında OLMAYAN karakter: ─ ⚠ → emoji, satır içi BOM
+#                                  (konsola yazılınca ÇÖKER: UnicodeEncodeError 'charmap'); cp1254'te olan — § · zararsız sayılır
+#     "karakter": "ascii"       → ASCII dışı her şey (eski "ascii_kaynak": true = bu seviye, geriye uyumlu)
+#   Kodlamanın KENDİ kapsamı/uzantıları olabilir ("kapsam", "uzantilar"); yoksa adlandırma kapsamı kullanılır. İki eksen iki
+#   ayrı soru sorar — Solum adlandırmayı yalnız src/'de tutar (tools/ 240 Türkçe tanımlayıcı borcu), kodlamayı tests/tools/hooks'a
+#   da yaymak ister. Muafiyet dosya YOLU ya da yalnız DOSYA ADI (alt dizinler aranır) olabilir; isteğe bağlı "icerir" içerik işareti
+#   muafiyetin "bu gerçekten ekran metni sabitleri dosyası" iddiasını doğrular (iş mantığı dosyasına Türkçe yorum yazıp listeye
+#   koyma kaçışı kapanır). Baştaki UTF-8 BOM sayılmaz (.ps1 PS 5.1 için zorunlu); satır içi BOM sayılır.
 OLU_SOZCUK = bool(AYAR.get("olu_sozcuk", True))
 KODLAMA_AYARI = AYAR.get("kodlama", {}) or {}
-ASCII_KAYNAK = bool(KODLAMA_AYARI.get("ascii_kaynak", False))
-KODLAMA_MUAF = {m.replace(chr(92), "/") for m in KODLAMA_AYARI.get("muaf", [])}
+KODLAMA_SEVIYE = KODLAMA_AYARI.get("karakter") or ("ascii" if KODLAMA_AYARI.get("ascii_kaynak") else None)
+if KODLAMA_SEVIYE not in (None, "turkce", "cp1254_disi", "ascii"):
+    print(f"KOŞAMADI  kodlama.karakter geçersiz: {KODLAMA_SEVIYE!r} — turkce | cp1254_disi | ascii")
+    sys.exit(2)
+KODLAMA_KAPSAM = KODLAMA_AYARI.get("kapsam")                                   # None → adlandırma kapsamı
+KODLAMA_UZANTILARI = tuple(KODLAMA_AYARI.get("uzantilar", [])) or None       # None → süpürme uzantıları
+TURKCE_HARFLER = set("çğıöşüÇĞİÖŞÜ")
+
+
+def _muaf_kaydi_normalize(m) -> dict:
+    if isinstance(m, str):
+        return {"yol": m.replace(chr(92), "/"), "icerir": None}
+    return {"yol": str(m.get("yol", "")).replace(chr(92), "/"), "icerir": m.get("icerir") or None}
+
+
+KODLAMA_MUAF = [_muaf_kaydi_normalize(m) for m in KODLAMA_AYARI.get("muaf", [])]
 
 TURKCE_KELIMELER = [
     "Sube", "Mudur", "Kisi", "Gun", "Tarih", "Onay", "Sifre", "Kullanici",
@@ -778,29 +803,94 @@ def bilesen_bulgulari(yol: Path, dagarcik: set) -> list[tuple[int, str, str]]:
 #              "dokundukça o dosyadaki her şeyi düzelt"). Kanca staged dosyaları bu bayrakla verir; taban
 #              yalnız süpürme/haritada borcu göstermeye yarar. Dokunulmayan dosyaya kimse bakmaz.
 
+def _kodlama_aykiri(c: str) -> bool:
+    """Seçili seviyede karakter aykırı mı."""
+    if ord(c) < 128:
+        return False
+    if KODLAMA_SEVIYE == "ascii":
+        return True
+    if KODLAMA_SEVIYE == "turkce":
+        return c in TURKCE_HARFLER
+    try:
+        c.encode("cp1254")
+        return False
+    except UnicodeEncodeError:
+        return True
+
+
+def _rel(yol: Path) -> str:
+    return (yol.relative_to(KOK).as_posix() if str(yol).startswith(str(KOK)) else yol.as_posix())
+
+
+def _kodlama_muaf_kaydi(yol: Path):
+    rel, ad = _rel(yol), yol.name
+    for m in KODLAMA_MUAF:
+        if m["yol"] == rel or ("/" not in m["yol"] and m["yol"] == ad):
+            return m
+    return None
+
+
 def kodlama_bulgulari(yol: Path) -> list[tuple[int, str, str]]:
-    """ascii_kaynak açıksa: dosyada (yorum dahil) ASCII dışı karakter → bulgu; muaf dosya için beyan doğrulanır."""
-    if not ASCII_KAYNAK:
+    """Seçili seviyede aykırı karakter (yorum dahil) → satır başına bulgu; muaf dosya için beyan doğrulanır."""
+    if not KODLAMA_SEVIYE:
         return []
-    rel = _gosterim(yol).replace(chr(92), "/")
+    from collections import Counter
     metin = io.open(yol, encoding="utf-8-sig", errors="replace").read()
-    ascii_disi = [(i, s) for i, s in enumerate(metin.split(chr(10)), 1) if any(ord(c) > 127 for c in s)]
-    if rel in KODLAMA_MUAF:
-        if not ascii_disi:
-            return [(1, "", "kodlama: muafiyet gerekçesiz — dosyada ASCII dışı karakter yok; muaf satırını sil")]
+    aykiri = []
+    for i, s in enumerate(metin.split(chr(10)), 1):
+        k = [c for c in s if _kodlama_aykiri(c)]
+        if k:
+            aykiri.append((i, s, k))
+    muaf = _kodlama_muaf_kaydi(yol)
+    if muaf:
+        b = []
+        if not aykiri:
+            b.append((1, "", f"kodlama: muafiyet gerekçesiz — dosyada '{KODLAMA_SEVIYE}' düzeyinde aykırı karakter yok; muaf satırını sil"))
+        if muaf["icerir"] and muaf["icerir"] not in metin:
+            b.append((1, "", f"kodlama: muafiyet iddiası doğrulanamadı — içerik işareti dosyada yok: {muaf['icerir']!r}"))
+        return b
+    if not aykiri:
         return []
-    if not ascii_disi:
-        return []
-    i, s = ascii_disi[0]
-    return [(i, s.strip()[:90], f"kodlama: ASCII dışı karakter (yorum dahil) — {len(ascii_disi)} satır; ekran metniyse kodlama.muaf listesine al")]
+    sayim = Counter(c for _, _, k in aykiri for c in k)
+    ozet = " ".join(f"{c} U+{ord(c):04X}×{n}" for c, n in sayim.most_common(5))
+    b = [(aykiri[0][0], aykiri[0][1].strip()[:90],
+          f"kodlama[{KODLAMA_SEVIYE}]: aykırı karakter — {len(aykiri)} satır · {ozet}; ekran metniyse kodlama.muaf listesine al")]
+    b += [(i, s.strip()[:90], f"kodlama[{KODLAMA_SEVIYE}]: " + " ".join(sorted(set(k)))) for i, s, k in aykiri[1:]]
+    return b
 
 
 def kodlama_muaf_denetimi() -> list[str]:
     """Muaf beyanı bir iddiadır: dosya yoksa muafiyet dayanaksız kalır ve kapı sessizce yarım açık olur."""
-    if not ASCII_KAYNAK:
+    if not KODLAMA_SEVIYE:
         return []
-    return [f"kodlama: muaf dosya yok — {m} (muafiyet dayanaksız kaldı, satırı sil ya da yolu düzelt)"
-            for m in sorted(KODLAMA_MUAF) if not (KOK / m).exists()]
+    eksik = []
+    for m in KODLAMA_MUAF:
+        var = (KOK / m["yol"]).exists() if "/" in m["yol"] else any(True for _ in KOK.rglob(m["yol"]))
+        if not var:
+            eksik.append(f"kodlama: muaf dosya yok — {m['yol']} (muafiyet dayanaksız kaldı, satırı sil ya da yolu düzelt)")
+    return eksik
+
+
+def kodlama_hedefleri() -> list[Path]:
+    """Kodlama ekseninin dosya kümesi: kendi kapsamı/uzantıları varsa onlar, yoksa adlandırma kapsamı."""
+    if not KODLAMA_SEVIYE:
+        return []
+    uzantilar = KODLAMA_UZANTILARI or SUPURME_UZANTILARI
+    kapsam = KAPSAM if KODLAMA_KAPSAM is None else KODLAMA_KAPSAM
+    if ARGUMANLAR:
+        secilen = [Path(a) for a in ARGUMANLAR if Path(a).exists() and Path(a).suffix.lower() in uzantilar]
+        if KODLAMA_KAPSAM is None:
+            return secilen
+        return [p for p in secilen
+                if any(_rel(p.resolve()).startswith(k.replace(chr(92), "/").rstrip("/") + "/") for k in kapsam)]
+    sonuc = []
+    for k in kapsam:
+        for uzanti in uzantilar:
+            sonuc += [p for p in (KOK / k).rglob("*" + uzanti) if p.is_file() and not (ATLANAN & set(p.parts))]
+    if not sonuc:
+        print(f"KOŞAMADI  kodlama kapsamında dosya yok — {kapsam} · {list(uzantilar)}")
+        sys.exit(2)
+    return sonuc
 
 
 def olu_sozcukler(hedefler: list[Path]) -> list[str]:
@@ -822,8 +912,8 @@ ARGUMANLAR = [a for a in sys.argv[1:] if not a.startswith("--")]
 hedefler: list[Path] = []
 if ARGUMANLAR:
     hedefler = [Path(a) for a in ARGUMANLAR if Path(a).exists() and Path(a).suffix.lower() in DESTEKLENEN_UZANTILAR + BILESEN_UZANTILARI]
-else:
-    ATLANAN = {"obj", "bin", "node_modules", ".git", "dist", "www"}
+ATLANAN = {"obj", "bin", "node_modules", ".git", "dist", "www"}
+if not ARGUMANLAR:
     for k in KAPSAM:
         for uzanti in SUPURME_UZANTILARI:
             hedefler += [p for p in (KOK / k).rglob("*" + uzanti)
@@ -866,7 +956,7 @@ toplam = 0
 dondurulan = 0      # tabanin ALTINDA ya da ESIT kalan (borc, yeni ihlal degil)
 gevseyen = []       # taban DUSMUS: tabani sikistirma firsati
 for p in sorted(hedefler):
-    b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK) + bicim_bulgulari(p) + bilesen_bulgulari(p, DAGARCIK) + kodlama_bulgulari(p)
+    b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK) + bicim_bulgulari(p) + bilesen_bulgulari(p, DAGARCIK)
     rel = p.relative_to(KOK).as_posix() if str(p).startswith(str(KOK)) else p.as_posix()
     izin = 0 if TABANSIZ else (TABAN.get(rel, 0) if tabanli_mi(p) else 0)
 
@@ -887,9 +977,27 @@ for p in sorted(hedefler):
     if len(asim) > 6 and not HEPSI:
         print(f"   … {len(asim) - 6} bulgu daha")
 
+# ── KODLAMA EKSENİ: kendi dosya kümesi, taban YOK (sıfır tolerans), adlandırma bulgularından ayrı basılır ──
+KODLAMA_HEDEFLER = sorted(set(kodlama_hedefleri()))
+kod_toplam = 0
+for p in KODLAMA_HEDEFLER:
+    kb = kodlama_bulgulari(p)
+    if not kb:
+        continue
+    kod_toplam += len(kb)
+    print(f"{chr(10)}KIRIK {_gosterim(p)}  [kodlama:{KODLAMA_SEVIYE}]")
+    for satir, metin, sebep in (kb if HEPSI else kb[:6]):
+        print(f"   satır {satir:>4}: {sebep}")
+        if metin:
+            print(f"              {metin}")
+    if len(kb) > 6 and not HEPSI:
+        print(f"   … {len(kb) - 6} satır daha")
 for eksik_muaf in kodlama_muaf_denetimi():
     print(f"{chr(10)}KIRIK {eksik_muaf}")
-    toplam += 1
+    kod_toplam += 1
+if KODLAMA_SEVIYE:
+    print(f"{chr(10)}kodlama[{KODLAMA_SEVIYE}] · {len(KODLAMA_HEDEFLER)} dosya · muaf {len(KODLAMA_MUAF)} · bulgu {kod_toplam}")
+toplam += kod_toplam
 olu = olu_sozcukler(hedefler)
 if olu:
     print(f"{chr(10)}KIRIK {EK_SOZLUK_DOSYASI.name}: ÖLÜ SÖZCÜK {len(olu)} — ek listede var, taranan kodda geçmiyor: {chr(44).join(olu[:12])}")
