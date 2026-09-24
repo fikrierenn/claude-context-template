@@ -2,6 +2,25 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.9.2] - 2026-09-24
+
+### Eklendi (Solum altıncı fark — paralel koşumda ölçüldü, 8/8 eşdeğerlikten sonra tools/hooks kapsamında 3 dosya ayrıştı)
+- **`"kodlama": {"dize_atla": [".py", ".sh", ".ps1", ".psm1"]}`** (varsayılan bu liste): betiğin ÇIKTISI onun arayüzüdür —
+  `print("Başarılı")`, üretilen Markdown başlığı — Türkçe olmalı. Bu uzantılarda DİZE içeriği kodlama taramasından çıkarılır,
+  YORUM taranır (Solum NamingTests `StripStringLiterals` ile aynı politika). Dosya muafiyeti yorumu da affederdi; NamingTests'ten
+  gevşek bir kapı doğardı — o yüzden dize politikası, muafiyet değil. Derlenen dillerde (.cs) dize taranır: arayüz metni ayrı
+  sabit dosyasındadır (muaf + `icerir`). Kapatmak: `"dize_atla": []`. Tek geçişli soyutlama (1.8.2 dersi): yorum içindeki tırnak
+  dize başlatmaz, dize içindeki `#` yorum başlatmaz. `.sh`/`.bash` için asgari profil eklendi (adlandırma kapısında .sh yok).
+- Sabotaj (9 vaka): .py dizede Türkçe → geçer · yorumda → KIRIK · `# it's 'başarılı'` → KIRIK · `print("#başarılı")` → geçer ·
+  .sh echo dizesi geçer, yorumu KIRIK · .cs dizesi KIRIK · `dize_atla: []` → dizeler KIRIK · Solum'un gerçek 18 betiği
+  (tools/*.py + hooks/*.sh kopyası) varsayılanla 0 bulgu, kapalıyken tam Solum ölçümü (icindekiler 27 · kapi-sina 1 · olcum 2) ·
+  bkm-magaza --hepsi etkilenmedi.
+
+### Uyarı (Solum tespiti)
+- **Ölü sözcük yalnız süpürme kipinde koşar.** Kanca dosya kipi onu çağırmaz (nüfus tam olmalı). "Açık" görünür ama hiçbir
+  şey süpürmeyi otomatik koşturmuyorsa çalışmaz: CI'ya `python …/turkce_tanimlayici_denetimi.py` süpürme adımı koy
+  (Solum `tools/ci.py` 6. adım). bkm-magaza: `turkish_baseline.py --map` günlük süpürme bu rolü görür; CI adımı ayrıca değerlendirilecek.
+
 ## [1.9.1] - 2026-09-24
 
 ### Değişti (Solum çekinceleri — ölçümlü, GMY: "çekincelerini aktar, bu özellikleri de alsın geliştirsin")

@@ -223,6 +223,13 @@ DOSYA_ADI_ISTISNALARI = set(AYAR.get("dosya_adi_istisnalari", []))
 #   da yaymak ister. Muafiyet dosya YOLU ya da yalnız DOSYA ADI (alt dizinler aranır) olabilir; isteğe bağlı "icerir" içerik işareti
 #   muafiyetin "bu gerçekten ekran metni sabitleri dosyası" iddiasını doğrular (iş mantığı dosyasına Türkçe yorum yazıp listeye
 #   koyma kaçışı kapanır). Baştaki UTF-8 BOM sayılmaz (.ps1 PS 5.1 için zorunlu); satır içi BOM sayılır.
+#   1.9.2 "dize_atla" (Solum altıncı fark, ölçülmüş: tools/icindekiler.py 27 Türkçe satır · dize DIŞINDA 0): betiğin ÇIKTISI
+#   onun arayüzüdür — `print("Başarılı")`, üretilen Markdown başlığı — Türkçe olmalı. Bu uzantılarda DİZE içeriği kodlama
+#   taramasından çıkarılır, yorum TARANIR (dosya muafiyeti yorumu da affederdi; NamingTests'ten gevşek kapı doğardı).
+#   Varsayılan betik dilleri: .py .sh .ps1 .psm1. Derlenen dillerde (.cs) dize taranır — arayüz metni ayrı sabit dosyasında
+#   (muaf + icerir). Kapatmak: "dize_atla": []. Dil profili olmayan uzantıda dize bilinmez → dosya olduğu gibi taranır.
+#   ⚠ ÖLÜ SÖZCÜK YALNIZ SÜPÜRME KİPİNDE KOŞAR — kanca dosya kipi onu çağırmaz (nüfus tam olmalı). Açık görünür ama
+#   hiçbir şey otomatik koşturmuyorsa çalışmaz: CI'ya süpürme adımı koy (Solum tools/ci.py 6. adım, 24.09.2026).
 OLU_SOZCUK = bool(AYAR.get("olu_sozcuk", True))
 KODLAMA_AYARI = AYAR.get("kodlama", {}) or {}
 KODLAMA_SEVIYE = KODLAMA_AYARI.get("karakter") or ("ascii" if KODLAMA_AYARI.get("ascii_kaynak") else None)
@@ -232,6 +239,7 @@ if KODLAMA_SEVIYE not in (None, "turkce", "cp1254_disi", "ascii"):
 KODLAMA_KAPSAM = KODLAMA_AYARI.get("kapsam")                                   # None → adlandırma kapsamı
 KODLAMA_UZANTILARI = tuple(KODLAMA_AYARI.get("uzantilar", [])) or None       # None → süpürme uzantıları
 TURKCE_HARFLER = set("çğıöşüÇĞİÖŞÜ")
+KODLAMA_DIZE_ATLA = tuple(u.lower() for u in KODLAMA_AYARI.get("dize_atla", [".py", ".sh", ".ps1", ".psm1"]))
 
 
 def _muaf_kaydi_normalize(m) -> dict:
@@ -803,6 +811,22 @@ def bilesen_bulgulari(yol: Path, dagarcik: set) -> list[tuple[int, str, str]]:
 #              "dokundukça o dosyadaki her şeyi düzelt"). Kanca staged dosyaları bu bayrakla verir; taban
 #              yalnız süpürme/haritada borcu göstermeye yarar. Dokunulmayan dosyaya kimse bakmaz.
 
+# Kabuk betiği için asgari profil (adlandırma kapısında .sh yok; kodlama ekseni tarar): # yorum, "…" ve '…' dize.
+DIZE_SH = re.compile(r'"(?:[^"\\]|\\.)*"|\'[^\']*\'', re.S)
+KODLAMA_EK_PROFILLERI = {".sh": dict(yorum=YORUM_PY, dize=DIZE_SH), ".bash": dict(yorum=YORUM_PY, dize=DIZE_SH)}
+
+
+def _dizeleri_soyutla(metin: str, uzanti: str) -> str:
+    """Yalnız DİZE içeriğini siler (satır sayısı korunur); yorum olduğu gibi kalır. Tek geçiş, soldan sağa —
+    yorum içindeki tırnak dize başlatmaz, dize içindeki # yorum başlatmaz (1.8.2 dersi)."""
+    profil = DIL_PROFILLERI.get(uzanti) or KODLAMA_EK_PROFILLERI.get(uzanti)
+    if not profil:
+        return metin
+    yorum, dize = profil["yorum"], profil["dize"]
+    birlesik = re.compile(f"(?P<d>{dize.pattern})|(?P<y>{yorum.pattern})", yorum.flags | dize.flags)
+    return birlesik.sub(lambda m: _satir_koru(m) if m.group("d") is not None else m.group(0), metin)
+
+
 def _kodlama_aykiri(c: str) -> bool:
     """Seçili seviyede karakter aykırı mı."""
     if ord(c) < 128:
@@ -836,11 +860,14 @@ def kodlama_bulgulari(yol: Path) -> list[tuple[int, str, str]]:
         return []
     from collections import Counter
     metin = io.open(yol, encoding="utf-8-sig", errors="replace").read()
+    uzanti = yol.suffix.lower()
+    taranan = _dizeleri_soyutla(metin, uzanti) if uzanti in KODLAMA_DIZE_ATLA else metin
+    asil_satirlar = metin.split(chr(10))
     aykiri = []
-    for i, s in enumerate(metin.split(chr(10)), 1):
+    for i, s in enumerate(taranan.split(chr(10)), 1):
         k = [c for c in s if _kodlama_aykiri(c)]
         if k:
-            aykiri.append((i, s, k))
+            aykiri.append((i, asil_satirlar[i - 1] if i - 1 < len(asil_satirlar) else s, k))
     muaf = _kodlama_muaf_kaydi(yol)
     if muaf:
         b = []
