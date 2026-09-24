@@ -561,7 +561,9 @@ def ihlaller(yol: Path) -> list[tuple[int, str, str]]:
                 if re.search(rf"\b\w*{k}\w*\b", satir):
                     eslesen = re.search(rf"\b\w*{k}\w*\b", satir).group(0)
                     # Alan adları (ürün/şirket) serbest — `.claude/turkce-kapi.json`
-                    if eslesen in ALAN_ADLARI:
+                    # ⚠ 1.8.2: SÖZCÜK düzeyinde, küçük harf — ak liste katmanıyla AYNI kural. Önce tam ad isteniyordu:
+                    #   `IX_SolumSetting_Kapsam` için ayara "Kapsam" yazmak yetmiyor, tam adı da yazmak gerekiyordu (Solum ölçtü).
+                    if eslesen in ALAN_ADLARI or any(p.lower() in ALAN_ADLARI_KUCUK for p in SOZCUK_PARCA.findall(eslesen)):
                         continue
                     bulgular.append((i, satirlar[i - 1].strip()[:90], f"Türkçe tanımlayıcı: {eslesen}"))
                     break
@@ -772,7 +774,7 @@ else:
     for k in KAPSAM:
         for uzanti in SUPURME_UZANTILARI:
             hedefler += [p for p in (KOK / k).rglob("*" + uzanti)
-                         if not (ATLANAN & set(p.parts))]
+                         if p.is_file() and not (ATLANAN & set(p.parts))]   # 1.8.2: `Solum.Sql` gibi dizinler dosya sanılıp PermissionError veriyordu
 
 if not hedefler:
     if ARGUMANLAR:

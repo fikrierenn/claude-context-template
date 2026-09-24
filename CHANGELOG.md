@@ -9,6 +9,10 @@ Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](htt
   içindeki `//`yi yorum sanıyor, tırnak eşleşmesini kaydırıyor ve dosyanın ilerisindeki Türkçe UI dizesini "tanımlayıcı"
   diye yakalıyordu (bkm-magaza `CorsGateTests`, iki URL dizesi). Aynı sınıf `#` (.py/.ps1) ve `--` (.sql) için de düzeldi.
   Sabotaj: URL dizesinden sonra `var ölçü` → yakalanır; Türkçe UI dizesi → geçer.
+- `alan_adlari`/`sozlesme_adlari` kara liste katmanında da SÖZCÜK düzeyinde, küçük harf (ak liste katmanıyla aynı kural).
+  Önce tam tanımlayıcı isteniyordu: `IX_SolumSetting_Kapsam` için "Kapsam" yetmiyor, tam ad da gerekiyordu (Solum ölçtü).
+- Süpürme kipi yalnız DOSYALARI açar (`is_file`): `Solum.Sql` gibi uzantıya benzer dizin adları PermissionError ile çökertiyordu.
+- `VERSION` 1.8.2 (bayat 1.8.1 kalmıştı — tüketici sürümü buradan okur).
 - Sözlük: İngilizce şema/tel sözleşmesi sözcükleri (loaded, candidates, floor, shelved, expires, seen, issued, used…).
 - `naming-conventions.md` 19. kural: evrensel katmandaki `Solum` örneği kaldırıldı (bin/durum.sh merkez sağlığı).
 
