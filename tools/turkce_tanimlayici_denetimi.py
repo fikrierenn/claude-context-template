@@ -201,6 +201,21 @@ SOZLESME_ADLARI = set(AYAR.get("sozlesme_adlari", []))
 ALAN_ADLARI |= SOZLESME_ADLARI
 ALAN_ADLARI_KUCUK = {a.lower() for a in ALAN_ADLARI}   # ak liste katmanı küçük harf karşılaştırır
 DOSYA_ADI_ISTISNALARI = set(AYAR.get("dosya_adi_istisnalari", []))
+# ── 1.9.0 (24.09.2026, Solum isteği: NamingTests merkeze) — iki yeni eksen ─────────────────────
+# ÖLÜ SÖZCÜK: tüketicinin ek listesi (kod-sozcukleri.ek.txt) HAK EDİLMİŞ bir listedir; eklendiği kod silinince satır
+#   kalır ve artık hiçbir şeyi savunmayan bir muafiyet olur. Süpürme kipinde ek listedeki her sözcük taranan kodda
+#   geçmeli (Solum ölçümü: hak edilmiş liste 814 sözcük · 3 ölü). ÇEKİRDEĞE UYGULANMAZ — çekirdek önceden dolduruldu
+#   (3.000+ sözcük, %30 'hazırda bekliyor'), aynı ölçüt orada 900 yanlış pozitif üretirdi. Varsayılan AÇIK; kapatmak:
+#   "olu_sozcuk": false.
+# KODLAMA (ascii_kaynak): kaynak dosyada YORUM DAHİL ASCII dışı karakter yasak — ADLANDIRMA kuralı DEĞİL, kodlama
+#   güvenliği (dosya kodlaması · konsol · komut satırı araçları arasında sessiz bozulma; Solum'da birden çok kez yaşandı).
+#   naming-conventions.md §18 (yorum/UI Türkçe, ASCII sadeleştirme yok) DEĞİŞMEZ: ayrı eksen, VARSAYILAN KAPALI. Açan depo
+#   muafiyeti BEYAN eder ve beyan ÖLÇÜLÜR: muaf dosya yoksa ya da ASCII dışı karakter taşımıyorsa KIRIK (bkm-magaza D-011'in
+#   'yanlış pozitif → red' sebebi böyle kapanır: listeye kaçış değil, iddia).
+OLU_SOZCUK = bool(AYAR.get("olu_sozcuk", True))
+KODLAMA_AYARI = AYAR.get("kodlama", {}) or {}
+ASCII_KAYNAK = bool(KODLAMA_AYARI.get("ascii_kaynak", False))
+KODLAMA_MUAF = {m.replace(chr(92), "/") for m in KODLAMA_AYARI.get("muaf", [])}
 
 TURKCE_KELIMELER = [
     "Sube", "Mudur", "Kisi", "Gun", "Tarih", "Onay", "Sifre", "Kullanici",
@@ -762,6 +777,44 @@ def bilesen_bulgulari(yol: Path, dagarcik: set) -> list[tuple[int, str, str]]:
 # --tabansiz : tabanı YOK say — "dokunulan dosya tamamen temiz olmalı" kuralı için (bkm-magaza, GMY 24.09:
 #              "dokundukça o dosyadaki her şeyi düzelt"). Kanca staged dosyaları bu bayrakla verir; taban
 #              yalnız süpürme/haritada borcu göstermeye yarar. Dokunulmayan dosyaya kimse bakmaz.
+
+def kodlama_bulgulari(yol: Path) -> list[tuple[int, str, str]]:
+    """ascii_kaynak açıksa: dosyada (yorum dahil) ASCII dışı karakter → bulgu; muaf dosya için beyan doğrulanır."""
+    if not ASCII_KAYNAK:
+        return []
+    rel = _gosterim(yol).replace(chr(92), "/")
+    metin = io.open(yol, encoding="utf-8-sig", errors="replace").read()
+    ascii_disi = [(i, s) for i, s in enumerate(metin.split(chr(10)), 1) if any(ord(c) > 127 for c in s)]
+    if rel in KODLAMA_MUAF:
+        if not ascii_disi:
+            return [(1, "", "kodlama: muafiyet gerekçesiz — dosyada ASCII dışı karakter yok; muaf satırını sil")]
+        return []
+    if not ascii_disi:
+        return []
+    i, s = ascii_disi[0]
+    return [(i, s.strip()[:90], f"kodlama: ASCII dışı karakter (yorum dahil) — {len(ascii_disi)} satır; ekran metniyse kodlama.muaf listesine al")]
+
+
+def kodlama_muaf_denetimi() -> list[str]:
+    """Muaf beyanı bir iddiadır: dosya yoksa muafiyet dayanaksız kalır ve kapı sessizce yarım açık olur."""
+    if not ASCII_KAYNAK:
+        return []
+    return [f"kodlama: muaf dosya yok — {m} (muafiyet dayanaksız kaldı, satırı sil ya da yolu düzelt)"
+            for m in sorted(KODLAMA_MUAF) if not (KOK / m).exists()]
+
+
+def olu_sozcukler(hedefler: list[Path]) -> list[str]:
+    """Ek listede olup taranan kodun HİÇBİR yerinde geçmeyen sözcükler. Yalnız süpürme kipinde (nüfus tam)."""
+    if not OLU_SOZCUK or ARGUMANLAR or not EK_SOZLUK_DOSYASI.exists():
+        return []
+    try:
+        sozcukler = _sozcukleri_oku(EK_SOZLUK_DOSYASI)
+    except Exception:
+        return []
+    metin = chr(10).join(io.open(p, encoding="utf-8-sig", errors="replace").read() for p in hedefler).lower()
+    return sorted(s for s in sozcukler if s and s.lower() not in metin)
+
+
 BAYRAKLAR = {a for a in sys.argv[1:] if a.startswith("--")}
 TABANSIZ = "--tabansiz" in BAYRAKLAR
 HEPSI = "--hepsi" in BAYRAKLAR      # bulguların tamamını bas (harita/toplu çeviri için); varsayılan ilk 6
@@ -813,7 +866,7 @@ toplam = 0
 dondurulan = 0      # tabanin ALTINDA ya da ESIT kalan (borc, yeni ihlal degil)
 gevseyen = []       # taban DUSMUS: tabani sikistirma firsati
 for p in sorted(hedefler):
-    b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK) + bicim_bulgulari(p) + bilesen_bulgulari(p, DAGARCIK)
+    b = ihlaller(p) + bilinmeyen_sozcukler(p, DAGARCIK) + bicim_bulgulari(p) + bilesen_bulgulari(p, DAGARCIK) + kodlama_bulgulari(p)
     rel = p.relative_to(KOK).as_posix() if str(p).startswith(str(KOK)) else p.as_posix()
     izin = 0 if TABANSIZ else (TABAN.get(rel, 0) if tabanli_mi(p) else 0)
 
@@ -834,6 +887,14 @@ for p in sorted(hedefler):
     if len(asim) > 6 and not HEPSI:
         print(f"   … {len(asim) - 6} bulgu daha")
 
+for eksik_muaf in kodlama_muaf_denetimi():
+    print(f"{chr(10)}KIRIK {eksik_muaf}")
+    toplam += 1
+olu = olu_sozcukler(hedefler)
+if olu:
+    print(f"{chr(10)}KIRIK {EK_SOZLUK_DOSYASI.name}: ÖLÜ SÖZCÜK {len(olu)} — ek listede var, taranan kodda geçmiyor: {chr(44).join(olu[:12])}")
+    print("      Bu satırlar artık hiçbir şeyi savunmayan muafiyetler; sil. (Kapatmak: turkce-kapi.json \"olu_sozcuk\": false)")
+    toplam += len(olu)
 print()
 if toplam:
     print(f"KIRIK · {toplam} bulgu. Kod İngilizce olmalı (turkish-ui.md); yorum ve UI")

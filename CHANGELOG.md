@@ -2,6 +2,19 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.9.0] - 2026-09-24
+
+### Eklendi (Solum isteği — GMY: "NamingTests'i genel araca aktar, tüm repolar yararlansın")
+- **Ölü sözcük kapısı** (`"olu_sozcuk"`, varsayılan AÇIK): tüketicinin `kod-sozcukleri.ek.txt` listesinde olup taranan kodda
+  hiç geçmeyen sözcük süpürme kipinde KIRIK. Ek liste hak edilmiştir; eklendiği kod silinince satır "hiçbir şeyi savunmayan
+  muafiyet" olur. Çekirdek sözlüğe UYGULANMAZ (önceden dolduruldu; Solum ölçümü 3.076 sözcük · 910 kullanılmayan = hazırda).
+- **Kodlama ekseni** (`"kodlama": {"ascii_kaynak": true, "muaf": [...]}`, varsayılan KAPALI): kaynak dosyada yorum dahil ASCII dışı
+  karakter KIRIK — adlandırma değil KODLAMA GÜVENLİĞİ kuralı (dosya kodlaması/konsol/araç zincirinde sessiz bozulma). Muafiyet
+  BEYANLI ve DOĞRULANMIŞ: muaf dosya yoksa ya da ASCII dışı karakter taşımıyorsa KIRIK. `naming-conventions.md` §18 (yorum/UI
+  Türkçe) DEĞİŞMEZ — Solum `kutuphane-disiplini.md` §6 ile çelişki, iki ayrı eksen olarak çözüldü; açan depo korunur, açmayan etkilenmez.
+- Sabotaj: ölü sözcük → KIRIK · Türkçe yorum (kodlama açık) → KIRIK · doğru muaf → geçer · gerekçesiz muaf → KIRIK · yok muaf → KIRIK.
+- Taşınmayan: Solum `NamingTests`'in `PublicAPI.*.txt` taraması — o analizöre özgü, merkezde ölü kod olurdu.
+
 ## [1.8.2] - 2026-09-24
 
 ### Düzeltildi

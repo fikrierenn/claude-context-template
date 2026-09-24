@@ -16,6 +16,7 @@ hatalar olmasın, standartlarımız oluşmalı"* — yeni proje bu dosyayı `boo
 |---|---|
 | Tanımlayıcı: sınıf · metot · değişken · parametre · dosya · CSS sınıf/id · rota · JSON alanı · SQL tablo/kolon | **İngilizce** |
 | Yorum · günlük · UI metni · hata mesajı · commit mesajı · belge | **Türkçe**, UTF-8, ASCII sadeleştirme YOK (`turkish-ui.md`) |
+| *(ayrı eksen)* Kaynak dosyada ASCII dışı karakter yasağı — kodlama güvenliği, adlandırma değil | Depo kararı: `turkce-kapi.json` `"kodlama": {"ascii_kaynak": true, "muaf": [...]}` (varsayılan kapalı; muafiyet beyanlı ve ölçülür). Açan depo (Solum) yorumları ASCII yazar; bu satır §18'i değiştirmez |
 | Ürün/şirket/şema **alan adı** (`Bkm`, `Zirve`, `fsm`) | çevrilmez; tüketicinin `.claude/kod-sozcukleri.ek.txt` listesinde |
 
 - Türkçe sözcük ASCII'ye indirgenerek tanımlayıcı **yapılmaz** (`Urun`, `Kayit`, `sikistir`). Çevir.
