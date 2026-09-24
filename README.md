@@ -1,4 +1,50 @@
-# claude-context-template
+# claude-context-template (→ Norma) — kuralların tek merkezi (v1.8.1)
+
+**BKM'nin bütün depolarının doğuştan aldığı çalışma disiplini: 19 evrensel kural. kapılar ve ortak sözlük — tek yerde.**
+Kural bir depoya kopyalanmaz. işaret edilir; kopyalanan kural bayatlar ve iki gerçek doğar. Depo adı yakında **Norma** (Latince: ölçü. kural) olacak.
+
+*v1.8.1 · 19 kural · ak liste 3.053 sözcük · 37 tüketici depo.*
+
+## Ne var
+
+- **`templates/.claude/rules/_universal/`** — evrensel kurallar: kanıt disiplini (ölç, sonra yaz), plan-first, commit disiplini, hata yönetimi, test
+  disiplini, dosya boyutu, ayak izi merdiveni, güvenlik, oturum protokolü, Türkçe UI ve **adlandırma standardı** (`naming-conventions.md`: dil ·
+  dil başına tek biçim · bileşen adı önekli kebab · sözleşme çift yaşatma · zorlama tablosu).
+- **`tools/turkce_tanimlayici_denetimi.py`** — adlandırma kapısı: C#, Razor, JS/TS, Python, PowerShell, SQL, CSS/HTML; Türkçe harf · Türkçe kök ·
+  ak liste · biçim · bileşen katmanları; `--tabansiz` ("dokunulan dosya tamamen temiz"), `sozlesme_adlari` (tel/kolon adı borcu), test adları kapı dışı.
+  `tools/kod-sozcukleri.txt` çekirdek sözlük — dilin sözcüğü buraya, alan adı tüketicinin ek dosyasına.
+- **`bin/`** — `bootstrap` (yeni depo kurulumu), `harvest` (yerel kuralı merkeze terfi), `durum.sh` (ekosistem sapma ölçümü), `bildirim-dagit`.
+- **`docs/TUKETICI-REHBERI.md`** — bir depo bu merkezi nasıl tüketir; **`CHANGELOG.md`** — her sürüm ölçümüyle.
+
+## İlke
+
+Kural metni davranış değiştirmez, **kapı** değiştirir. Bu depodaki her kural için ya bir kapı vardır ya da "kapısı yok — niyettir" yazılıdır; iki
+tüketici aynı kusuru ölçmeden bir kural genelleşmez, bir kapı yanlış pozitif üretiyorsa kapı düzeltilir, bastırma öğretilmez.
+
+## BKM Kitap yazılım omurgası — bu depo nerede duruyor
+
+BKM Kitap'ta yazılım tek tek uygulamalar değil, birbirine oturan **katmanlar** olarak büyüyor. Beş depo, tek omurga:
+
+| Katman | Depo | Görevi |
+|---|---|---|
+| **Kurallar** | [claude-context-template](https://github.com/fikrierenn/claude-context-template) (→ *Norma*) | Her deponun doğuştan aldığı 19 evrensel kural, kapılar, adlandırma standardı, 3.000+ sözcüklük ak liste. Kopyalanmaz, işaret edilir. |
+| **Ortak .NET katmanı** | [Solum](https://github.com/fikrierenn/Solum) | Kimlik, yetki, çok kiracılılık, denetim izi, migrasyon, şema sapma doğrulaması — bir kez yazılır, her ürün referansla alır. |
+| **Veri gerçeği** | [pusula](https://github.com/fikrierenn/pusula) | ERP · Encore · Zirve · panel şemalarının **ölçülmüş** tanımı (10.000+ satır YAML), 150+ sorgu, 40+ plan. Her rapor ve uygulama buradan beslenir; iki gerçek doğmaz. |
+| **Ölçüm aracı** | [sqlcli](https://github.com/fikrierenn/sqlcli) | "İddia değil ölçüm": profilli SQL CLI, salt-okuma muhafızı, `assert`/`lookup`, çıkış sözleşmesi 0/1/2. Kapıların ve şemanın ölçüm eli. |
+| **Ürünler** | [bkm-magaza](https://github.com/fikrierenn/bkm-magaza) ve diğerleri (vardiya, anlık ciro, etiket, el terminali…) | Sahada çalışan uygulamalar. İlk örnek bkm-magaza: ~200 mağaza personelinin telefonunda ürün bulma. |
+
+**Yön (GMY, 2026):** bütün uygulamalar **tek kullanıcı ve yetki yönetimine** taşınır (Solum İSTEK-31: kişi → çalışma dönemi → hesap → cihaz;
+kimlik İK sisteminden türer, işten çıkış uygulamayı kendiliğinden kapatır). Yeni bir uygulama bu omurgaya oturur; kendi kullanıcı tablosunu,
+kendi kuralını, kendi şema kopyasını yazmaz.
+
+**Çalışma ilkeleri (hepsi kapıyla zorlanır, niyet olarak bırakılmaz):** önce ölç, sonra yaz · kural değil kapı · sözleşme değişince eskisi bir sürüm
+çift yaşar · kod İngilizce, insan dili Türkçe · hiçbir sır depoya girmez · her commit tek konu, her kapı sabotajla kırılabilir olduğunu kanıtlar.
+
+---
+
+## Ayrıntılar (teknik README, korunuyor)
+
+### claude-context-template
 
 **Her projede kullanılabilir, Claude Code için bağlam yönetimi şablon sistemi.**
 
