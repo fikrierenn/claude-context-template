@@ -40,6 +40,7 @@ KAPININ ÜÇ KATMANI (Solum'un ayrımı + V-19):
   • AK LİSTE (V-19) — bildirilen adlardaki her sözcük dağarcıkta mı? Eksikliği
     İNSANA SORAR: yanlış pozitifin bedeli bir satır, yanlış negatifin bedeli
     görünmeyen bir ihlal.
+  ⚠ 1.8.2 (24.09.2026): yorum+dize soyutlama TEK geçiş — dize içindeki `//` / `#` / `--` yorum sanılmaz (bkz. _yorum_ve_dize_soyutla).
   ⚠ 1.8.1 (24.09.2026): `sozlesme_adlari` — JSON alanı / kolon / rota gibi SÖZLEŞME olan Türkçe adlar kapıdan
     BORÇ olarak geçer (alan adı değil; sözleşme İngilizceye geçince satır silinir, kapı yeniden yakalar).
   ⚠ 1.8.0 (24.09.2026): BİÇİM ve BİLEŞEN katmanları (opt-in: ayar "bicim": true, "bilesen": {"onekler": […]}) —
@@ -329,6 +330,18 @@ def _satir_koru(m: re.Match) -> str:
     ve bulgu yanlış satırı gösterir (ilk sürümde tam bu oldu)."""
     return chr(10) * m.group(0).count(chr(10))
 
+def _yorum_ve_dize_soyutla(metin: str, yorum: re.Pattern, dize: re.Pattern) -> str:
+    """Yorum ve dizeyi TEK GEÇİŞTE, soldan sağa soyutlar — hangisi önce başlıyorsa o kazanır.
+
+    ⚠ 1.8.2 (24.09.2026, bkm-magaza CorsGateTests ile ölçüldü): önce yorum sonra dize sırayla soyutlanıyordu.
+    `"http://localhost"` içindeki `//` yorum sanılıp satırın kalanı silindi; açık kalan tek tırnak sonraki dize
+    eşleşmelerini KAYDIRDI — 40 satır aşağıdaki Türkçe UI dizesi "tanımlayıcı" diye yakalandı, ve tersi de
+    mümkün: kayan eşleşme gerçek bir Türkçe adı dize sanıp GİZLEYEBİLİRDİ. Aynı kusur `#` için .py/.ps1'de
+    (`"#fff"`), `--` için .sql'de (`'a--b'`) geçerliydi. Alternasyon soldan sağa tarar: dize içinde yorum
+    başlayamaz, yorum içinde dize başlayamaz."""
+    birlesik = re.compile(f"(?:{dize.pattern})|(?:{yorum.pattern})", yorum.flags | dize.flags)
+    return birlesik.sub(_satir_koru, metin)
+
 
 # Razor'da KOD yalnız `@` ile başlayan ifadelerdedir: `@Model.Foo`, `@Bar(x)`,
 # `@if (…)`, `@code { … }`. Gerisi HTML metnidir ve TÜRKÇE OLMALI.
@@ -493,8 +506,7 @@ def soyutla(metin: str, razor: bool, profil: dict | None = None):
     """
     yorum = (profil or {}).get("yorum", YORUM)
     dize = (profil or {}).get("dize", DIZE)
-    metin = yorum.sub(_satir_koru, metin)
-    metin = dize.sub(_satir_koru, metin)
+    metin = _yorum_ve_dize_soyutla(metin, yorum, dize)
     if dize is DIZE_JS:
         metin = REGEX_JS.sub(lambda m: m.group(1) + _satir_koru(m), metin)
     if not razor:
@@ -507,8 +519,7 @@ def soyutla(metin: str, razor: bool, profil: dict | None = None):
 
 def kod_kismi(metin: str, razor: bool) -> str:
     """Kod DIŞINI çıkar. Razor'da tersi: yalnız `@` ifadelerini TUT."""
-    metin = YORUM.sub(_satir_koru, metin)
-    metin = DIZE.sub(_satir_koru, metin)
+    metin = _yorum_ve_dize_soyutla(metin, YORUM, DIZE)
     if razor:
         # satır yapısını koru: her satırda yalnız @ifadelerini bırak
         return chr(10).join(" ".join(RAZOR_IFADE.findall(satir)) for satir in metin.splitlines())

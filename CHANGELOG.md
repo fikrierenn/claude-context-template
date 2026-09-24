@@ -2,6 +2,16 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.8.2] - 2026-09-24
+
+### Düzeltildi
+- Yorum ve dize soyutlaması artık TEK geçişte (soldan sağa alternasyon). Önce yorum sonra dize sırası, `"http://localhost"`
+  içindeki `//`yi yorum sanıyor, tırnak eşleşmesini kaydırıyor ve dosyanın ilerisindeki Türkçe UI dizesini "tanımlayıcı"
+  diye yakalıyordu (bkm-magaza `CorsGateTests`, iki URL dizesi). Aynı sınıf `#` (.py/.ps1) ve `--` (.sql) için de düzeldi.
+  Sabotaj: URL dizesinden sonra `var ölçü` → yakalanır; Türkçe UI dizesi → geçer.
+- Sözlük: İngilizce şema/tel sözleşmesi sözcükleri (loaded, candidates, floor, shelved, expires, seen, issued, used…).
+- `naming-conventions.md` 19. kural: evrensel katmandaki `Solum` örneği kaldırıldı (bin/durum.sh merkez sağlığı).
+
 ## [1.8.1] - 2026-09-24
 
 ### Eklendi

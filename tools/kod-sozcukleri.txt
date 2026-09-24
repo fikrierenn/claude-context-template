@@ -3125,3 +3125,16 @@ cacheable
 catalog
 locations
 erp
+# ── 1.8.1 ek 3 (24.09): İngilizce şema/tel sözleşmesi ──
+loaded
+candidates
+floor
+shelved
+tracks
+picker
+err
+expires
+seen
+issued
+used
+preflight

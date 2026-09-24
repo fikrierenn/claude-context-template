@@ -16,7 +16,7 @@ hatalar olmasın, standartlarımız oluşmalı"* — yeni proje bu dosyayı `boo
 |---|---|
 | Tanımlayıcı: sınıf · metot · değişken · parametre · dosya · CSS sınıf/id · rota · JSON alanı · SQL tablo/kolon | **İngilizce** |
 | Yorum · günlük · UI metni · hata mesajı · commit mesajı · belge | **Türkçe**, UTF-8, ASCII sadeleştirme YOK (`turkish-ui.md`) |
-| Ürün/şirket/şema **alan adı** (`Bkm`, `Zirve`, `Solum`, `fsm`) | çevrilmez; tüketicinin `.claude/kod-sozcukleri.ek.txt` listesinde |
+| Ürün/şirket/şema **alan adı** (`Bkm`, `Zirve`, `fsm`) | çevrilmez; tüketicinin `.claude/kod-sozcukleri.ek.txt` listesinde |
 
 - Türkçe sözcük ASCII'ye indirgenerek tanımlayıcı **yapılmaz** (`Urun`, `Kayit`, `sikistir`). Çevir.
 - **Türkçe okunuşu argo/cinsel çağrışımlı** hiçbir sözcük — İngilizce olsa bile — tanımlayıcıda, sözlükte,
