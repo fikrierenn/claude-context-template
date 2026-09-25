@@ -16,7 +16,7 @@ hatalar olmasın, standartlarımız oluşmalı"* — yeni proje bu dosyayı `boo
 |---|---|
 | Tanımlayıcı: sınıf · metot · değişken · parametre · dosya · CSS sınıf/id · rota · JSON alanı · SQL tablo/kolon | **İngilizce** |
 | Yorum · günlük · UI metni · hata mesajı · commit mesajı · belge | **Türkçe**, UTF-8, ASCII sadeleştirme YOK (`turkish-ui.md`) |
-| *(ayrı eksen)* Kaynak dosyada ASCII dışı karakter yasağı — kodlama güvenliği, adlandırma değil | Depo kararı: `turkce-kapi.json` `"kodlama": {"karakter": "turkce" ∣ "cp1254_disi" ∣ "ascii", "kapsam": [...], "muaf": [{"yol": "...", "icerir": "..."}]}` (varsayılan kapalı; kendi kapsamı; muafiyet beyanlı ve ölçülür). `turkce` = Türkçe harf yasağı (Solum NamingTests eşdeğeri), `cp1254_disi` = konsolda çöken karakterler (`─ ⚠ → emoji`); bu satır §18'i değiştirmez |
+| *(ayrı eksen)* Kaynak dosyada ASCII dışı karakter yasağı — kodlama güvenliği, adlandırma değil | Depo kararı: `turkce-kapi.json` `"kodlama": {"karakter": "turkce" ∣ "cp1254_disi" ∣ "ascii" ∣ [liste], "kapsam": [...], "dize_atla": [...], "muaf": [{"yol": "...", "icerir": "...", "seviye": [...]}]}` (varsayılan kapalı; kendi kapsamı; muafiyet beyanlı ve ölçülür). `turkce` = Türkçe harf yasağı (Solum NamingTests eşdeğeri), `cp1254_disi` = konsolda çöken karakterler (`─ ⚠ → emoji`); bu satır §18'i değiştirmez |
 | Ürün/şirket/şema **alan adı** (`Bkm`, `Zirve`, `fsm`) | çevrilmez; tüketicinin `.claude/kod-sozcukleri.ek.txt` listesinde |
 
 - Türkçe sözcük ASCII'ye indirgenerek tanımlayıcı **yapılmaz** (`Urun`, `Kayit`, `sikistir`). Çevir.

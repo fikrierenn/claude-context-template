@@ -232,10 +232,17 @@ DOSYA_ADI_ISTISNALARI = set(AYAR.get("dosya_adi_istisnalari", []))
 #   hiçbir şey otomatik koşturmuyorsa çalışmaz: CI'ya süpürme adımı koy (Solum tools/ci.py 6. adım, 24.09.2026).
 OLU_SOZCUK = bool(AYAR.get("olu_sozcuk", True))
 KODLAMA_AYARI = AYAR.get("kodlama", {}) or {}
-KODLAMA_SEVIYE = KODLAMA_AYARI.get("karakter") or ("ascii" if KODLAMA_AYARI.get("ascii_kaynak") else None)
-if KODLAMA_SEVIYE not in (None, "turkce", "cp1254_disi", "ascii"):
-    print(f"KOŞAMADI  kodlama.karakter geçersiz: {KODLAMA_SEVIYE!r} — turkce | cp1254_disi | ascii")
-    sys.exit(2)
+#   1.9.3 (Solum ölçümü): tek seviye iki hasar sınıfını birlikte tutamıyordu — "turkce" yalnız harfleri, "cp1254_disi"
+#   yalnız konsolda çökenleri. "karakter" artık LİSTE de olabilir: ["turkce", "cp1254_disi"]; muafiyet seviye başına
+#   ({"yol": …, "seviye": ["turkce"]}) — SolumUiText.cs Türkçe harf için muaf, kutu çizgisi için değil.
+_KODLAMA_GECERLI = ("turkce", "cp1254_disi", "ascii")
+_karakter = KODLAMA_AYARI.get("karakter") or (["ascii"] if KODLAMA_AYARI.get("ascii_kaynak") else [])
+KODLAMA_SEVIYELER = [_karakter] if isinstance(_karakter, str) else list(_karakter)
+for _seviye in KODLAMA_SEVIYELER:
+    if _seviye not in _KODLAMA_GECERLI:
+        print(f"KOŞAMADI  kodlama.karakter geçersiz: {_seviye!r} — turkce | cp1254_disi | ascii (dize ya da liste)")
+        sys.exit(2)
+KODLAMA_SEVIYE = "+".join(KODLAMA_SEVIYELER) if KODLAMA_SEVIYELER else None   # etiket; boşsa eksen kapalı
 KODLAMA_KAPSAM = KODLAMA_AYARI.get("kapsam")                                   # None → adlandırma kapsamı
 KODLAMA_UZANTILARI = tuple(KODLAMA_AYARI.get("uzantilar", [])) or None       # None → süpürme uzantıları
 TURKCE_HARFLER = set("çğıöşüÇĞİÖŞÜ")
@@ -244,8 +251,10 @@ KODLAMA_DIZE_ATLA = tuple(u.lower() for u in KODLAMA_AYARI.get("dize_atla", [".p
 
 def _muaf_kaydi_normalize(m) -> dict:
     if isinstance(m, str):
-        return {"yol": m.replace(chr(92), "/"), "icerir": None}
-    return {"yol": str(m.get("yol", "")).replace(chr(92), "/"), "icerir": m.get("icerir") or None}
+        return {"yol": m.replace(chr(92), "/"), "icerir": None, "seviye": None}
+    seviye = m.get("seviye")
+    seviye = [seviye] if isinstance(seviye, str) else (list(seviye) if seviye else None)   # None = tüm seviyeler
+    return {"yol": str(m.get("yol", "")).replace(chr(92), "/"), "icerir": m.get("icerir") or None, "seviye": seviye}
 
 
 KODLAMA_MUAF = [_muaf_kaydi_normalize(m) for m in KODLAMA_AYARI.get("muaf", [])]
@@ -816,9 +825,85 @@ DIZE_SH = re.compile(r'"(?:[^"\\]|\\.)*"|\'[^\']*\'', re.S)
 KODLAMA_EK_PROFILLERI = {".sh": dict(yorum=YORUM_PY, dize=DIZE_SH), ".bash": dict(yorum=YORUM_PY, dize=DIZE_SH)}
 
 
+def _kabuk_dizeleri_soyutla(metin: str) -> str:
+    """Kabuk (.sh) için DURUM MAKİNESİ — regex yetmiyor (1.9.3, Solum ölçümü): `X="$(python -c '…çok satır…' "$a")"`
+    deseninde çift tırnak içinde `$( … )` komut yerine koyması, onun içinde tek tırnaklı çok satırlı program var. Düz
+    regex dıştaki çift tırnağı programın ilk `"`ünde kapatıyor, tırnak eşliği kayıyor: dize yorum sanılıyor (yanlış
+    pozitif) ya da yorum dize sanılıyor (GERÇEK ihlal gizlenir). Burada: '…' (kaçış yok) · "…" (ters bölü kaçışı,
+    içindeki $( … ) KOD sayılır ve iç içe tırnak taşır) · `$(`/`)` sayacı · # yorum yalnız kod modunda ve sözcük
+    başında · heredoc (<<EOF, <<-EOF, <<'EOF', <<"EOF") gövdesi DİZE. Dize karakterleri boşluğa çevrilir, satır sayısı
+    ve sütunlar korunur; yorumlar olduğu gibi kalır (kodlama ekseni yorumu TARAR)."""
+    out = []
+    i, n = 0, len(metin)
+    stack: list[str] = []          # "dq" (çift tırnak) · "sub" ($( … ) kodu)
+    heredoc_terms: list[str] = []
+    line_start = True
+    def mode():
+        return stack[-1] if stack else "code"
+    while i < n:
+        c = metin[i]
+        if line_start and heredoc_terms:
+            # heredoc gövdesi: sonlandırıcı satıra kadar her şey DİZE (satır sonu korunur)
+            end = metin.find(chr(10), i)
+            end = n if end < 0 else end
+            line = metin[i:end]
+            if line.strip() == heredoc_terms[0] or line.lstrip(chr(9)) == heredoc_terms[0]:
+                heredoc_terms.pop(0)
+                out.append(line)
+            else:
+                out.append(" " * len(line))
+            out.append(metin[end:end + 1])
+            i = end + 1
+            line_start = True
+            continue
+        m = mode()
+        if c == chr(10):
+            out.append(c); i += 1; line_start = True; continue
+        if m in ("code", "sub"):
+            if c == "#" and (i == 0 or metin[i - 1] in " " + chr(9) + chr(10) + ";(&|"):
+                end = metin.find(chr(10), i); end = n if end < 0 else end
+                out.append(metin[i:end]); i = end; line_start = False; continue
+            if c == "'":
+                end = metin.find("'", i + 1); end = n - 1 if end < 0 else end
+                seg = metin[i:end + 1]
+                out.append("'" + "".join(chr(10) if ch == chr(10) else " " for ch in seg[1:-1]) + "'")
+                i = end + 1; line_start = False; continue
+            if c == '"':
+                stack.append("dq"); out.append(c); i += 1; line_start = False; continue
+            if c == "$" and metin.startswith("$(", i):
+                stack.append("sub"); out.append("$("); i += 2; line_start = False; continue
+            if c == ")" and m == "sub":
+                stack.pop(); out.append(c); i += 1; line_start = False; continue
+            if c == "<" and metin.startswith("<<", i):
+                j = i + 2
+                if j < n and metin[j] == "-": j += 1
+                while j < n and metin[j] == " ": j += 1
+                quote = metin[j] if j < n and metin[j] in "'" + '"' else ""
+                k = j + (1 if quote else 0)
+                while k < n and (metin[k].isalnum() or metin[k] == "_"): k += 1
+                term = metin[j + (1 if quote else 0):k]
+                if term:
+                    heredoc_terms.append(term)
+                out.append(metin[i:k + (1 if quote else 0)]); i = k + (1 if quote else 0); line_start = False; continue
+            if c == chr(92):
+                out.append(metin[i:i + 2]); i += 2; line_start = False; continue
+            out.append(c); i += 1; line_start = False; continue
+        # m == "dq": çift tırnak içi — $( … ) koda döner, ters bölü kaçış, kapanış "
+        if c == chr(92):
+            out.append("  " if i + 1 < n and metin[i + 1] != chr(10) else metin[i:i + 2]); i += 2; line_start = False; continue
+        if c == "$" and metin.startswith("$(", i):
+            stack.append("sub"); out.append("$("); i += 2; line_start = False; continue
+        if c == '"':
+            stack.pop(); out.append(c); i += 1; line_start = False; continue
+        out.append(" "); i += 1; line_start = False
+    return "".join(out)
+
+
 def _dizeleri_soyutla(metin: str, uzanti: str) -> str:
     """Yalnız DİZE içeriğini siler (satır sayısı korunur); yorum olduğu gibi kalır. Tek geçiş, soldan sağa —
-    yorum içindeki tırnak dize başlatmaz, dize içindeki # yorum başlatmaz (1.8.2 dersi)."""
+    yorum içindeki tırnak dize başlatmaz, dize içindeki # yorum başlatmaz (1.8.2 dersi). Kabuk için durum makinesi."""
+    if uzanti in (".sh", ".bash"):
+        return _kabuk_dizeleri_soyutla(metin)
     profil = DIL_PROFILLERI.get(uzanti) or KODLAMA_EK_PROFILLERI.get(uzanti)
     if not profil:
         return metin
@@ -827,19 +912,28 @@ def _dizeleri_soyutla(metin: str, uzanti: str) -> str:
     return birlesik.sub(lambda m: _satir_koru(m) if m.group("d") is not None else m.group(0), metin)
 
 
-def _kodlama_aykiri(c: str) -> bool:
-    """Seçili seviyede karakter aykırı mı."""
-    if ord(c) < 128:
-        return False
-    if KODLAMA_SEVIYE == "ascii":
-        return True
-    if KODLAMA_SEVIYE == "turkce":
-        return c in TURKCE_HARFLER
+def _cp1254_disi(c: str) -> bool:
     try:
         c.encode("cp1254")
         return False
     except UnicodeEncodeError:
         return True
+
+
+def _kodlama_seviyeleri(c: str) -> set[str]:
+    """Karakterin ihlal ettiği (yapılandırılmış) seviyeler — boş küme = temiz."""
+    if ord(c) < 128:
+        return set()
+    hit = set()
+    for seviye in KODLAMA_SEVIYELER:
+        if (seviye == "ascii") or (seviye == "turkce" and c in TURKCE_HARFLER) or (seviye == "cp1254_disi" and _cp1254_disi(c)):
+            hit.add(seviye)
+    return hit
+
+
+def _kodlama_aykiri(c: str) -> bool:
+    """Seçili seviyelerin herhangi birinde karakter aykırı mı (geriye uyumlu yardımcı)."""
+    return bool(_kodlama_seviyeleri(c))
 
 
 def _rel(yol: Path) -> str:
@@ -863,26 +957,36 @@ def kodlama_bulgulari(yol: Path) -> list[tuple[int, str, str]]:
     uzanti = yol.suffix.lower()
     taranan = _dizeleri_soyutla(metin, uzanti) if uzanti in KODLAMA_DIZE_ATLA else metin
     asil_satirlar = metin.split(chr(10))
-    aykiri = []
+    muaf = _kodlama_muaf_kaydi(yol)
+    muaf_seviyeler = set(muaf["seviye"] or KODLAMA_SEVIYELER) if muaf else set()
+    aykiri = []                      # (satır, asıl satır, [karakter]) — muaf seviyeler DÜŞÜLDÜKTEN sonra kalanlar
+    seviye_var: set[str] = set()     # dosyada hangi seviyelerden karakter var (muafiyet gerekçesi için)
     for i, s in enumerate(taranan.split(chr(10)), 1):
-        k = [c for c in s if _kodlama_aykiri(c)]
+        k = []
+        for c in s:
+            hit = _kodlama_seviyeleri(c)
+            if not hit:
+                continue
+            seviye_var |= hit
+            if hit - muaf_seviyeler:          # muafiyetin kapsamadığı bir seviyede aykırı → bulgu
+                k.append(c)
         if k:
             aykiri.append((i, asil_satirlar[i - 1] if i - 1 < len(asil_satirlar) else s, k))
-    muaf = _kodlama_muaf_kaydi(yol)
+    b = []
     if muaf:
-        b = []
-        if not aykiri:
-            b.append((1, "", f"kodlama: muafiyet gerekçesiz — dosyada '{KODLAMA_SEVIYE}' düzeyinde aykırı karakter yok; muaf satırını sil"))
+        for seviye in sorted(muaf_seviyeler):
+            if seviye not in seviye_var:
+                b.append((1, "", f"kodlama: muafiyet gerekçesiz — dosyada '{seviye}' düzeyinde aykırı karakter yok; muaf satırından bu seviyeyi sil"))
         if muaf["icerir"] and muaf["icerir"] not in metin:
             b.append((1, "", f"kodlama: muafiyet iddiası doğrulanamadı — içerik işareti dosyada yok: {muaf['icerir']!r}"))
-        return b
     if not aykiri:
-        return []
+        return b
     sayim = Counter(c for _, _, k in aykiri for c in k)
     ozet = " ".join(f"{c} U+{ord(c):04X}×{n}" for c, n in sayim.most_common(5))
-    b = [(aykiri[0][0], aykiri[0][1].strip()[:90],
-          f"kodlama[{KODLAMA_SEVIYE}]: aykırı karakter — {len(aykiri)} satır · {ozet}; ekran metniyse kodlama.muaf listesine al")]
-    b += [(i, s.strip()[:90], f"kodlama[{KODLAMA_SEVIYE}]: " + " ".join(sorted(set(k)))) for i, s, k in aykiri[1:]]
+    seviye_etiket = "+".join(sorted({sv for _, _, k in aykiri for c in k for sv in (_kodlama_seviyeleri(c) - muaf_seviyeler)}))
+    b.append((aykiri[0][0], aykiri[0][1].strip()[:90],
+              f"kodlama[{seviye_etiket}]: aykırı karakter — {len(aykiri)} satır · {ozet}; ekran metniyse kodlama.muaf listesine al"))
+    b += [(i, s.strip()[:90], f"kodlama[{seviye_etiket}]: " + " ".join(sorted(set(k)))) for i, s, k in aykiri[1:]]
     return b
 
 

@@ -2,6 +2,26 @@
 
 Bicim: [Keep a Changelog](https://keepachangelog.com) · Surumleme: [SemVer](https://semver.org)
 
+## [1.9.3] - 2026-09-25
+
+### Düzeltildi (Solum ölçümü — kabuk dize lexer'ı)
+- **Kabuk (.sh/.bash) dize soyutlaması regex'ten DURUM MAKİNESİNE geçti.** `X="$(python -c '…çok satır…' "$a")"` deseninde
+  çift tırnak içindeki `$( … )` komut yerine koyması ve onun içindeki tek tırnaklı çok satırlı program, düz regex'te dıştaki
+  çift tırnağı programın ilk `"`ünde kapatıyor ve tırnak eşliği kayıyordu: dize yorum sanılıyor (yanlış pozitif — Solum
+  `pre-edit-advisor-gate.sh:142` echo dizesi) ya da yorum dize sanılıyor (GERÇEK ihlal gizlenir). Yeni çözümleyici: `'…'`
+  (kaçış yok) · `"…"` (ters bölü kaçışı; içindeki `$( … )` kod, iç içe tırnak taşır) · `$(`/`)` sayacı · `#` yorum yalnız
+  kod modunda ve sözcük başında · heredoc (`<<EOF`, `<<-EOF`, `<<'EOF'`, `<<"EOF"`) gövdesi dize. Sabotaj: Solum'un gerçek
+  betiğinde yalnız yorum cetvelleri (2/21/23/67) kırık, 142 temiz; gömülü programdan SONRAKİ yorumda Türkçe → KIRIK; heredoc
+  gövdesi geçer, sonrası yorum KIRIK.
+
+### Eklendi (Solum tasarım isteği — iki hasar sınıfı tek kapıda)
+- **`"karakter"` LİSTE olabilir**: `["turkce", "cp1254_disi"]` — Türkçe harf (UTF-8↔cp1254 uyumsuzluğu) ve konsolda çöken
+  karakterler (`─ ⚠ → emoji BOM`) birlikte. Bulgu etiketi ihlal edilen seviyeleri yazar (`kodlama[cp1254_disi+turkce]`).
+- **Muafiyet seviye başına**: `{"yol": "SolumUiText.cs", "icerir": "internal const string", "seviye": ["turkce"]}` —
+  Türkçe harf affedilir, kutu çizgisi yine KIRIK; "gerekçesiz muafiyet" seviye başına ölçülür ("dosyada 'cp1254_disi' yok").
+  `seviye` yoksa tüm seviyeler. Tek dize hâlâ geçerli; geçersiz liste üyesi → KOŞAMADI.
+- Sabotaj 11 vaka; bkm-magaza `--hepsi` etkilenmedi (65 dosya). Solum NamingTests'in iki testi artık silinebilir (koşul: GitHub 6. adım YEŞIL).
+
 ## [1.9.2] - 2026-09-24
 
 ### Eklendi (Solum altıncı fark — paralel koşumda ölçüldü, 8/8 eşdeğerlikten sonra tools/hooks kapsamında 3 dosya ayrıştı)
