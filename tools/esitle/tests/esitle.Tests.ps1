@@ -299,6 +299,22 @@ Describe 'Iki yonlu esitleme (Sync + Converge)' {
         ((Get-Content (Join-Path $s.RepoA 'readme.txt')) -join "`n") | Should Match 'A yerel degisiklik'
     }
 
+    It 'ortak gecmisi olmayan dal repoyu dusurmez, IlgisizGecmis raporlanir ve push surer' {
+        $s = New-Sandbox
+        New-TestGit $s.RepoB @('switch', '-q', '--orphan', 'yetim') | Out-Null
+        Add-TestCommit $s.RepoB 'y.txt' 'B yetim' 'B yetim kok'
+        New-TestGit $s.RepoA @('switch', '-q', '--orphan', 'yetim') | Out-Null
+        Add-TestCommit $s.RepoA 'z.txt' 'A yetim' 'A yetim kok'
+        New-TestGit $s.RepoA @('switch', '-q', 'main') | Out-Null
+        Invoke-EsitleSync -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config | Out-Null
+        $aBefore = Get-RefOrNull $s.RepoA 'refs/heads/yetim'
+        $ra = Invoke-EsitleSync -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config
+        $ra.Status | Should Be 'Synced'
+        (@($ra.Converge) | Where-Object { $_.Branch -eq 'yetim' }).Result | Should Be 'IlgisizGecmis'
+        (Get-RefOrNull $s.RepoA 'refs/heads/yetim') | Should Be $aBefore
+        (& git -C $s.HubUrl rev-parse refs/makine/A/yetim) | Should Be $aBefore
+    }
+
     It 'autoMerge kapaliysa ayrismis dali birlestirmez' {
         $s = New-Sandbox
         $s.Config | Add-Member -NotePropertyName autoMerge -NotePropertyValue $false -Force

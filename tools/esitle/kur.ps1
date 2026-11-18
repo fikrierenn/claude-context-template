@@ -155,7 +155,23 @@ if ($Kaldir) {
     return
 }
 
+# ── Hub yolları için safe.directory (global) ─────────────────────────────────
+# git 2.5x ağ paylaşımındaki repoların sahibini doğrulayamıyor ("may refer to a non-local directory")
+# ve push'u reddediyor (18.11 SANAL-FIKRI, git 2.55). Komut satırı -c push'ta karşı tarafa geçmediği
+# için global ayar gerekiyor. YALNIZ esitle.json'daki hub yolları eklenir, '*' asla.
+function Set-HubSafeDirectory {
+    $have = @(& git config --global --get-all safe.directory 2>$null)
+    foreach ($r in $config.repos) {
+        $url = (($config.hubRoot.TrimEnd('/', '\') + '/' + $r.hub) -replace '\\', '/')
+        if ($have -notcontains $url) {
+            & git config --global --add safe.directory $url
+            if ($LASTEXITCODE -ne 0) { throw "safe.directory eklenemedi: $url" }
+            Write-Host "safe.directory eklendi: $url"
+        }
+    }
+}
 foreach ($h in $HubOlustur) { New-HubRepo $h }
+Set-HubSafeDirectory
 if (-not $GorevYok) { Set-SyncTask }
 if (-not $HookYok) { Set-SessionEndHook -Remove $false }
 Set-RuleImport -Remove $false

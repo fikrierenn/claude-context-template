@@ -383,6 +383,12 @@ function Invoke-EsitleConverge {
                     $result = 'Cakisma'; $detail = ($files -join ', ')
                     Write-EsitleLog "CAKISMA $RepoName/$($r.Branch) <-> $($r.Other): $detail" 'WARN'
                 }
+                elseif ($mt.Err -match 'unrelated histories') {
+                    # İki makinede aynı adlı ama ortak kökü olmayan dal (ör. ayrı ayrı 'git init'). Otomatik
+                    # birleştirme anlamsız; dokunma, raporla. Repo'nun geri kalanı (push dahil) sürer.
+                    $result = 'IlgisizGecmis'; $detail = 'ortak gecmis yok'
+                    Write-EsitleLog "ILGISIZ GECMIS $RepoName/$($r.Branch) <-> $($r.Other)" 'WARN'
+                }
                 elseif ($mt.ExitCode -ne 0) {
                     throw "merge-tree basarisiz ($RepoName/$($r.Branch)): $($mt.Err)"
                 }
@@ -463,8 +469,8 @@ function Invoke-EsitleMain {
                         $snap = if ($r.Snapshot) { $r.Snapshot.Status } else { '-' }
                         $conv = (@($r.Converge) | Group-Object Result | ForEach-Object { "$($_.Name)=$($_.Count)" }) -join ' '
                         $summary += [pscustomobject]@{ Repo = $t.name; Status = $r.Status; Detail = "snapshot: $snap $conv $($r.Detail)".Trim() }
-                        foreach ($c in @($r.Converge) | Where-Object { $_.Result -eq 'Cakisma' }) {
-                            $summary += [pscustomobject]@{ Repo = $t.name; Status = 'Cakisma'; Detail = "$($c.Branch) <-> $($c.Other): $($c.Detail)" }
+                        foreach ($c in @($r.Converge) | Where-Object { $_.Result -in @('Cakisma', 'IlgisizGecmis') }) {
+                            $summary += [pscustomobject]@{ Repo = $t.name; Status = $c.Result; Detail = "$($c.Branch) <-> $($c.Other): $($c.Detail)" }
                         }
                         if ($r.Snapshot -and $r.Snapshot.Status -eq 'SecretRisk') { $exit = 1 }
                     }
@@ -503,7 +509,7 @@ function Invoke-EsitleMain {
         }
     }
     if ($Mode -eq 'Sync' -and -not $hubOk) { return 2 }
-    if ($exit -eq 0 -and @($summary | Where-Object { $_.Status -eq 'Cakisma' }).Count -gt 0) { return 3 }
+    if ($exit -eq 0 -and @($summary | Where-Object { $_.Status -in @('Cakisma', 'IlgisizGecmis') }).Count -gt 0) { return 3 }
     return $exit
 }
 
