@@ -299,6 +299,23 @@ Describe 'Iki yonlu esitleme (Sync + Converge)' {
         ($refs -contains 'refs/makine/A/wip/B') | Should Be $false
     }
 
+    It 'kendi ad alanini budar: yerelde olmayan ref hubdan silinir, baskasinin ad alanina dokunmaz' {
+        $s = New-Sandbox
+        Invoke-EsitleSync -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config | Out-Null
+        # A'da acilip silinen, karsiya hic gecmemis dal (B bu arada esitlemedi)
+        New-TestGit $s.RepoA @('branch', 'gecici') | Out-Null
+        Invoke-EsitleSync -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config | Out-Null
+        # Eski surumden kalmis yabanci ayna
+        & git -C $s.HubUrl update-ref refs/makine/A/wip/B (& git -C $s.HubUrl rev-parse refs/makine/A/main)
+        New-TestGit $s.RepoA @('branch', '-D', 'gecici') | Out-Null
+        Invoke-EsitleSync -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config | Out-Null
+        $refs = & git -C $s.HubUrl for-each-ref --format='%(refname)'
+        ($refs -contains 'refs/makine/A/wip/B') | Should Be $false
+        ($refs -contains 'refs/makine/A/gecici') | Should Be $false
+        ($refs -contains 'refs/makine/A/main') | Should Be $true
+        ($refs -contains 'refs/makine/B/main') | Should Be $true
+    }
+
     It 'aktif dalda ezilecek yerel degisiklik varsa ilerletmez' {
         $s = New-Sandbox
         Add-TestCommit $s.RepoB 'readme.txt' 'B yeni' 'B1'

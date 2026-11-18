@@ -305,6 +305,17 @@ function Invoke-EsitleSync {
     }
     # Push sonrası kendi ad alanımızın yerel aynasını tazele (rapor tutarlılığı).
     Invoke-Git -Repo $RepoPath -Arguments @('fetch', '-q', '--prune', $hubUrl, "+refs/makine/${Machine}/*:refs/esitle/${Machine}/*") | Out-Null
+    # Kendi ad alanını buda: yerelde karşılığı olmayan ayna ref'i (silinmiş/yeniden adlandırılmış dal,
+    # eski sürümün geri gönderdiği yabancı wip) hub'dan silinir. Başka makinenin ad alanına dokunulmaz.
+    $expected = @($pushSpecs | ForEach-Object { ($_ -split ':', 2)[1] })
+    $mirrorPrefix = "refs/esitle/$Machine/"
+    $stale = @(Get-GitLines (Invoke-Git -Repo $RepoPath -Arguments @('for-each-ref', '--format=%(refname)', $mirrorPrefix)).Out |
+        ForEach-Object { "refs/makine/$Machine/" + $_.Substring($mirrorPrefix.Length) } | Where-Object { $expected -notcontains $_ })
+    if ($stale.Count -gt 0) {
+        Invoke-Git -Repo $RepoPath -Arguments (@('push', '-q', '--no-verify', $hubUrl) + @($stale | ForEach-Object { ':' + $_ })) | Out-Null
+        Invoke-Git -Repo $RepoPath -Arguments @('fetch', '-q', '--prune', $hubUrl, "+refs/makine/${Machine}/*:refs/esitle/${Machine}/*") | Out-Null
+        Write-EsitleLog "Ad alani budandi: $RepoName -> $($stale -join ', ')"
+    }
 
     $res.Status = 'Synced'
     Write-EsitleLog "Sync tamam: $RepoName ($Machine)"

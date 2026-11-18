@@ -45,6 +45,12 @@ powershell -File tools\esitle\esitle.ps1 -Mode Snapshot -RepoPath D:\Dev\pusula 
 Çıkış kodları: `0` tamam · `1` hata veya sır riski · `2` hub erişilemiyor · `3` çakışma var.
 Log: `%USERPROFILE%\.esitle\esitle.log` (AppData değil: Claude masaüstü MSIX sanallaştırması hook ile görevin loglarını ayırıyordu).
 
+## Sınırlar
+
+- **Dal silme yayılmaz.** Bir makinede silinen dal karşıda duruyorsa bir sonraki eşitlemede geri gelir (hiçbir şey kaybolmasın kuralı). Kalıcı silmek için iki makinede de sil; araç her makinenin hub'daki kendi bölümünü yerel dallara göre budar.
+- **Ortak geçmişi olmayan dal** (`IlgisizGecmis`) ve **çakışma** (`Cakisma`) elle çözülür; araç dokunmaz, çıkış kodu 3.
+- **Karşının kaydedilmemiş işi** çalışma klasörüne uygulanmaz; yerelde `wip/<KARSI>` dalı olarak durur ve geri gönderilmez.
+
 ## Güvenlik
 
 - Ignore edilmemiş sır deseni (`.env`, `*.pfx`, `.secrets/`, `secrets*.json`, …) → o repo **atlanır** (`SecretRisk`).
