@@ -619,6 +619,46 @@ function Import-EsitleSessions {
     return $res
 }
 
+# ── Kendini güncelleme ───────────────────────────────────────────────────────
+# Repo dışındaki kopya (ör. SANAL-FIKRI C:\dev\_esitle, SURUM.txt taşır) her Sync sonunda, eşitlenmiş
+# repodaki dalın ucu kopyadan İLERİDEYSE kendini git archive ile yeniler; değişiklik bir sonraki koşuda
+# devreye girer. Yalnız ileri: dal geri alınmış ya da ayrışmışsa dokunmaz (18.11: kopya elle taşınıyordu).
+function Update-EsitleSelf {
+    param(
+        [Parameter(Mandatory)][string]$CopyRoot, [Parameter(Mandatory)][string]$RepoPath,
+        [Parameter(Mandatory)][string]$Branch, [Parameter(Mandatory)][string[]]$Paths
+    )
+    $verFile = Join-Path $CopyRoot 'SURUM.txt'
+    $current = ''
+    if (Test-Path -LiteralPath $verFile) { $current = ([IO.File]::ReadAllText($verFile)).Trim([char]0xFEFF, ' ', "`r", "`n", "`t") }
+    $tip = Get-GitRef $RepoPath "refs/heads/$Branch"
+    if (-not $tip) { return 'DalYok' }
+    if ($current -eq $tip) { return 'Guncel' }
+    if ($current -and (Test-GitRef $RepoPath $current)) {
+        $ahead = (Invoke-Git -Repo $RepoPath -Arguments @('merge-base', '--is-ancestor', $current, $tip) -AllowFail).ExitCode -eq 0
+        if (-not $ahead) {
+            Write-EsitleLog "Kendini guncelleme atlandi: $Branch ($($tip.Substring(0,7))) kopyadan ($($current.Substring(0,7))) ileride degil" 'WARN'
+            return 'AtlandiGeride'
+        }
+    }
+    $id = [guid]::NewGuid().ToString('N').Substring(0, 8)
+    $zip = Join-Path ([IO.Path]::GetTempPath()) "esitle-self-$id.zip"
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) "esitle-self-$id"
+    try {
+        Invoke-Git -Repo $RepoPath -Arguments (@('archive', '--format=zip', '-o', $zip, $tip, '--') + $Paths) | Out-Null
+        Expand-Archive -LiteralPath $zip -DestinationPath $tmp -Force
+        Get-ChildItem -LiteralPath $tmp -Force | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $CopyRoot -Recurse -Force }
+        [IO.File]::WriteAllText($verFile, $tip + "`n", (New-Object Text.ASCIIEncoding))
+    }
+    finally {
+        if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
+        if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Recurse -Force }
+    }
+    $from = if ($current) { $current.Substring(0, [Math]::Min(7, $current.Length)) } else { '?' }
+    Write-EsitleLog "Kendini guncelledi: $from -> $($tip.Substring(0,7)) ($Branch)"
+    return 'Guncellendi'
+}
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 function Invoke-EsitleMain {
     $cfgPath = if ($ConfigPath) { $ConfigPath } else { Join-Path $PSScriptRoot 'esitle.json' }
@@ -730,6 +770,22 @@ function Invoke-EsitleMain {
         }
     }
 
+    # Kendini güncelleme: yalnız repo dışı kopyada (SURUM.txt) ve Sync'te.
+    $copyRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    if ($Mode -eq 'Sync' -and (Test-Path (Join-Path $copyRoot 'SURUM.txt')) -and ($config.PSObject.Properties.Name -contains 'selfUpdate')) {
+        try {
+            $su = $config.selfUpdate
+            $suEntry = $config.repos | Where-Object { $_.name -eq $su.repo } | Select-Object -First 1
+            if (-not $suEntry) { throw "selfUpdate.repo ayarda yok: $($su.repo)" }
+            $suRes = Update-EsitleSelf -CopyRoot $copyRoot -RepoPath (Get-RepoPathFor $config $Machine $suEntry) -Branch $su.branch -Paths @($su.paths)
+            if ($suRes -ne 'Guncel') { $summary += [pscustomobject]@{ Repo = '(esitle)'; Status = "KendiniGuncelle:$suRes"; Detail = $su.branch } }
+        }
+        catch {
+            $exit = 1
+            Write-EsitleLog "HATA kendini guncelleme: $($_.Exception.Message)" 'ERROR'
+            $summary += [pscustomobject]@{ Repo = '(esitle)'; Status = 'KendiniGuncelleHata'; Detail = $_.Exception.Message }
+        }
+    }
     if (-not (Test-Path $script:LogDir)) { New-Item -ItemType Directory -Force $script:LogDir | Out-Null }
     [pscustomobject]@{
         Zaman = (Get-Date).ToString('dd.MM.yyyy HH:mm:ss'); Makine = $Machine; Mod = $Mode

@@ -449,3 +449,35 @@ Describe 'Oturum gecmisi (Export/Import)' {
         ([IO.File]::ReadAllText($mine)) | Should Match 'A surumu daha yeni'
     }
 }
+
+Describe 'Kendini guncelleme (Update-EsitleSelf)' {
+    It 'repodaki dal kopyadan ileride ise kopyayi gunceller; geride/ayni ise dokunmaz' {
+        $s = New-Sandbox
+        $repo = $s.RepoA
+        New-Item -ItemType Directory -Force (Join-Path $repo 'tools\esitle') | Out-Null
+        Set-Content (Join-Path $repo 'tools\esitle\esitle.ps1') 'surum 1' -Encoding UTF8
+        New-TestGit $repo @('add', '-A') | Out-Null
+        New-TestGit $repo @('commit', '-q', '-m', 'v1') | Out-Null
+        $v1 = Get-RefOrNull $repo 'HEAD'
+        $copy = Join-Path $s.Root 'kopya'
+        New-Item -ItemType Directory -Force (Join-Path $copy 'tools\esitle') | Out-Null
+        Set-Content (Join-Path $copy 'tools\esitle\esitle.ps1') 'surum 1' -Encoding UTF8
+        Set-Content (Join-Path $copy 'SURUM.txt') $v1 -Encoding ASCII
+
+        $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'main' -Paths @('tools/esitle')
+        $r | Should Be 'Guncel'
+
+        Set-Content (Join-Path $repo 'tools\esitle\esitle.ps1') 'surum 2' -Encoding UTF8
+        New-TestGit $repo @('commit', '-q', '-am', 'v2') | Out-Null
+        $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'main' -Paths @('tools/esitle')
+        $r | Should Be 'Guncellendi'
+        ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
+        ((Get-Content (Join-Path $copy 'SURUM.txt')) -join '').Trim() | Should Be (Get-RefOrNull $repo 'HEAD')
+
+        # Dal geri alinirsa (kopya daha yeni) dokunmaz
+        New-TestGit $repo @('branch', '-f', 'eski', $v1) | Out-Null
+        $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'eski' -Paths @('tools/esitle')
+        $r | Should Be 'AtlandiGeride'
+        ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
+    }
+}
