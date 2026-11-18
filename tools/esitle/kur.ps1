@@ -73,12 +73,14 @@ print("hook " + ("kaldirildi" if remove else "eklendi") + ": " + path)
         & python -I $tmp $settings $hookMarker $(if ($Remove) { '1' } else { '0' })
         if ($LASTEXITCODE -ne 0) { throw "settings.json guncellenemedi (python cikis $LASTEXITCODE)" }
     }
-    finally { Remove-Item $tmp -Force }
+    finally { if ([IO.File]::Exists($tmp)) { [IO.File]::Delete($tmp) } }  # Remove-Item 8.3 kisa yolu (FIKRI~1.ERE) cozemiyor
 }
 
 # ── Görev Zamanlayıcı: oturum açılışı + 30 dk + ağ bağlanınca ────────────────
 function Set-SyncTask {
     $user = "$env:USERDOMAIN\$env:USERNAME"
+    # Oturum tetiğinin tekrarı yalnız bir sonraki girişte başlar; kayıttan hemen sonra da 30 dk döngü için zaman tetiği.
+    $start = (Get-Date).AddMinutes(2).ToString('yyyy-MM-ddTHH:mm:ss')  # Görev XML biçimi (ISO 8601) zorunlu
     $taskArgs = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File &quot;$esitle&quot; -Mode Sync -Quiet"
     $xml = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -88,6 +90,9 @@ function Set-SyncTask {
     <LogonTrigger><Enabled>true</Enabled><UserId>$user</UserId><Delay>PT2M</Delay>
       <Repetition><Interval>PT30M</Interval><StopAtDurationEnd>false</StopAtDurationEnd></Repetition>
     </LogonTrigger>
+    <TimeTrigger><Enabled>true</Enabled><StartBoundary>$start</StartBoundary>
+      <Repetition><Interval>PT30M</Interval><StopAtDurationEnd>false</StopAtDurationEnd></Repetition>
+    </TimeTrigger>
     <EventTrigger><Enabled>true</Enabled><Delay>PT1M</Delay>
       <Subscription>&lt;QueryList&gt;&lt;Query Id="0" Path="Microsoft-Windows-NetworkProfile/Operational"&gt;&lt;Select Path="Microsoft-Windows-NetworkProfile/Operational"&gt;*[System[(EventID=10000)]]&lt;/Select&gt;&lt;/Query&gt;&lt;/QueryList&gt;</Subscription>
     </EventTrigger>
@@ -106,7 +111,7 @@ function Set-SyncTask {
 </Task>
 "@
     Register-ScheduledTask -TaskName $taskName -Xml $xml -Force | Out-Null
-    Write-Host "Gorev kaydedildi: $taskName (oturum acilisi + 30 dk + ag baglaninca)"
+    Write-Host "Gorev kaydedildi: $taskName (simdi+2 dk itibariyle 30 dk dongu + oturum acilisi + ag baglaninca)"
 }
 
 # ── Hub'da eksik bare repo ───────────────────────────────────────────────────
