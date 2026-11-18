@@ -2,6 +2,7 @@
   "hubRoot": "//10.100.1.120/C$/git",
   "maxFileMB": 20,
   "autoMerge": true,
+  "sessions": { "enabled": true, "hubDir": "_oturumlar", "importDays": 14 },
   "machines": {
     "BT-FIKRI": { "devRoot": "D:\\Dev" },
     "SANAL-FIKRI": { "devRoot": "C:\\dev" }

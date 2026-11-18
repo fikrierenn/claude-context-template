@@ -325,3 +325,98 @@ Describe 'Iki yonlu esitleme (Sync + Converge)' {
         (@($rb.Converge) | Where-Object { $_.Branch -eq 'main' }).Result | Should Be 'AtlandiAyar'
     }
 }
+
+# ── Faz 2: oturum geçmişi ───────────────────────────────────────────────────
+function New-SessionSandbox {
+    $s = New-Sandbox
+    $s.Config | Add-Member -NotePropertyName sessions -NotePropertyValue ([pscustomobject]@{ enabled = $true; hubDir = '_oturumlar'; importDays = 14 }) -Force
+    $projA = Join-Path $s.Root 'claudeA\projects'
+    $projB = Join-Path $s.Root 'claudeB\projects'
+    $stateA = Join-Path $s.Root 'stateA'
+    $stateB = Join-Path $s.Root 'stateB'
+    New-Item -ItemType Directory -Force $projA, $projB, $stateA, $stateB | Out-Null
+    $s | Add-Member -NotePropertyName ProjA -NotePropertyValue $projA
+    $s | Add-Member -NotePropertyName ProjB -NotePropertyValue $projB
+    $s | Add-Member -NotePropertyName StateA -NotePropertyValue $stateA
+    $s | Add-Member -NotePropertyName StateB -NotePropertyValue $stateB
+    return $s
+}
+
+function New-FakeSession {
+    param([string]$ProjectsRoot, [string]$RepoPath, [string]$Id, [string]$Prompt, [string]$Suffix = '', [int]$AgeDays = 0)
+    $dir = Join-Path $ProjectsRoot ((ConvertTo-ClaudeProjectName $RepoPath) + $Suffix)
+    New-Item -ItemType Directory -Force $dir | Out-Null
+    $file = Join-Path $dir "$Id.jsonl"
+    $lines = @(
+        '{"type":"summary","summary":"x"}',
+        ('{"type":"user","sessionId":"' + $Id + '","message":{"role":"user","content":"' + $Prompt + '"}}'),
+        '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"tamam"}]}}'
+    )
+    [IO.File]::WriteAllText($file, (($lines -join "`n") + "`n"), (New-Object Text.UTF8Encoding $false))
+    if ($AgeDays -gt 0) { (Get-Item $file).LastWriteTime = (Get-Date).AddDays(-$AgeDays) }
+    return $file
+}
+
+Describe 'Oturum gecmisi (Export/Import)' {
+    It 'kendi oturumlarini sikistirip gonderir, dizin yazar, degismeyeni tekrar gondermez' {
+        $s = New-SessionSandbox
+        New-FakeSession $s.ProjA $s.RepoA 'aaaa-1111' 'Urun resimlerini bul' | Out-Null
+        New-FakeSession $s.ProjA $s.RepoA 'aaaa-2222' 'Worktree isi' '--claude-worktrees-x' | Out-Null
+        $r = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r.Sent | Should Be 2
+        $base = Join-Path $s.Hub '_oturumlar\A\proj'
+        (Test-Path (Join-Path $base '_kok\aaaa-1111.jsonl.gz')) | Should Be $true
+        (Test-Path (Join-Path $base '--claude-worktrees-x\aaaa-2222.jsonl.gz')) | Should Be $true
+        $idx = Get-Content (Join-Path $base 'dizin.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+        (@($idx) | Where-Object { $_.id -eq 'aaaa-1111' }).ilkIstek | Should Be 'Urun resimlerini bul'
+        $r2 = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r2.Sent | Should Be 0
+    }
+
+    It 'karsinin son gunlerdeki oturumlarini yerel proje klasorune acar; eskileri yalniz kimlikle' {
+        $s = New-SessionSandbox
+        $new = New-FakeSession $s.ProjB $s.RepoB 'bbbb-yeni' 'yeni is'
+        New-FakeSession $s.ProjB $s.RepoB 'bbbb-eski' 'eski is' '' 40 | Out-Null
+        Export-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB | Out-Null
+
+        $r = Import-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r.Received | Should Be 1
+        $localDir = Join-Path $s.ProjA (ConvertTo-ClaudeProjectName $s.RepoA)
+        $got = Join-Path $localDir 'bbbb-yeni.jsonl'
+        (Test-Path $got) | Should Be $true
+        ([IO.File]::ReadAllText($got)) | Should Be ([IO.File]::ReadAllText($new))
+        (Test-Path (Join-Path $localDir 'bbbb-eski.jsonl')) | Should Be $false
+
+        $r2 = Import-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA -SessionId 'bbbb-eski'
+        $r2.Received | Should Be 1
+        (Test-Path (Join-Path $localDir 'bbbb-eski.jsonl')) | Should Be $true
+    }
+
+    It 'iceri alinan oturumu geri gondermez; burada devam ettirilirse kendi adina gonderir' {
+        $s = New-SessionSandbox
+        New-FakeSession $s.ProjB $s.RepoB 'bbbb-devam' 'devam edilecek' | Out-Null
+        Export-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB | Out-Null
+        Import-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA | Out-Null
+
+        $r = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r.Sent | Should Be 0
+
+        $local = Join-Path (Join-Path $s.ProjA (ConvertTo-ClaudeProjectName $s.RepoA)) 'bbbb-devam.jsonl'
+        Add-Content $local '{"type":"user","message":{"role":"user","content":"A tarafinda devam"}}'
+        (Get-Item $local).LastWriteTime = (Get-Date).AddMinutes(5)
+        $r2 = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r2.Sent | Should Be 1
+        (Test-Path (Join-Path $s.Hub '_oturumlar\A\proj\_kok\bbbb-devam.jsonl.gz')) | Should Be $true
+    }
+
+    It 'yereldeki daha yeni dosyayi ezmez' {
+        $s = New-SessionSandbox
+        New-FakeSession $s.ProjB $s.RepoB 'bbbb-cakis' 'B surumu' | Out-Null
+        Export-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB | Out-Null
+        $mine = New-FakeSession $s.ProjA $s.RepoA 'bbbb-cakis' 'A surumu daha yeni'
+        (Get-Item $mine).LastWriteTime = (Get-Date).AddMinutes(10)
+        $r = Import-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r.Received | Should Be 0
+        ([IO.File]::ReadAllText($mine)) | Should Match 'A surumu daha yeni'
+    }
+}

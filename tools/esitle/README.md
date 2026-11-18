@@ -52,6 +52,17 @@ Log: `%USERPROFILE%\.esitle\esitle.log` (AppData değil: Claude masaüstü MSIX 
 - Force push yalnız kendi ad alanına (`refs/makine/<MAKINE>/*`). Commit kuralındaki tek onaylı istisna.
 - Ayna push'u projenin pre-push kapısını atlar (`--no-verify`): build/test her 30 dk koşmaz. Teslim push'ları (`origin`) kapıdan geçmeye devam eder.
 
+## Oturum geçmişi (Faz 2)
+
+Claude Code geçmişi (`~/.claude/projects/<kodlanmış-yol>/*.jsonl`) makineye özgü klasörde durur. `esitle` her Sync'te:
+
+- **Gönderir:** kendi oturumlarını hub'da `_oturumlar\<MAKINE>\<repo>\` altına gzip'li kopyalar (ekleme/güncelleme, silme yok) ve `dizin.json` yazar (kimlik, tarih, boyut, ilk istek). Git'e girmez: boyut ve iş verisi.
+- **Alır:** karşı makinenin son `importDays` (14) gündeki oturumlarını yerel proje klasörüne açar → `claude --resume` listesinde görünür. Eskiler kimlikle: `esitle.ps1 -Mode Sessions -SessionId <id>` (hepsi: `-AllSessions`).
+- Yereldeki daha yeni dosya ezilmez. İçeri alınıp değişmeyen dosya geri gönderilmez; burada devam ettirilirse bu makinenin adıyla gönderilir.
+- Masaüstü uygulamasının kenar çubuğu listesi taşınmaz (uygulama iç verisi); alınan oturumlar `claude --resume` ile açılır.
+
+**C: dolu ise:** `tasi-claude-projects.ps1` geçmişi `D:\claude\projects`'e taşır, eski yere junction koyar (Claude kapalıyken, `-Uygula`; eski kopya silinmez; `-GeriAl` var).
+
 ## Test
 
 ```

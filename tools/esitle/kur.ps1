@@ -102,7 +102,7 @@ function Set-SyncTask {
     <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
     <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <ExecutionTimeLimit>PT20M</ExecutionTimeLimit>
+    <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
     <StartWhenAvailable>true</StartWhenAvailable>
     <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
     <Enabled>true</Enabled>

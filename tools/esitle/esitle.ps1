@@ -20,7 +20,7 @@
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('Snapshot', 'Sync', 'Report', 'Converge')]
+    [ValidateSet('Snapshot', 'Sync', 'Report', 'Converge', 'Sessions')]
     [string]$Mode = 'Report',
     [string]$RepoPath,
     [string]$Message = '',
@@ -28,7 +28,10 @@ param(
     [string]$Machine = $env:COMPUTERNAME,
     [switch]$Quiet,
     # Claude Code SessionEnd hook'u: stdin'den {cwd, session_id, reason} JSON'u okunur.
-    [switch]$FromHook
+    [switch]$FromHook,
+    # Sessions modu: belirli oturumu ya da tümünü içeri al (varsayılan: son importDays gün).
+    [string]$SessionId = '',
+    [switch]$AllSessions
 )
 
 Set-StrictMode -Version 2.0
@@ -407,6 +410,193 @@ function Invoke-EsitleConverge {
     return $out
 }
 
+# ── Oturum geçmişi (Faz 2) ───────────────────────────────────────────────────
+# Claude Code geçmişi: <projects>\<kodlanmış-yol>\<oturum-id>.jsonl (+ alt klasörler: tool-results, subagents).
+# Hub: <hubRoot>\<hubDir>\<MAKINE>\<repo>\<ek>\<göreli-yol>.gz + dizin.json. Git'e girmez (boyut + iş verisi).
+# Gönderme: yalnız kendi makinenin ad alanına, yalnız ekleme/güncelleme. Alma: son N gün ya da kimlikle.
+# Yereldeki daha yeni dosya asla ezilmez. İçeri alınıp değiştirilmeyen dosya geri gönderilmez.
+
+function ConvertTo-ClaudeProjectName {
+    param([string]$Path)
+    return ($Path.TrimEnd('\', '/') -replace '[^A-Za-z0-9]', '-')
+}
+
+function Get-ClaudeProjectsRoot {
+    param($Config, [string]$Machine)
+    $m = $Config.machines.PSObject.Properties[$Machine]
+    if ($m -and ($m.Value.PSObject.Properties.Name -contains 'claudeProjects')) { return $m.Value.claudeProjects }
+    $base = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $env:USERPROFILE '.claude' }
+    return (Join-Path $base 'projects')
+}
+
+function Get-SessionHubBase {
+    param($Config, [string]$Machine, [string]$RepoName)
+    $dir = '_oturumlar'
+    if ($Config.PSObject.Properties.Name -contains 'sessions' -and $Config.sessions.PSObject.Properties.Name -contains 'hubDir') { $dir = $Config.sessions.hubDir }
+    return (Join-Path (Join-Path (Join-Path ($Config.hubRoot -replace '/', '\') $dir) $Machine) $RepoName)
+}
+
+function Read-ImportManifest {
+    param([string]$StateDir)
+    $p = Join-Path $StateDir 'ice-alinan.json'
+    $h = @{}
+    if (Test-Path $p) {
+        $o = Get-Content $p -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($prop in $o.PSObject.Properties) { $h[$prop.Name] = [long]$prop.Value }
+    }
+    return $h
+}
+
+function Save-ImportManifest {
+    param([string]$StateDir, [hashtable]$Manifest)
+    if (-not (Test-Path $StateDir)) { New-Item -ItemType Directory -Force $StateDir | Out-Null }
+    $o = New-Object psobject
+    foreach ($k in $Manifest.Keys) { $o | Add-Member -NotePropertyName $k -NotePropertyValue $Manifest[$k] }
+    $o | ConvertTo-Json -Depth 3 | Set-Content -Path (Join-Path $StateDir 'ice-alinan.json') -Encoding UTF8
+}
+
+function Copy-Compressed {
+    param([string]$Source, [string]$Target, [switch]$Decompress)
+    $dir = Split-Path -Parent $Target
+    if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force $dir | Out-Null }
+    $tmp = "$Target.esitle-tmp"
+    # Claude açık oturuma yazarken de okunabilsin: FileShare ReadWrite.
+    $in = [IO.File]::Open($Source, 'Open', 'Read', 'ReadWrite')
+    try {
+        $out = [IO.File]::Open($tmp, 'Create', 'Write', 'None')
+        try {
+            if ($Decompress) {
+                $gz = New-Object IO.Compression.GZipStream($in, [IO.Compression.CompressionMode]::Decompress, $true)
+                try { $gz.CopyTo($out) } finally { $gz.Dispose() }
+            }
+            else {
+                $gz = New-Object IO.Compression.GZipStream($out, [IO.Compression.CompressionLevel]::Optimal, $true)
+                try { $in.CopyTo($gz) } finally { $gz.Dispose() }
+            }
+        }
+        finally { $out.Dispose() }
+    }
+    finally { $in.Dispose() }
+    if (Test-Path -LiteralPath $Target) { Remove-Item -LiteralPath $Target -Force }
+    Move-Item -LiteralPath $tmp -Destination $Target
+    (Get-Item -LiteralPath $Target).LastWriteTimeUtc = (Get-Item -LiteralPath $Source).LastWriteTimeUtc
+}
+
+function Get-FirstPrompt {
+    param([string]$Path)
+    try {
+        $fs = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
+        $sr = New-Object IO.StreamReader($fs, [Text.Encoding]::UTF8)
+        try {
+            for ($i = 0; $i -lt 400; $i++) {
+                $line = $sr.ReadLine()
+                if ($null -eq $line) { break }
+                if ($line -notmatch '"type"\s*:\s*"user"') { continue }
+                $o = $line | ConvertFrom-Json
+                $c = $o.message.content
+                $text = if ($c -is [string]) { $c } else { (@($c) | Where-Object { $_.type -eq 'text' } | Select-Object -First 1).text }
+                if ($text -and $text -notmatch '^\s*<') {
+                    $text = ($text -replace '\s+', ' ').Trim()
+                    if ($text.Length -gt 120) { $text = $text.Substring(0, 120) + '...' }
+                    return $text
+                }
+            }
+        }
+        finally { $sr.Dispose() }
+    }
+    catch { Write-EsitleLog "Ilk istek okunamadi: $Path ($($_.Exception.Message))" 'WARN' }
+    return ''
+}
+
+function Export-EsitleSessions {
+    param(
+        [Parameter(Mandatory)][string]$RepoPath, [Parameter(Mandatory)][string]$RepoName,
+        [Parameter(Mandatory)][string]$Machine, [Parameter(Mandatory)]$Config,
+        [string]$ProjectsRoot = '', [string]$StateDir = ''
+    )
+    if (-not $ProjectsRoot) { $ProjectsRoot = Get-ClaudeProjectsRoot $Config $Machine }
+    if (-not $StateDir) { $StateDir = $script:LogDir }
+    $res = [pscustomobject]@{ Repo = $RepoName; Sent = 0; Skipped = 0 }
+    if (-not (Test-Path -LiteralPath $ProjectsRoot)) { return $res }
+    $prefix = ConvertTo-ClaudeProjectName $RepoPath
+    $base = Get-SessionHubBase $Config $Machine $RepoName
+    $manifest = Read-ImportManifest $StateDir
+    $index = @()
+    $dirs = @(Get-ChildItem -LiteralPath $ProjectsRoot -Directory | Where-Object { $_.Name -ieq $prefix -or $_.Name -ilike "$prefix-*" })
+    foreach ($d in $dirs) {
+        $suffix = $d.Name.Substring($prefix.Length)
+        $folder = if ($suffix) { $suffix } else { '_kok' }
+        foreach ($f in @(Get-ChildItem -LiteralPath $d.FullName -Recurse -File | Where-Object { $_.Name -notlike '*.esitle-tmp' })) {
+            $rel = $f.FullName.Substring($d.FullName.Length).TrimStart('\')
+            if ($manifest.ContainsKey($f.FullName) -and $f.LastWriteTimeUtc.Ticks -le $manifest[$f.FullName]) { $res.Skipped++; continue }
+            $target = Join-Path (Join-Path $base $folder) ($rel + '.gz')
+            $need = -not (Test-Path -LiteralPath $target)
+            if (-not $need) { $need = $f.LastWriteTimeUtc -gt (Get-Item -LiteralPath $target).LastWriteTimeUtc.AddSeconds(2) }
+            if ($need) { Copy-Compressed -Source $f.FullName -Target $target; $res.Sent++ }
+            if ($rel -notmatch '\\' -and $f.Extension -eq '.jsonl') {
+                $index += [pscustomobject]@{
+                    id = $f.BaseName; klasor = $folder; tarih = $f.LastWriteTime.ToString('dd.MM.yyyy HH:mm')
+                    zaman = $f.LastWriteTimeUtc.Ticks; boyutMB = [math]::Round($f.Length / 1MB, 1); ilkIstek = (Get-FirstPrompt $f.FullName)
+                }
+            }
+        }
+    }
+    if ($index.Count -gt 0) {
+        if (-not (Test-Path -LiteralPath $base)) { New-Item -ItemType Directory -Force $base | Out-Null }
+        ConvertTo-Json -InputObject @($index | Sort-Object zaman -Descending) -Depth 3 |
+            Set-Content -Path (Join-Path $base 'dizin.json') -Encoding UTF8
+    }
+    if ($res.Sent) { Write-EsitleLog "Oturum gonderildi: $RepoName $($res.Sent) dosya" }
+    return $res
+}
+
+function Import-EsitleSessions {
+    param(
+        [Parameter(Mandatory)][string]$RepoPath, [Parameter(Mandatory)][string]$RepoName,
+        [Parameter(Mandatory)][string]$Machine, [Parameter(Mandatory)]$Config,
+        [string]$ProjectsRoot = '', [string]$StateDir = '',
+        [int]$Days = -1, [string]$SessionId = '', [switch]$All
+    )
+    if (-not $ProjectsRoot) { $ProjectsRoot = Get-ClaudeProjectsRoot $Config $Machine }
+    if (-not $StateDir) { $StateDir = $script:LogDir }
+    if ($Days -lt 0) {
+        $Days = 14
+        if ($Config.PSObject.Properties.Name -contains 'sessions' -and $Config.sessions.PSObject.Properties.Name -contains 'importDays') { $Days = [int]$Config.sessions.importDays }
+    }
+    $res = [pscustomobject]@{ Repo = $RepoName; Received = 0; KeptLocal = 0 }
+    $machinesDir = Split-Path -Parent (Split-Path -Parent (Get-SessionHubBase $Config $Machine $RepoName))
+    if (-not (Test-Path -LiteralPath $machinesDir)) { return $res }
+    $prefix = ConvertTo-ClaudeProjectName $RepoPath
+    $cutoff = (Get-Date).ToUniversalTime().AddDays(-$Days)
+    $manifest = Read-ImportManifest $StateDir
+    foreach ($m in @(Get-ChildItem -LiteralPath $machinesDir -Directory | Where-Object { $_.Name -ne $Machine })) {
+        $src = Join-Path $m.FullName $RepoName
+        if (-not (Test-Path -LiteralPath $src)) { continue }
+        foreach ($folderDir in @(Get-ChildItem -LiteralPath $src -Directory)) {
+            $suffix = if ($folderDir.Name -eq '_kok') { '' } else { $folderDir.Name }
+            $localDir = Join-Path $ProjectsRoot ($prefix + $suffix)
+            foreach ($g in @(Get-ChildItem -LiteralPath $folderDir.FullName -Recurse -File -Filter '*.gz')) {
+                $rel = $g.FullName.Substring($folderDir.FullName.Length).TrimStart('\')
+                $rel = $rel.Substring(0, $rel.Length - 3)
+                $sid = [IO.Path]::GetFileNameWithoutExtension(($rel -split '\\')[0])
+                if ($SessionId) { if ($sid -ne $SessionId) { continue } }
+                elseif (-not $All -and $g.LastWriteTimeUtc -lt $cutoff) { continue }
+                $target = Join-Path $localDir $rel
+                if (Test-Path -LiteralPath $target) {
+                    $t = Get-Item -LiteralPath $target
+                    if ($t.LastWriteTimeUtc -gt $g.LastWriteTimeUtc.AddSeconds(2)) { $res.KeptLocal++; continue }
+                    if ($t.LastWriteTimeUtc -ge $g.LastWriteTimeUtc.AddSeconds(-2)) { continue }
+                }
+                Copy-Compressed -Source $g.FullName -Target $target -Decompress
+                $manifest[$target] = (Get-Item -LiteralPath $target).LastWriteTimeUtc.Ticks
+                $res.Received++
+            }
+        }
+    }
+    if ($res.Received) { Save-ImportManifest $StateDir $manifest; Write-EsitleLog "Oturum alindi: $RepoName $($res.Received) dosya" }
+    return $res
+}
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 function Invoke-EsitleMain {
     $cfgPath = if ($ConfigPath) { $ConfigPath } else { Join-Path $PSScriptRoot 'esitle.json' }
@@ -492,6 +682,29 @@ function Invoke-EsitleMain {
             $exit = 1
             Write-EsitleLog "HATA $($t.name): $($_.Exception.Message)" 'ERROR'
             $summary += [pscustomobject]@{ Repo = $t.name; Status = 'Hata'; Detail = $_.Exception.Message }
+        }
+    }
+
+    # Oturum geçmişi (Faz 2): Sync'te ve Sessions modunda, hub erişilebilirse.
+    $sessOn = ($config.PSObject.Properties.Name -contains 'sessions') -and [bool]$config.sessions.enabled
+    if ($hubOk -and (($Mode -eq 'Sync' -and $sessOn) -or $Mode -eq 'Sessions')) {
+        foreach ($t in $targets) {
+            $path = Get-RepoPathFor $config $Machine $t
+            try {
+                $ex = Export-EsitleSessions -RepoPath $path -RepoName $t.name -Machine $Machine -Config $config
+                $imArgs = @{ RepoPath = $path; RepoName = $t.name; Machine = $Machine; Config = $config }
+                if ($SessionId) { $imArgs.SessionId = $SessionId }
+                if ($AllSessions) { $imArgs.All = $true }
+                $im = Import-EsitleSessions @imArgs
+                if ($ex.Sent -or $im.Received -or $im.KeptLocal) {
+                    $summary += [pscustomobject]@{ Repo = $t.name; Status = 'Oturum'; Detail = "gonderilen $($ex.Sent), alinan $($im.Received), yerelde daha yeni $($im.KeptLocal)" }
+                }
+            }
+            catch {
+                $exit = 1
+                Write-EsitleLog "HATA oturum $($t.name): $($_.Exception.Message)" 'ERROR'
+                $summary += [pscustomobject]@{ Repo = $t.name; Status = 'OturumHata'; Detail = $_.Exception.Message }
+            }
         }
     }
 
