@@ -278,14 +278,14 @@ function Invoke-EsitleSync {
     # 1) Kendi kaydedilmemiş işimizi güvenceye al.
     $res.Snapshot = Invoke-EsitleSnapshot -RepoPath $RepoPath -Machine $Machine -Config $Config -Message $Message
     # 2) Karşıyı al: tüm makinelerin ad alanı (kendimizinki raporda süzülür).
-    Invoke-Git -Repo $RepoPath -Arguments @('fetch', '-q', '--prune', $hubUrl, '+refs/makine/*:refs/esitle/*') | Out-Null
+    Invoke-Git -Repo $RepoPath -Arguments (@('fetch', '-q', '--prune', $hubUrl, '+refs/makine/*:refs/esitle/*')) | Out-Null
     # 3) Yakınsa: karşının dallarını yerelde oluştur / ileri sar / çakışmasız birleştir.
     $autoMerge = if ($Config.PSObject.Properties.Name -contains 'autoMerge') { [bool]$Config.autoMerge } else { $true }
     $res.Converge = @(Invoke-EsitleConverge -RepoPath $RepoPath -RepoName $RepoName -Machine $Machine -AutoMerge $autoMerge)
     # 4) Gönder: yalnız kendi ad alanı. '+' yalnız refs/makine/<KENDİ>/* için (plan 58 force istisnası).
-    Invoke-Git -Repo $RepoPath -Arguments @('push', '-q', $hubUrl, "+refs/heads/*:refs/makine/$Machine/*") | Out-Null
+    Invoke-Git -Repo $RepoPath -Arguments (@('push', '-q', $hubUrl, "+refs/heads/*:refs/makine/$Machine/*")) | Out-Null
     # Push sonrası kendi ad alanımızın yerel aynasını tazele (rapor tutarlılığı).
-    Invoke-Git -Repo $RepoPath -Arguments @('fetch', '-q', '--prune', $hubUrl, "+refs/makine/${Machine}/*:refs/esitle/${Machine}/*") | Out-Null
+    Invoke-Git -Repo $RepoPath -Arguments (@('fetch', '-q', '--prune', $hubUrl, "+refs/makine/${Machine}/*:refs/esitle/${Machine}/*")) | Out-Null
 
     $res.Status = 'Synced'
     Write-EsitleLog "Sync tamam: $RepoName ($Machine)"

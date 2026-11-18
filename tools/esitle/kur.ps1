@@ -118,6 +118,10 @@ function New-HubRepo {
     if (Test-Path $path) { Write-Host "Zaten var: $path"; return }
     & git init -q --bare $path
     if ($LASTEXITCODE -ne 0) { throw "bare repo olusturulamadi: $path" }
+    # Yönetici paylaşımı (C$) üzerinden açılan klasörün sahibi BUILTIN\Administrators olur ve
+    # git push "dubious ownership" ile reddeder (18.11 nexusflow.git vakası). Sahibi kullanıcıya çevir.
+    & icacls $path /setowner "$env:USERDOMAIN\$env:USERNAME" /T /C /Q | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "sahiplik ayarlanamadi: $path" }
     Write-Host "Hub repo olusturuldu: $path"
 }
 
