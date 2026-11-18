@@ -18,7 +18,7 @@ Karşının **kaydedilmemiş** işi çalışma ağacına uygulanmaz, yerelde `wi
 git diff HEAD wip/SANAL-FIKRI
 ```
 
-Çakışma (`Cakisma`) hiçbir dala dokunmaz. `%LOCALAPPDATA%\esitle\son-rapor.json` içinde görünür ve çıkış kodu 3 olur. Elle birleştirilir.
+Çakışma (`Cakisma`) hiçbir dala dokunmaz. `%USERPROFILE%\.esitle\son-rapor.json` içinde görünür ve çıkış kodu 3 olur. Elle birleştirilir.
 
 ## Kurulum (her makinede bir kez)
 
@@ -43,7 +43,7 @@ powershell -File tools\esitle\esitle.ps1 -Mode Snapshot -RepoPath D:\Dev\pusula 
 ```
 
 Çıkış kodları: `0` tamam · `1` hata veya sır riski · `2` hub erişilemiyor · `3` çakışma var.
-Log: `%LOCALAPPDATA%\esitle\esitle.log`.
+Log: `%USERPROFILE%\.esitle\esitle.log` (AppData değil: Claude masaüstü MSIX sanallaştırması hook ile görevin loglarını ayırıyordu).
 
 ## Güvenlik
 

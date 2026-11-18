@@ -35,7 +35,9 @@ Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
 # ── Logging ──────────────────────────────────────────────────────────────────
-$script:LogDir = Join-Path $env:LOCALAPPDATA 'esitle'
+# AppData DEĞİL: Claude masaüstü (MSIX) içinden başlayan süreçlerin AppData yazmaları paket
+# sanallaştırmasına gider; zamanlanmış görev gerçek AppData'ya yazar -> iki ayrı log (18.11 ölçüldü).
+$script:LogDir = Join-Path $env:USERPROFILE '.esitle'
 
 function Write-EsitleLog {
     param([string]$Text, [string]$Level = 'INFO')

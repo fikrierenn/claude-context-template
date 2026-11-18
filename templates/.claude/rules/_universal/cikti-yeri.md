@@ -17,7 +17,7 @@ _`paths:` yok — compact sonrası da geçerli. Plan 58 (pusula/plans/58-makine-
 - Oturum bitince `SessionEnd` hook'u (`tools/esitle/esitle.ps1 -Mode Snapshot -FromHook`) kaydedilmemiş işi `wip/<MAKINE>` dalına commit'ler. Çalışma ağacına, HEAD'e ve index'e dokunmaz.
 - `wip/*` dalı **teslim değildir.** İş bitince gerçek commit + doğru dal (`feat/…`, `fix/…`). `wip/*`'e elle commit atılmaz.
 - Görev Zamanlayıcı (`esitle` görevi) ağ gelince iki yönlü eşitler. Öbür makinenin kaydedilmemiş işi yerelde `wip/<KARSI>` dalı olarak görünür: `git diff HEAD wip/SANAL-FIKRI`.
-- **Çakışma raporu** (`%LOCALAPPDATA%\esitle\son-rapor.json`, durum `Cakisma`) oturum başında okunur. Çakışan dal elle birleştirilir; araç dokunmaz.
+- **Çakışma raporu** (`%USERPROFILE%\.esitle\son-rapor.json`, durum `Cakisma`) oturum başında okunur. Çakışan dal elle birleştirilir; araç dokunmaz.
 
 ## 3. Sır
 
