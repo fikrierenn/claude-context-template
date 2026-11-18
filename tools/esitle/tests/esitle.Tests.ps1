@@ -481,3 +481,46 @@ Describe 'Kendini guncelleme (Update-EsitleSelf)' {
         ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
     }
 }
+
+Describe 'Oturum maskeleme' {
+    It 'gizli degerleri (duz ve JSON kacisli) gonderirken *** yapar, yereli degistirmez' {
+        $s = New-SessionSandbox
+        $secret = 'Gz9"k\x7Q'
+        $file = New-FakeSession $s.ProjA $s.RepoA 'mmmm-1' 'baglanti'
+        $jsonForm = (ConvertTo-Json $secret).Trim('"')
+        Add-Content $file ('{"type":"user","message":{"role":"user","content":"Password=' + $jsonForm + ';"}}')
+        [IO.File]::WriteAllText((Join-Path $s.StateA 'gizli-degerler.txt'), "# yorum`n$secret`n", (New-Object Text.UTF8Encoding $false))
+        $before = [IO.File]::ReadAllText($file)
+        Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA | Out-Null
+        $gz = Join-Path $s.Hub '_oturumlar\A\proj\_kok\mmmm-1.jsonl.gz'
+        $tmp = Join-Path $s.Root 'acik.jsonl'
+        Copy-Compressed -Source $gz -Target $tmp -Decompress
+        $txt = [IO.File]::ReadAllText($tmp)
+        $txt.Contains($jsonForm) | Should Be $false
+        $txt.Contains($secret) | Should Be $false
+        $txt | Should Match 'Password=\*\*\*;'
+        [IO.File]::ReadAllText($file) | Should Be $before
+    }
+
+    It 'liste degisince arsivi bir kez bastan yazar, yerelde olmayan hub dosyasini da maskeler' {
+        $s = New-SessionSandbox
+        $file = New-FakeSession $s.ProjA $s.RepoA 'mmmm-2' 'Parola GIZLI12345 burada'
+        $orphan = New-FakeSession $s.ProjA $s.RepoA 'mmmm-3' 'eski GIZLI12345'
+        Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA | Out-Null
+        Remove-Item $orphan
+        [IO.File]::WriteAllText((Join-Path $s.StateA 'gizli-degerler.txt'), "GIZLI12345`n", (New-Object Text.UTF8Encoding $false))
+        $r = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r.Sent | Should Be 1
+        $r.Repaired | Should Be 1
+        foreach ($id in 'mmmm-2', 'mmmm-3') {
+            $tmp = Join-Path $s.Root "$id.jsonl"
+            Copy-Compressed -Source (Join-Path $s.Hub "_oturumlar\A\proj\_kok\$id.jsonl.gz") -Target $tmp -Decompress
+            [IO.File]::ReadAllText($tmp).Contains('GIZLI12345') | Should Be $false
+        }
+        $idx = Get-Content (Join-Path $s.Hub '_oturumlar\A\proj\dizin.json') -Raw -Encoding UTF8
+        $idx.Contains('GIZLI12345') | Should Be $false
+        $r2 = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r2.Sent | Should Be 0
+        $r2.Repaired | Should Be 0
+    }
+}

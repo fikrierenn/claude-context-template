@@ -477,8 +477,44 @@ function Save-ImportManifest {
     $o | ConvertTo-Json -Depth 3 | Set-Content -Path (Join-Path $StateDir 'ice-alinan.json') -Encoding UTF8
 }
 
+# ── Maskeleme ──
+# Bilinen gizli değerler (git dışı ~/.esitle/gizli-degerler.txt, satır başına bir değer, '#' yorum) oturum
+# dosyası hub'a giderken '***' olur. JSON içindeki kaçışlı biçim de aranır. Yerel dosyaya dokunulmaz.
+# 18.11.2026: üretim ERP sa parolası 13 proje klasöründe 21 oturum dosyasında bulundu.
+function Get-RedactList {
+    param($Config, [string]$StateDir)
+    $p = Join-Path $StateDir 'gizli-degerler.txt'
+    if ($Config.PSObject.Properties.Name -contains 'sessions' -and $Config.sessions.PSObject.Properties.Name -contains 'redactFile') {
+        $p = [Environment]::ExpandEnvironmentVariables($Config.sessions.redactFile)
+    }
+    $res = [pscustomobject]@{ Values = @(); Hash = '' }
+    if (-not (Test-Path -LiteralPath $p)) { return $res }
+    $raw = [IO.File]::ReadAllText($p)
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try { $res.Hash = [BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($raw))) -replace '-', '' } finally { $sha.Dispose() }
+    $vals = New-Object System.Collections.Generic.List[string]
+    foreach ($line in ($raw -split "`r?`n")) {
+        $v = $line.Trim([char]0xFEFF).Trim()
+        if (-not $v -or $v.StartsWith('#')) { continue }
+        if ($v.Length -lt 4) { Write-EsitleLog "Maskeleme: 4 karakterden kisa deger atlandi (yanlis pozitif riski)" 'WARN'; continue }
+        $vals.Add($v)
+        $j = (ConvertTo-Json $v).Trim('"')   # JSON içindeki kaçışlı biçim (\" \\ \u..)
+        if ($j -ne $v) { $vals.Add($j) }
+    }
+    # Uzun olan önce: biri öbürünün parçasıysa yarım maske kalmasın.
+    $res.Values = @($vals | Sort-Object Length -Descending -Unique)
+    return $res
+}
+
+function Get-Redacted {
+    param([string]$Text, [string[]]$Redact)
+    if (-not $Text) { return $Text }
+    foreach ($s in @($Redact)) { $Text = $Text.Replace($s, '***') }
+    return $Text
+}
+
 function Copy-Compressed {
-    param([string]$Source, [string]$Target, [switch]$Decompress)
+    param([string]$Source, [string]$Target, [switch]$Decompress, [string[]]$Redact = @())
     $dir = Split-Path -Parent $Target
     if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force $dir | Out-Null }
     $tmp = "$Target.esitle-tmp"
@@ -490,6 +526,18 @@ function Copy-Compressed {
             if ($Decompress) {
                 $gz = New-Object IO.Compression.GZipStream($in, [IO.Compression.CompressionMode]::Decompress, $true)
                 try { $gz.CopyTo($out) } finally { $gz.Dispose() }
+            }
+            elseif (@($Redact).Count -gt 0) {
+                # Metin olarak satır satır maskele (oturum dosyaları ve tool-results metindir).
+                $gz = New-Object IO.Compression.GZipStream($out, [IO.Compression.CompressionLevel]::Optimal, $true)
+                $utf8 = New-Object Text.UTF8Encoding $false
+                $sr = New-Object IO.StreamReader($in, $utf8, $true, 65536, $true)
+                $sw = New-Object IO.StreamWriter($gz, $utf8, 65536, $true)
+                $sw.NewLine = "`n"
+                try {
+                    while ($null -ne ($line = $sr.ReadLine())) { $sw.WriteLine((Get-Redacted $line $Redact)) }
+                }
+                finally { $sw.Dispose(); $sr.Dispose(); $gz.Dispose() }
             }
             else {
                 $gz = New-Object IO.Compression.GZipStream($out, [IO.Compression.CompressionLevel]::Optimal, $true)
@@ -538,12 +586,23 @@ function Export-EsitleSessions {
     )
     if (-not $ProjectsRoot) { $ProjectsRoot = Get-ClaudeProjectsRoot $Config $Machine }
     if (-not $StateDir) { $StateDir = $script:LogDir }
-    $res = [pscustomobject]@{ Repo = $RepoName; Sent = 0; Skipped = 0 }
+    $res = [pscustomobject]@{ Repo = $RepoName; Sent = 0; Skipped = 0; Repaired = 0 }
     if (-not (Test-Path -LiteralPath $ProjectsRoot)) { return $res }
     $prefix = ConvertTo-ClaudeProjectName $RepoPath
     $base = Get-SessionHubBase $Config $Machine $RepoName
     $manifest = Read-ImportManifest $StateDir
     $index = @()
+    # Maskeleme listesi değiştiyse (ya da bu repo için hiç uygulanmadıysa) bu repo arşivi bir kez baştan yazılır.
+    $redact = Get-RedactList $Config $StateDir
+    $stateFile = Join-Path $StateDir 'maskeleme-durumu.json'
+    $state = @{}
+    if (Test-Path -LiteralPath $stateFile) {
+        $o = Get-Content -LiteralPath $stateFile -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($prop in $o.PSObject.Properties) { $state[$prop.Name] = [string]$prop.Value }
+    }
+    $force = (-not $state.ContainsKey($RepoName)) -or ($state[$RepoName] -ne $redact.Hash)
+    if (-not $state.ContainsKey($RepoName) -and -not $redact.Hash) { $force = $false }   # liste hiç yok: ilk kayıt
+    $touched = @{}
     $dirs = @(Get-ChildItem -LiteralPath $ProjectsRoot -Directory | Where-Object { $_.Name -ieq $prefix -or $_.Name -ilike "$prefix-*" })
     foreach ($d in $dirs) {
         $suffix = $d.Name.Substring($prefix.Length)
@@ -552,15 +611,30 @@ function Export-EsitleSessions {
             $rel = $f.FullName.Substring($d.FullName.Length).TrimStart('\')
             if ($manifest.ContainsKey($f.FullName) -and $f.LastWriteTimeUtc.Ticks -le $manifest[$f.FullName]) { $res.Skipped++; continue }
             $target = Join-Path (Join-Path $base $folder) ($rel + '.gz')
-            $need = -not (Test-Path -LiteralPath $target)
+            $touched[$target] = $true
+            $need = $force -or -not (Test-Path -LiteralPath $target)
             if (-not $need) { $need = $f.LastWriteTimeUtc -gt (Get-Item -LiteralPath $target).LastWriteTimeUtc.AddSeconds(2) }
-            if ($need) { Copy-Compressed -Source $f.FullName -Target $target; $res.Sent++ }
+            if ($need) { Copy-Compressed -Source $f.FullName -Target $target -Redact $redact.Values; $res.Sent++ }
             if ($rel -notmatch '\\' -and $f.Extension -eq '.jsonl') {
                 $index += [pscustomobject]@{
                     id = $f.BaseName; klasor = $folder; tarih = $f.LastWriteTime.ToString('dd.MM.yyyy HH:mm')
-                    zaman = $f.LastWriteTimeUtc.Ticks; boyutMB = [math]::Round($f.Length / 1MB, 1); ilkIstek = (Get-FirstPrompt $f.FullName)
+                    zaman = $f.LastWriteTimeUtc.Ticks; boyutMB = [math]::Round($f.Length / 1MB, 1)
+                    ilkIstek = (Get-Redacted (Get-FirstPrompt $f.FullName) $redact.Values)
                 }
             }
+        }
+    }
+    # Baştan yazımda: yerelde artık karşılığı olmayan hub dosyaları da yerinde maskelenir.
+    if ($force -and @($redact.Values).Count -gt 0 -and (Test-Path -LiteralPath $base)) {
+        foreach ($g in @(Get-ChildItem -LiteralPath $base -Recurse -File -Filter '*.gz')) {
+            if ($touched.ContainsKey($g.FullName)) { continue }
+            $plain = $g.FullName.Substring(0, $g.FullName.Length - 3) + '.esitle-acik'
+            try {
+                Copy-Compressed -Source $g.FullName -Target $plain -Decompress
+                Copy-Compressed -Source $plain -Target $g.FullName -Redact $redact.Values
+                $res.Repaired++
+            }
+            finally { if (Test-Path -LiteralPath $plain) { Remove-Item -LiteralPath $plain -Force } }
         }
     }
     if ($index.Count -gt 0) {
@@ -568,7 +642,12 @@ function Export-EsitleSessions {
         ConvertTo-Json -InputObject @($index | Sort-Object zaman -Descending) -Depth 3 |
             Set-Content -Path (Join-Path $base 'dizin.json') -Encoding UTF8
     }
-    if ($res.Sent) { Write-EsitleLog "Oturum gonderildi: $RepoName $($res.Sent) dosya" }
+    $state[$RepoName] = $redact.Hash
+    if (-not (Test-Path -LiteralPath $StateDir)) { New-Item -ItemType Directory -Force $StateDir | Out-Null }
+    $so = New-Object psobject
+    foreach ($k in $state.Keys) { $so | Add-Member -NotePropertyName $k -NotePropertyValue $state[$k] }
+    $so | ConvertTo-Json | Set-Content -LiteralPath $stateFile -Encoding UTF8
+    if ($res.Sent -or $res.Repaired) { Write-EsitleLog "Oturum gonderildi: $RepoName $($res.Sent) dosya, maskeyle duzeltilen $($res.Repaired)" }
     return $res
 }
 

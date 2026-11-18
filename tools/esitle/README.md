@@ -67,6 +67,8 @@ Claude Code geçmişi (`~/.claude/projects/<kodlanmış-yol>/*.jsonl`) makineye 
 - Yereldeki daha yeni dosya ezilmez. İçeri alınıp değişmeyen dosya geri gönderilmez; burada devam ettirilirse bu makinenin adıyla gönderilir.
 - Masaüstü uygulamasının kenar çubuğu listesi taşınmaz (uygulama iç verisi); alınan oturumlar `claude --resume` ile açılır.
 
+**Maskeleme:** `%USERPROFILE%\.esitle\gizli-degerler.txt` (git dışı, her makinede ayrı; satır başına bir değer, `#` yorum, en az 4 karakter) içindeki değerler oturum dosyaları hub'a giderken `***` olur (JSON-kaçışlı biçimi de). Liste değişince o makinenin arşivi bir kez baştan yazılır; yerelde karşılığı kalmamış hub dosyaları da yerinde maskelenir. Yerel oturum dosyalarına dokunulmaz. Listeyi araç doldurmaz: değerleri kullanıcı yazar (araç ya da Claude sırları toplamaz).
+
 **C: dolu ise:** `tasi-claude-projects.ps1` geçmişi `D:\claude\projects`'e taşır, eski yere junction koyar (Claude kapalıyken, `-Uygula`; eski kopya silinmez; `-GeriAl` var).
 
 ## Test
