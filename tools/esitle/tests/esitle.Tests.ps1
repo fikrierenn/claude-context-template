@@ -287,6 +287,18 @@ Describe 'Iki yonlu esitleme (Sync + Converge)' {
         (Get-RefOrNull $s.RepoB 'refs/heads/wip/A') | Should Be $myWip
     }
 
+    It 'karsinin wip dalini kendi ad alanindan geri gondermez' {
+        $s = New-Sandbox
+        Set-Content (Join-Path $s.RepoB 'b-taslak.txt') 'B kaydedilmemis' -Encoding UTF8
+        Invoke-EsitleSync -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config | Out-Null
+        Set-Content (Join-Path $s.RepoA 'a-taslak.txt') 'A kaydedilmemis' -Encoding UTF8
+        Invoke-EsitleSync -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config | Out-Null
+        (Get-RefOrNull $s.RepoA 'refs/heads/wip/B') | Should Not Be $null
+        $refs = & git -C $s.HubUrl for-each-ref --format='%(refname)'
+        ($refs -contains 'refs/makine/A/wip/A') | Should Be $true
+        ($refs -contains 'refs/makine/A/wip/B') | Should Be $false
+    }
+
     It 'aktif dalda ezilecek yerel degisiklik varsa ilerletmez' {
         $s = New-Sandbox
         Add-TestCommit $s.RepoB 'readme.txt' 'B yeni' 'B1'

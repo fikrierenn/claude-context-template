@@ -291,7 +291,18 @@ function Invoke-EsitleSync {
     #    --no-verify: bu bir ayna, teslim değil. Projenin pre-push kapısı (build/test/gitleaks) her 30 dk koşmasın;
     #    teslim push'ları (origin) kapıdan geçmeye devam eder. Sır koruması: Snapshot'taki desen taraması.
     #    Kullanıcı kararı 18.11.2026 (NEXUSFLOW vakası).
-    Invoke-Git -Repo $RepoPath -Arguments @('push', '-q', '--no-verify', $hubUrl, "+refs/heads/*:refs/makine/$Machine/*") | Out-Null
+    #    Karşı makinelerin wip/<KARSI> dalları GERİ GÖNDERİLMEZ (negatif refspec): aksi halde bir makinenin
+    #    kaydedilmemiş içeriği öbürünün adıyla da yayılıyordu (18.11 fifo: parolalı geçmiş iki ad alanına
+    #    sızdı). Kendi wip dalımız ayrıca gönderilir.
+    #    Negatif refspec (^refs/heads/wip/*) bu git sürümünde push'ta yok sayılıyor (18.11 ölçüldü);
+    #    bu yüzden dallar tek tek listelenir.
+    $heads = @(Get-GitLines (Invoke-Git -Repo $RepoPath -Arguments @('for-each-ref', '--format=%(refname)', 'refs/heads/')).Out)
+    $pushSpecs = @($heads | Where-Object { $_ -notlike 'refs/heads/wip/*' -or $_ -eq "refs/heads/wip/$Machine" } |
+        ForEach-Object { '+' + $_ + ':refs/makine/' + $Machine + '/' + $_.Substring('refs/heads/'.Length) })
+    # Boş liste push'u varsayılan davranışa düşürür (mevcut dal); hiç dal yoksa gönderme.
+    if ($pushSpecs.Count -gt 0) {
+        Invoke-Git -Repo $RepoPath -Arguments (@('push', '-q', '--no-verify', $hubUrl) + $pushSpecs) | Out-Null
+    }
     # Push sonrası kendi ad alanımızın yerel aynasını tazele (rapor tutarlılığı).
     Invoke-Git -Repo $RepoPath -Arguments @('fetch', '-q', '--prune', $hubUrl, "+refs/makine/${Machine}/*:refs/esitle/${Machine}/*") | Out-Null
 
