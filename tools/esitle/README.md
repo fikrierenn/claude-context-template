@@ -50,6 +50,7 @@ Log: `%LOCALAPPDATA%\esitle\esitle.log`.
 - Ignore edilmemiş sır deseni (`.env`, `*.pfx`, `.secrets/`, `secrets*.json`, …) → o repo **atlanır** (`SecretRisk`).
 - 20 MB üstü dosya anlık görüntüye girmez, loga yazılır.
 - Force push yalnız kendi ad alanına (`refs/makine/<MAKINE>/*`). Commit kuralındaki tek onaylı istisna.
+- Ayna push'u projenin pre-push kapısını atlar (`--no-verify`): build/test her 30 dk koşmaz. Teslim push'ları (`origin`) kapıdan geçmeye devam eder.
 
 ## Test
 

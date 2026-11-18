@@ -166,6 +166,20 @@ Describe 'Sync (Invoke-EsitleSync)' {
         @($refs | Where-Object { $_ -like 'refs/makine/B/*' }).Count | Should Be 0
     }
 
+    It 'ayna push''u projenin pre-push kapisina takilmaz (teslim push''u degildir)' {
+        $s = New-Sandbox
+        $hooks = Join-Path $s.RepoA '.git\hooks'
+        [IO.File]::WriteAllText((Join-Path $hooks 'pre-push'), "#!/bin/sh`necho kapi reddetti >&2`nexit 1`n")
+        New-TestGit $s.RepoA @('commit', '-q', '--allow-empty', '-m', 'A ilerledi') | Out-Null
+        $r = Invoke-EsitleSync -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config
+        $r.Status | Should Be 'Synced'
+        (& git -C $s.HubUrl rev-parse refs/makine/A/main) | Should Be (Get-RefOrNull $s.RepoA 'refs/heads/main')
+        # Kapi yerinde duruyor: normal push hala reddediliyor
+        $normal = Invoke-Git -Repo $s.RepoA -Arguments @('push', '-q', $s.HubUrl, 'main:refs/heads/deneme') -AllowFail
+        $normal.ExitCode | Should Not Be 0
+        $normal.Err | Should Match 'kapi reddetti'
+    }
+
     It 'diger makinenin dallarini refs/esitle/<makine>/ altina ceker' {
         $s = New-Sandbox
         New-TestGit $s.RepoB @('commit', '-q', '--allow-empty', '-m', 'B isi') | Out-Null
