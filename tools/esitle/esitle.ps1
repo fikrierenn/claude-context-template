@@ -734,7 +734,7 @@ function Invoke-EsitleMain {
     [pscustomobject]@{
         Zaman = (Get-Date).ToString('dd.MM.yyyy HH:mm:ss'); Makine = $Machine; Mod = $Mode
         Ozet = $summary; Rapor = $report
-    } | ConvertTo-Json -Depth 5 | Set-Content -Path (Join-Path $script:LogDir 'son-rapor.json') -Encoding UTF8
+    } | ConvertTo-Json -Depth 5 | Set-Content -Path (Join-Path $script:LogDir $(if ($Mode -eq 'Snapshot') { 'son-anlik.json' } else { 'son-rapor.json' })) -Encoding UTF8  # oturum sonu anlık görüntüsü eşitleme raporunu ezmesin
 
     if (-not $Quiet) {
         if ($summary.Count) { $summary | Format-Table -AutoSize | Out-String -Width 200 | Write-Host }
