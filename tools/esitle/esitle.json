@@ -1,0 +1,34 @@
+{
+  "hubRoot": "//10.100.1.120/C$/git",
+  "maxFileMB": 20,
+  "autoMerge": true,
+  "machines": {
+    "BT-FIKRI": { "devRoot": "D:\\Dev" },
+    "SANAL-FIKRI": { "devRoot": "C:\\dev" }
+  },
+  "repos": [
+    { "name": "pusula", "hub": "pusula.git" },
+    { "name": "bkm-magaza", "hub": "bkm-magaza.git" },
+    { "name": "orkestra", "hub": "orkestra.git" },
+    { "name": "ENS", "hub": "dizustu/ENS.git" },
+    { "name": "fifo", "hub": "fifo.git" },
+    { "name": "NEXUSFLOW", "hub": "nexusflow.git" },
+    { "name": "reporthub", "hub": "dizustu/reporthub.git" },
+    { "name": "sqlcli", "hub": "sqlcli.git" },
+    { "name": "MIMBAL", "hub": "dizustu/MIMBAL.git" },
+    { "name": "Solum", "hub": "solum.git" },
+    { "name": "claude-context-template", "hub": "claude-context-template.git" }
+  ],
+  "secretPatterns": [
+    "(^|/)\\.env(\\.[^/]*)?$",
+    "\\.(pfx|p12|pem|key|kdbx)$",
+    "(^|/)\\.secrets/",
+    "(^|/)secrets?[^/]*\\.json$",
+    "(^|/)credentials?[^/]*$",
+    "appsettings\\.Production\\.json$",
+    "(^|/)id_(rsa|ed25519)"
+  ],
+  "secretAllow": [
+    "\\.(example|sample|template)$"
+  ]
+}

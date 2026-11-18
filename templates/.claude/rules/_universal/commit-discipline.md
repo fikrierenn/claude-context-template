@@ -39,6 +39,8 @@ _Her projede aynen uygulanır. `paths:` yok — compact sonrası survive._
 
 Gerekirse sor: "Bu komutu çalıştırmam emin misin? Mevcut N dosya değişikliği kaybolacak."
 
+**Tek onaylı istisna (plan 58, 18.11.2026):** `tools/esitle` aracının makine ad alanına push'u (`+refs/heads/*:refs/makine/<MAKINE>/*`). Yalnız o makinenin kendi aynasıdır; başka hiçbir ref'e force yok. Elle force-push yine yasak.
+
 ### Yasak liste NİYETE bakmaz — kırmızı kip geri alma
 
 Bir kapının kırılabilirliğini kanıtlamak iki adımdır: **sabotaj** ve **geri alma**.
