@@ -402,6 +402,20 @@ Describe 'Oturum gecmisi (Export/Import)' {
         $r2.Sent | Should Be 0
     }
 
+    It 'message alani olmayan ya da arac sonucu olan kullanici satirlarini atlayip ilk gercek istegi bulur' {
+        $s = New-SessionSandbox
+        $dir = Join-Path $s.ProjA (ConvertTo-ClaudeProjectName $s.RepoA)
+        New-Item -ItemType Directory -Force $dir | Out-Null
+        $f = Join-Path $dir 'meta-1.jsonl'
+        $lines = @(
+            '{"type":"user","isMeta":true}',
+            '{"type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"x"}]}}',
+            '{"type":"user","message":{"role":"user","content":[{"type":"text","text":"Asil istek"}]}}'
+        )
+        [IO.File]::WriteAllText($f, (($lines -join "`n") + "`n"), (New-Object Text.UTF8Encoding $false))
+        (Get-FirstPrompt $f) | Should Be 'Asil istek'
+    }
+
     It 'karsinin son gunlerdeki oturumlarini yerel proje klasorune acar; eskileri yalniz kimlikle' {
         $s = New-SessionSandbox
         $new = New-FakeSession $s.ProjB $s.RepoB 'bbbb-yeni' 'yeni is'
@@ -478,6 +492,12 @@ Describe 'Kendini guncelleme (Update-EsitleSelf)' {
         New-TestGit $repo @('branch', '-f', 'eski', $v1) | Out-Null
         $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'eski' -Paths @('tools/esitle')
         $r | Should Be 'AtlandiGeride'
+        ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
+
+        # Kopyanin surumu repoda bilinmiyorsa (elle konmus daha yeni kopya) geri almaz
+        Set-Content (Join-Path $copy 'SURUM.txt') ('f' * 40) -Encoding ASCII
+        $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'main' -Paths @('tools/esitle')
+        $r | Should Be 'AtlandiBilinmeyen'
         ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
     }
 }

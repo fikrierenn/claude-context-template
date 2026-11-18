@@ -533,9 +533,13 @@ function Copy-Compressed {
                 $utf8 = New-Object Text.UTF8Encoding $false
                 $sr = New-Object IO.StreamReader($in, $utf8, $true, 65536, $true)
                 $sw = New-Object IO.StreamWriter($gz, $utf8, 65536, $true)
-                $sw.NewLine = "`n"
                 try {
-                    while ($null -ne ($line = $sr.ReadLine())) { $sw.WriteLine((Get-Redacted $line $Redact)) }
+                    # Dosyanın tamamı tek seferde: satır başına PowerShell çağrısı milyonlarca satırda
+                    # dakikalar sürüyordu (18.11: 18 dk'da 1 dosya). Oturum dosyaları belleğe sığar (<100 MB).
+                    $text = $sr.ReadToEnd()
+                    foreach ($s in $Redact) { $text = $text.Replace($s, '***') }
+                    $sw.Write($text)
+                    $text = $null
                 }
                 finally { $sw.Dispose(); $sr.Dispose(); $gz.Dispose() }
             }
@@ -563,8 +567,16 @@ function Get-FirstPrompt {
                 if ($null -eq $line) { break }
                 if ($line -notmatch '"type"\s*:\s*"user"') { continue }
                 $o = $line | ConvertFrom-Json
+                # Bazı kullanıcı satırlarında message/text yok (araç sonucu, meta): StrictMode'da atla.
+                if (-not ($o.PSObject.Properties.Name -contains 'message')) { continue }
+                if (-not ($o.message.PSObject.Properties.Name -contains 'content')) { continue }
                 $c = $o.message.content
-                $text = if ($c -is [string]) { $c } else { (@($c) | Where-Object { $_.type -eq 'text' } | Select-Object -First 1).text }
+                $text = $null
+                if ($c -is [string]) { $text = $c }
+                else {
+                    $part = @($c) | Where-Object { $_.PSObject.Properties.Name -contains 'text' -and $_.PSObject.Properties.Name -contains 'type' -and $_.type -eq 'text' } | Select-Object -First 1
+                    if ($part) { $text = $part.text }
+                }
                 if ($text -and $text -notmatch '^\s*<') {
                     $text = ($text -replace '\s+', ' ').Trim()
                     if ($text.Length -gt 120) { $text = $text.Substring(0, 120) + '...' }
@@ -713,7 +725,12 @@ function Update-EsitleSelf {
     $tip = Get-GitRef $RepoPath "refs/heads/$Branch"
     if (-not $tip) { return 'DalYok' }
     if ($current -eq $tip) { return 'Guncel' }
-    if ($current -and (Test-GitRef $RepoPath $current)) {
+    if ($current -and -not (Test-GitRef $RepoPath $current)) {
+        # Kopyanın sürümü repoda yok: kopya repodan yeni (elle konmuş) olabilir. Geri alma riski -> dokunma.
+        Write-EsitleLog "Kendini guncelleme atlandi: kopya surumu ($($current.Substring(0, [Math]::Min(7, $current.Length)))) repoda bilinmiyor" 'WARN'
+        return 'AtlandiBilinmeyen'
+    }
+    if ($current) {
         $ahead = (Invoke-Git -Repo $RepoPath -Arguments @('merge-base', '--is-ancestor', $current, $tip) -AllowFail).ExitCode -eq 0
         if (-not $ahead) {
             Write-EsitleLog "Kendini guncelleme atlandi: $Branch ($($tip.Substring(0,7))) kopyadan ($($current.Substring(0,7))) ileride degil" 'WARN'
@@ -826,6 +843,22 @@ function Invoke-EsitleMain {
         }
     }
 
+    # Kendini güncelleme: yalnız repo dışı kopyada (SURUM.txt) ve Sync'te.
+    $copyRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    if ($Mode -eq 'Sync' -and (Test-Path (Join-Path $copyRoot 'SURUM.txt')) -and ($config.PSObject.Properties.Name -contains 'selfUpdate')) {
+        try {
+            $su = $config.selfUpdate
+            $suEntry = $config.repos | Where-Object { $_.name -eq $su.repo } | Select-Object -First 1
+            if (-not $suEntry) { throw "selfUpdate.repo ayarda yok: $($su.repo)" }
+            $suRes = Update-EsitleSelf -CopyRoot $copyRoot -RepoPath (Get-RepoPathFor $config $Machine $suEntry) -Branch $su.branch -Paths @($su.paths)
+            if ($suRes -ne 'Guncel') { $summary += [pscustomobject]@{ Repo = '(esitle)'; Status = "KendiniGuncelle:$suRes"; Detail = $su.branch } }
+        }
+        catch {
+            $exit = 1
+            Write-EsitleLog "HATA kendini guncelleme: $($_.Exception.Message)" 'ERROR'
+            $summary += [pscustomobject]@{ Repo = '(esitle)'; Status = 'KendiniGuncelleHata'; Detail = $_.Exception.Message }
+        }
+    }
     # Oturum geçmişi (Faz 2): Sync'te ve Sessions modunda, hub erişilebilirse.
     $sessOn = ($config.PSObject.Properties.Name -contains 'sessions') -and [bool]$config.sessions.enabled
     if ($hubOk -and (($Mode -eq 'Sync' -and $sessOn) -or $Mode -eq 'Sessions')) {
@@ -849,22 +882,6 @@ function Invoke-EsitleMain {
         }
     }
 
-    # Kendini güncelleme: yalnız repo dışı kopyada (SURUM.txt) ve Sync'te.
-    $copyRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-    if ($Mode -eq 'Sync' -and (Test-Path (Join-Path $copyRoot 'SURUM.txt')) -and ($config.PSObject.Properties.Name -contains 'selfUpdate')) {
-        try {
-            $su = $config.selfUpdate
-            $suEntry = $config.repos | Where-Object { $_.name -eq $su.repo } | Select-Object -First 1
-            if (-not $suEntry) { throw "selfUpdate.repo ayarda yok: $($su.repo)" }
-            $suRes = Update-EsitleSelf -CopyRoot $copyRoot -RepoPath (Get-RepoPathFor $config $Machine $suEntry) -Branch $su.branch -Paths @($su.paths)
-            if ($suRes -ne 'Guncel') { $summary += [pscustomobject]@{ Repo = '(esitle)'; Status = "KendiniGuncelle:$suRes"; Detail = $su.branch } }
-        }
-        catch {
-            $exit = 1
-            Write-EsitleLog "HATA kendini guncelleme: $($_.Exception.Message)" 'ERROR'
-            $summary += [pscustomobject]@{ Repo = '(esitle)'; Status = 'KendiniGuncelleHata'; Detail = $_.Exception.Message }
-        }
-    }
     if (-not (Test-Path $script:LogDir)) { New-Item -ItemType Directory -Force $script:LogDir | Out-Null }
     [pscustomobject]@{
         Zaman = (Get-Date).ToString('dd.MM.yyyy HH:mm:ss'); Makine = $Machine; Mod = $Mode
