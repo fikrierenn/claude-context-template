@@ -487,6 +487,9 @@ Describe 'Kendini guncelleme (Update-EsitleSelf)' {
         $r | Should Be 'Guncellendi'
         ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
         ((Get-Content (Join-Path $copy 'SURUM.txt')) -join '').Trim() | Should Be (Get-RefOrNull $repo 'HEAD')
+        # Repo index'i ve çalışma ağacı değişmez; geçici index geride kalmaz.
+        (@(New-TestGit $repo @('status', '--porcelain')) -join '') | Should Be ''
+        @(Get-ChildItem (Join-Path $repo '.git') -Filter 'esitle-self-index-*').Count | Should Be 0
 
         # Dal geri alinirsa (kopya daha yeni) dokunmaz
         New-TestGit $repo @('branch', '-f', 'eski', $v1) | Out-Null

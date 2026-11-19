@@ -14,9 +14,9 @@
   - Geri alma: -GeriAl (junction kaldırılır, eski klasör adına döner).
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File tasi-claude-projects.ps1                  # rapor
-  powershell -ExecutionPolicy Bypass -File tasi-claude-projects.ps1 -Uygula          # taşı
-  powershell -ExecutionPolicy Bypass -File tasi-claude-projects.ps1 -GeriAl          # geri al
+  powershell -ExecutionPolicy RemoteSigned -File tasi-claude-projects.ps1                  # rapor
+  powershell -ExecutionPolicy RemoteSigned -File tasi-claude-projects.ps1 -Uygula          # taşı
+  powershell -ExecutionPolicy RemoteSigned -File tasi-claude-projects.ps1 -GeriAl          # geri al
 #>
 [CmdletBinding()]
 param(

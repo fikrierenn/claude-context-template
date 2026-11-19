@@ -737,18 +737,22 @@ function Update-EsitleSelf {
             return 'AtlandiGeride'
         }
     }
-    $id = [guid]::NewGuid().ToString('N').Substring(0, 8)
-    $zip = Join-Path ([IO.Path]::GetTempPath()) "esitle-self-$id.zip"
-    $tmp = Join-Path ([IO.Path]::GetTempPath()) "esitle-self-$id"
+    # Dosyaları git doğrudan yazar (geçici index + checkout-index). Eskiden TEMP'e zip açıp PowerShell ile
+    # kendi .ps1'lerinin üstüne kopyalıyordu; Bitdefender ATC bu "indir-aç-üstüne yaz" desenini zararlı
+    # sayıp betiği karantinaya aldı (19.11.2026 BT-FIKRI). Repo index'ine ve çalışma ağacına dokunulmaz.
+    $gitDir = (Invoke-Git -Repo $RepoPath -Arguments @('rev-parse', '--absolute-git-dir')).Out
+    $tmpIndex = Join-Path $gitDir ("esitle-self-index-" + $PID + ".tmp")
     try {
-        Invoke-Git -Repo $RepoPath -Arguments (@('archive', '--format=zip', '-o', $zip, $tip, '--') + $Paths) | Out-Null
-        Expand-Archive -LiteralPath $zip -DestinationPath $tmp -Force
-        Get-ChildItem -LiteralPath $tmp -Force | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $CopyRoot -Recurse -Force }
+        $gitEnv = @{ GIT_INDEX_FILE = $tmpIndex }
+        Invoke-Git -Repo $RepoPath -Env $gitEnv -Arguments @('read-tree', $tip) | Out-Null
+        $files = @(Get-GitLines -NullSeparated (Invoke-Git -Repo $RepoPath -Env $gitEnv -Arguments (@('ls-files', '-z', '--') + $Paths)).Out)
+        if ($files.Count -eq 0) { throw "kendini guncelleme: $Branch dalinda yol bulunamadi: $($Paths -join ', ')" }
+        $prefix = (($CopyRoot.TrimEnd('\', '/')) -replace '\\', '/') + '/'
+        Invoke-Git -Repo $RepoPath -Env $gitEnv -Arguments (@('checkout-index', '-f', "--prefix=$prefix", '--') + $files) | Out-Null
         [IO.File]::WriteAllText($verFile, $tip + "`n", (New-Object Text.ASCIIEncoding))
     }
     finally {
-        if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
-        if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Recurse -Force }
+        if (Test-Path -LiteralPath $tmpIndex) { Remove-Item -LiteralPath $tmpIndex -Force }
     }
     $from = if ($current) { $current.Substring(0, [Math]::Min(7, $current.Length)) } else { '?' }
     Write-EsitleLog "Kendini guncelledi: $from -> $($tip.Substring(0,7)) ($Branch)"

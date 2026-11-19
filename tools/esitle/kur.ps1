@@ -3,9 +3,9 @@
   esitle kurulumu (plan 58): Görev Zamanlayıcı + Claude Code SessionEnd hook'u + eksik hub repoları.
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File kur.ps1                    # görev + hook
-  powershell -ExecutionPolicy Bypass -File kur.ps1 -HubOlustur ens.git,mimbal.git
-  powershell -ExecutionPolicy Bypass -File kur.ps1 -Kaldir
+  powershell -ExecutionPolicy RemoteSigned -File kur.ps1                    # görev + hook
+  powershell -ExecutionPolicy RemoteSigned -File kur.ps1 -HubOlustur ens.git,mimbal.git
+  powershell -ExecutionPolicy RemoteSigned -File kur.ps1 -Kaldir
 
 .NOTES
   -HubOlustur paylaşılan sunucuya yazar: yalnız adı açıkça verilen bare repolar oluşturulur.
@@ -35,7 +35,7 @@ if (-not ($config.machines.PSObject.Properties.Name -contains $env:COMPUTERNAME)
 # ── Hook (python ile JSON birleştirme: settings.json biçimi bozulmasın) ──────
 function Set-SessionEndHook {
     param([bool]$Remove)
-    $cmd = 'powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $esitle + '" -Mode Snapshot -FromHook -Quiet'
+    $cmd = 'powershell -NoProfile -ExecutionPolicy RemoteSigned -WindowStyle Hidden -File "' + $esitle + '" -Mode Snapshot -FromHook -Quiet'
     $py = @'
 import json, os, sys, shutil, datetime
 path, marker, remove = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
@@ -81,7 +81,7 @@ function Set-SyncTask {
     $user = "$env:USERDOMAIN\$env:USERNAME"
     # Oturum tetiğinin tekrarı yalnız bir sonraki girişte başlar; kayıttan hemen sonra da 30 dk döngü için zaman tetiği.
     $start = (Get-Date).AddMinutes(2).ToString('yyyy-MM-ddTHH:mm:ss')  # Görev XML biçimi (ISO 8601) zorunlu
-    $taskArgs = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File &quot;$esitle&quot; -Mode Sync -Quiet"
+    $taskArgs = "-NoProfile -ExecutionPolicy RemoteSigned -WindowStyle Hidden -File &quot;$esitle&quot; -Mode Sync -Quiet"
     $xml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">

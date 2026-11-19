@@ -23,7 +23,7 @@ git diff HEAD wip/SANAL-FIKRI
 ## Kurulum (her makinede bir kez)
 
 ```
-powershell -ExecutionPolicy Bypass -File tools\esitle\kur.ps1
+powershell -ExecutionPolicy RemoteSigned -File tools\esitle\kur.ps1
 ```
 
 - Görev Zamanlayıcı `esitle`: oturum açılınca, 30 dakikada bir ve ağ bağlanınca çalışır.
