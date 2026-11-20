@@ -9,6 +9,7 @@
     "SANAL-FIKRI": { "devRoot": "C:\\dev" }
   },
   "repos": [
+    { "name": "araclar", "hub": "araclar.git" },
     { "name": "pusula", "hub": "pusula.git" },
     { "name": "bkm-magaza", "hub": "bkm-magaza.git" },
     { "name": "orkestra", "hub": "orkestra.git" },
