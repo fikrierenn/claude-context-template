@@ -503,6 +503,36 @@ Describe 'Kendini guncelleme (Update-EsitleSelf)' {
         $r | Should Be 'AtlandiBilinmeyen'
         ((Get-Content (Join-Path $copy 'tools\esitle\esitle.ps1')) -join '') | Should Match 'surum 2'
     }
+
+    It 'listede olup dalda henuz olmayan yolu atlar; yol sonradan eklenince kopyaya yazar (reposync koprusu)' {
+        $s = New-Sandbox
+        $repo = $s.RepoA
+        New-Item -ItemType Directory -Force (Join-Path $repo 'tools\esitle') | Out-Null
+        Set-Content (Join-Path $repo 'tools\esitle\esitle.ps1') 'eski' -Encoding UTF8
+        New-TestGit $repo @('add', '-A') | Out-Null
+        New-TestGit $repo @('commit', '-q', '-m', 'v1') | Out-Null
+        $v1 = Get-RefOrNull $repo 'HEAD'
+        $copy = Join-Path $s.Root 'kopya'
+        New-Item -ItemType Directory -Force $copy | Out-Null
+        Set-Content (Join-Path $copy 'SURUM.txt') $v1 -Encoding ASCII
+        $paths = @('tools/esitle', 'tools/reposync', 'templates/.claude/rules/_universal/output-location.md')
+
+        # Yeni yollar dalda yokken: hata yok, var olan yol yazilir
+        Set-Content (Join-Path $repo 'tools\esitle\esitle.ps1') 'kopru' -Encoding UTF8
+        New-TestGit $repo @('commit', '-q', '-am', 'v2') | Out-Null
+        $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'main' -Paths $paths
+        $r | Should Be 'Guncellendi'
+        Test-Path (Join-Path $copy 'tools\reposync') | Should Be $false
+
+        # Yeni klasor dala gelince ayni (eski) yol listesiyle kopyaya yazilir
+        New-Item -ItemType Directory -Force (Join-Path $repo 'tools\reposync') | Out-Null
+        Set-Content (Join-Path $repo 'tools\reposync\reposync.ps1') 'yeni' -Encoding UTF8
+        New-TestGit $repo @('add', '-A') | Out-Null
+        New-TestGit $repo @('commit', '-q', '-m', 'v3') | Out-Null
+        $r = Update-EsitleSelf -CopyRoot $copy -RepoPath $repo -Branch 'main' -Paths $paths
+        $r | Should Be 'Guncellendi'
+        ((Get-Content (Join-Path $copy 'tools\reposync\reposync.ps1')) -join '') | Should Match 'yeni'
+    }
 }
 
 Describe 'Oturum maskeleme' {
