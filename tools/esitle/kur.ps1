@@ -103,6 +103,7 @@ function Set-SyncTask {
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
     <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
     <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
+    <Priority>5</Priority>
     <StartWhenAvailable>true</StartWhenAvailable>
     <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
     <Enabled>true</Enabled>
