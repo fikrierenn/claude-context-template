@@ -3,7 +3,7 @@
   "maxFileMB": 20,
   "autoMerge": true,
   "sessions": { "enabled": true, "hubDir": "_oturumlar", "importDays": 14 },
-  "selfUpdate": { "repo": "claude-context-template", "branch": "feat/esitle", "paths": ["tools/esitle", "templates/.claude/rules/_universal/cikti-yeri.md", "tools/reposync", "templates/.claude/rules/_universal/output-location.md"] },
+  "selfUpdate": { "repo": "claude-context-template", "branch": "main", "paths": ["tools/esitle", "templates/.claude/rules/_universal/cikti-yeri.md", "tools/reposync", "templates/.claude/rules/_universal/output-location.md"] },
   "machines": {
     "BT-FIKRI": { "devRoot": "D:\\Dev" },
     "SANAL-FIKRI": { "devRoot": "C:\\dev" }
