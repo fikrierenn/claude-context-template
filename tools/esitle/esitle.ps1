@@ -477,6 +477,58 @@ function Save-ImportManifest {
     $o | ConvertTo-Json -Depth 3 | Set-Content -Path (Join-Path $StateDir 'ice-alinan.json') -Encoding UTF8
 }
 
+# Gönderilen dosya kaydı: yerel yol -> "boyut|LastWriteTimeUtc.Ticks". Değişmeyen dosya için hub'a hiç
+# sorulmaz (20.11 ölçüm: dosya başına ~130 ms SMB, pusula'da 695 dosya = 97 sn).
+function Read-SentManifest {
+    param([string]$StateDir)
+    $p = Join-Path $StateDir 'gonderilen.json'
+    $h = @{}
+    if (Test-Path -LiteralPath $p) {
+        $o = Get-Content -LiteralPath $p -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($prop in $o.PSObject.Properties) { $h[$prop.Name] = [string]$prop.Value }
+    }
+    return $h
+}
+
+function Save-SentManifest {
+    param([string]$StateDir, [hashtable]$Manifest)
+    if (-not (Test-Path -LiteralPath $StateDir)) { New-Item -ItemType Directory -Force $StateDir | Out-Null }
+    $o = New-Object psobject
+    foreach ($k in $Manifest.Keys) { $o | Add-Member -NotePropertyName $k -NotePropertyValue $Manifest[$k] }
+    $o | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath (Join-Path $StateDir 'gonderilen.json') -Encoding UTF8
+}
+
+function Get-SentKey { param($File) return ('{0}|{1}' -f $File.Length, $File.LastWriteTimeUtc.Ticks) }
+
+# Hub'daki gönderim listesi (liste.json): karşı makine özyinelemeli SMB taraması yerine bunu okur.
+# Kayıt: k = klasör (_kok ya da worktree eki), r = göreli yol (.gz'siz), t = LastWriteTimeUtc.Ticks.
+function Get-HubSessionFiles {
+    param([string]$Src, [switch]$FullScan)
+    $list = Join-Path $Src 'liste.json'
+    if (-not $FullScan -and (Test-Path -LiteralPath $list)) {
+        # PS5: ConvertFrom-Json diziyi tek nesne verir; parantez açar.
+        $items = @((Get-Content -LiteralPath $list -Raw -Encoding UTF8 | ConvertFrom-Json))
+        foreach ($e in $items) {
+            [pscustomobject]@{
+                Folder = [string]$e.k; Rel = [string]$e.r
+                Time = [DateTime]::new([long]$e.t, [DateTimeKind]::Utc)
+                Path = Join-Path (Join-Path $Src ([string]$e.k)) ([string]$e.r + '.gz'); FromList = $true
+            }
+        }
+        return
+    }
+    foreach ($folderDir in @(Get-ChildItem -LiteralPath $Src -Directory)) {
+        Assert-SessionBudget "$(Split-Path -Leaf $Src) alma tarama $($folderDir.Name)"
+        foreach ($g in @(Get-ChildItem -LiteralPath $folderDir.FullName -Recurse -File -Filter '*.gz')) {
+            $rel = $g.FullName.Substring($folderDir.FullName.Length).TrimStart('\')
+            [pscustomobject]@{
+                Folder = $folderDir.Name; Rel = $rel.Substring(0, $rel.Length - 3)
+                Time = $g.LastWriteTimeUtc; Path = $g.FullName; FromList = $false
+            }
+        }
+    }
+}
+
 # ── Maskeleme ──
 # Bilinen gizli değerler (git dışı ~/.esitle/gizli-degerler.txt, satır başına bir değer, '#' yorum) oturum
 # dosyası hub'a giderken '***' olur. JSON içindeki kaçışlı biçim de aranır. Yerel dosyaya dokunulmaz.
@@ -504,6 +556,27 @@ function Get-RedactList {
     # Uzun olan önce: biri öbürünün parçasıysa yarım maske kalmasın.
     $res.Values = @($vals | Sort-Object Length -Descending -Unique)
     return $res
+}
+
+# ── Oturum adımı süre bütçesi ────────────────────────────────────────────────
+# 20.11: oturum adımı 11:09'dan 12:00'ye kadar ilerlemedi, görev 1 saat sınırında öldürüldü ve rapor
+# yazılmadı. Bütçe aşılınca kalan iş atlanır, sebep loga ve rapora yazılır; sonraki koşu kaldığı yerden sürer.
+$script:SessionDeadline = $null
+
+function Get-SessionBudgetMinutes {
+    param($Config)
+    if ($Config.PSObject.Properties.Name -contains 'sessions' -and $Config.sessions.PSObject.Properties.Name -contains 'budgetMinutes') {
+        return [double]$Config.sessions.budgetMinutes
+    }
+    return 10
+}
+
+function Assert-SessionBudget {
+    # Bütçe dolduysa TimeoutException atar; ana döngü yakalar, kalan repoları atlar.
+    param([string]$Step)
+    if ($script:SessionDeadline -and (Get-Date) -gt $script:SessionDeadline) {
+        throw (New-Object TimeoutException "Oturum suresi doldu: $Step")
+    }
 }
 
 function Get-Redacted {
@@ -556,15 +629,47 @@ function Copy-Compressed {
     (Get-Item -LiteralPath $Target).LastWriteTimeUtc = (Get-Item -LiteralPath $Source).LastWriteTimeUtc
 }
 
+function Read-BoundedLines {
+    # Dosyanın başından en çok $MaxLines satır döner; $MaxLineChars'tan uzun satırlar okunmadan atlanır,
+    # toplam $MaxTotalChars karakterde durulur. ReadLine dev bir JSONL satırını (araç çıktısı, resim) tümüyle
+    # belleğe alıp dakikalarca takılabiliyordu (20.11 askıda kalma incelemesi).
+    param([string]$Path, [int]$MaxLines = 400, [int]$MaxLineChars = 65536, [int]$MaxTotalChars = 1048576)
+    $lines = New-Object 'System.Collections.Generic.List[string]'
+    $fs = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
+    $sr = New-Object IO.StreamReader($fs, [Text.Encoding]::UTF8)
+    try {
+        $buf = New-Object char[] 65536
+        $sb = New-Object Text.StringBuilder
+        $tooLong = $false; $total = 0
+        while ($lines.Count -lt $MaxLines -and $total -lt $MaxTotalChars) {
+            $n = $sr.Read($buf, 0, $buf.Length)
+            if ($n -le 0) { break }
+            $total += $n
+            $chunk = New-Object string($buf, 0, $n)
+            $start = 0
+            while ($start -le $chunk.Length -and $lines.Count -lt $MaxLines) {
+                $nl = $chunk.IndexOf([char]10, $start)
+                $end = if ($nl -lt 0) { $chunk.Length } else { $nl }
+                if (-not $tooLong) {
+                    if ($sb.Length + ($end - $start) -gt $MaxLineChars) { $tooLong = $true; [void]$sb.Clear() }
+                    else { [void]$sb.Append($chunk, $start, $end - $start) }
+                }
+                if ($nl -lt 0) { break }
+                if (-not $tooLong) { $lines.Add($sb.ToString().TrimEnd([char]13)) }
+                [void]$sb.Clear(); $tooLong = $false; $start = $nl + 1
+            }
+        }
+        # Sonda satır sonu olmayan son satır.
+        if ($lines.Count -lt $MaxLines -and -not $tooLong -and $sb.Length -gt 0 -and $total -lt $MaxTotalChars) { $lines.Add($sb.ToString().TrimEnd([char]13)) }
+    }
+    finally { $sr.Dispose() }
+    return $lines.ToArray()   # dizi açılarak döner: @(...) ile Count doğru (boşta 0)
+}
+
 function Get-FirstPrompt {
     param([string]$Path)
     try {
-        $fs = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
-        $sr = New-Object IO.StreamReader($fs, [Text.Encoding]::UTF8)
-        try {
-            for ($i = 0; $i -lt 400; $i++) {
-                $line = $sr.ReadLine()
-                if ($null -eq $line) { break }
+        foreach ($line in (Read-BoundedLines -Path $Path)) {
                 if ($line -notmatch '"type"\s*:\s*"user"') { continue }
                 $o = $line | ConvertFrom-Json
                 # Bazı kullanıcı satırlarında message/text yok (araç sonucu, meta): StrictMode'da atla.
@@ -582,9 +687,7 @@ function Get-FirstPrompt {
                     if ($text.Length -gt 120) { $text = $text.Substring(0, 120) + '...' }
                     return $text
                 }
-            }
         }
-        finally { $sr.Dispose() }
     }
     catch { Write-EsitleLog "Ilk istek okunamadi: $Path ($($_.Exception.Message))" 'WARN' }
     return ''
@@ -615,18 +718,30 @@ function Export-EsitleSessions {
     $force = (-not $state.ContainsKey($RepoName)) -or ($state[$RepoName] -ne $redact.Hash)
     if (-not $state.ContainsKey($RepoName) -and -not $redact.Hash) { $force = $false }   # liste hiç yok: ilk kayıt
     $touched = @{}
+    $sent = Read-SentManifest $StateDir
+    $hubList = New-Object 'System.Collections.Generic.List[object]'
+    $swAll = [Diagnostics.Stopwatch]::StartNew(); $slowMs = 0; $slowFile = ''
     $dirs = @(Get-ChildItem -LiteralPath $ProjectsRoot -Directory | Where-Object { $_.Name -ieq $prefix -or $_.Name -ilike "$prefix-*" })
+    try {
     foreach ($d in $dirs) {
         $suffix = $d.Name.Substring($prefix.Length)
         $folder = if ($suffix) { $suffix } else { '_kok' }
         foreach ($f in @(Get-ChildItem -LiteralPath $d.FullName -Recurse -File | Where-Object { $_.Name -notlike '*.esitle-tmp' })) {
+            Assert-SessionBudget "$RepoName gonderim ($($res.Sent) gonderildi)"
+            $swFile = [Diagnostics.Stopwatch]::StartNew()
             $rel = $f.FullName.Substring($d.FullName.Length).TrimStart('\')
             if ($manifest.ContainsKey($f.FullName) -and $f.LastWriteTimeUtc.Ticks -le $manifest[$f.FullName]) { $res.Skipped++; continue }
             $target = Join-Path (Join-Path $base $folder) ($rel + '.gz')
             $touched[$target] = $true
-            $need = $force -or -not (Test-Path -LiteralPath $target)
-            if (-not $need) { $need = $f.LastWriteTimeUtc -gt (Get-Item -LiteralPath $target).LastWriteTimeUtc.AddSeconds(2) }
+            $key = Get-SentKey $f
+            # Kayıtta aynı boyut+zamanla varsa hub'a sorma; baştan maskelemede (force) kayda bakılmaz.
+            $need = $force -or ($sent[$f.FullName] -ne $key)
+            if ($need -and -not $force -and (Test-Path -LiteralPath $target)) {
+                $need = $f.LastWriteTimeUtc -gt (Get-Item -LiteralPath $target).LastWriteTimeUtc.AddSeconds(2)
+            }
             if ($need) { Copy-Compressed -Source $f.FullName -Target $target -Redact $redact.Values; $res.Sent++ }
+            $sent[$f.FullName] = $key
+            $hubList.Add([pscustomobject]@{ k = $folder; r = $rel; t = $f.LastWriteTimeUtc.Ticks })
             if ($rel -notmatch '\\' -and $f.Extension -eq '.jsonl') {
                 $index += [pscustomobject]@{
                     id = $f.BaseName; klasor = $folder; tarih = $f.LastWriteTime.ToString('dd.MM.yyyy HH:mm')
@@ -634,12 +749,16 @@ function Export-EsitleSessions {
                     ilkIstek = (Get-Redacted (Get-FirstPrompt $f.FullName) $redact.Values)
                 }
             }
+            if ($swFile.ElapsedMilliseconds -gt $slowMs) { $slowMs = $swFile.ElapsedMilliseconds; $slowFile = $rel }
         }
     }
+    }
+    finally { Save-SentManifest $StateDir $sent }   # bütçe aşımında da: gönderilenler bir daha sorulmasın
     # Baştan yazımda: yerelde artık karşılığı olmayan hub dosyaları da yerinde maskelenir.
     if ($force -and @($redact.Values).Count -gt 0 -and (Test-Path -LiteralPath $base)) {
         foreach ($g in @(Get-ChildItem -LiteralPath $base -Recurse -File -Filter '*.gz')) {
             if ($touched.ContainsKey($g.FullName)) { continue }
+            Assert-SessionBudget "$RepoName maske onarimi ($($res.Repaired) duzeltildi)"
             $plain = $g.FullName.Substring(0, $g.FullName.Length - 3) + '.esitle-acik'
             try {
                 Copy-Compressed -Source $g.FullName -Target $plain -Decompress
@@ -654,12 +773,18 @@ function Export-EsitleSessions {
         ConvertTo-Json -InputObject @($index | Sort-Object zaman -Descending) -Depth 3 |
             Set-Content -Path (Join-Path $base 'dizin.json') -Encoding UTF8
     }
+    # Liste yalnız tam turda yazılır: yarım liste karşıya dosya eksik gösterirdi.
+    if ($hubList.Count -gt 0) {
+        if (-not (Test-Path -LiteralPath $base)) { New-Item -ItemType Directory -Force $base | Out-Null }
+        ConvertTo-Json -InputObject @($hubList.ToArray()) -Depth 3 -Compress | Set-Content -LiteralPath (Join-Path $base 'liste.json') -Encoding UTF8
+    }
     $state[$RepoName] = $redact.Hash
     if (-not (Test-Path -LiteralPath $StateDir)) { New-Item -ItemType Directory -Force $StateDir | Out-Null }
     $so = New-Object psobject
     foreach ($k in $state.Keys) { $so | Add-Member -NotePropertyName $k -NotePropertyValue $state[$k] }
     $so | ConvertTo-Json | Set-Content -LiteralPath $stateFile -Encoding UTF8
     if ($res.Sent -or $res.Repaired) { Write-EsitleLog "Oturum gonderildi: $RepoName $($res.Sent) dosya, maskeyle duzeltilen $($res.Repaired)" }
+    Write-EsitleLog ("Oturum gonderim bitti: {0} {1} ms, en yavas dosya {2} ms {3}" -f $RepoName, $swAll.ElapsedMilliseconds, $slowMs, $slowFile)
     return $res
 }
 
@@ -682,31 +807,40 @@ function Import-EsitleSessions {
     $prefix = ConvertTo-ClaudeProjectName $RepoPath
     $cutoff = (Get-Date).ToUniversalTime().AddDays(-$Days)
     $manifest = Read-ImportManifest $StateDir
+    $swAll = [Diagnostics.Stopwatch]::StartNew()
+    try {
     foreach ($m in @(Get-ChildItem -LiteralPath $machinesDir -Directory | Where-Object { $_.Name -ne $Machine })) {
         $src = Join-Path $m.FullName $RepoName
         if (-not (Test-Path -LiteralPath $src)) { continue }
-        foreach ($folderDir in @(Get-ChildItem -LiteralPath $src -Directory)) {
-            $suffix = if ($folderDir.Name -eq '_kok') { '' } else { $folderDir.Name }
+        # Kimlikle / hepsini alma elle ve seyrek: hub'ın tamamı taranır (listede olmayan eski dosyalar da).
+        $full = [bool]$SessionId -or $All
+        foreach ($g in @(Get-HubSessionFiles -Src $src -FullScan:$full)) {
+            Assert-SessionBudget "$RepoName alma ($($res.Received) alindi)"
+            $suffix = if ($g.Folder -eq '_kok') { '' } else { $g.Folder }
             $localDir = Join-Path $ProjectsRoot ($prefix + $suffix)
-            foreach ($g in @(Get-ChildItem -LiteralPath $folderDir.FullName -Recurse -File -Filter '*.gz')) {
-                $rel = $g.FullName.Substring($folderDir.FullName.Length).TrimStart('\')
-                $rel = $rel.Substring(0, $rel.Length - 3)
-                $sid = [IO.Path]::GetFileNameWithoutExtension(($rel -split '\\')[0])
-                if ($SessionId) { if ($sid -ne $SessionId) { continue } }
-                elseif (-not $All -and $g.LastWriteTimeUtc -lt $cutoff) { continue }
-                $target = Join-Path $localDir $rel
-                if (Test-Path -LiteralPath $target) {
-                    $t = Get-Item -LiteralPath $target
-                    if ($t.LastWriteTimeUtc -gt $g.LastWriteTimeUtc.AddSeconds(2)) { $res.KeptLocal++; continue }
-                    if ($t.LastWriteTimeUtc -ge $g.LastWriteTimeUtc.AddSeconds(-2)) { continue }
-                }
-                Copy-Compressed -Source $g.FullName -Target $target -Decompress
-                $manifest[$target] = (Get-Item -LiteralPath $target).LastWriteTimeUtc.Ticks
-                $res.Received++
+            $rel = $g.Rel
+            $sid = [IO.Path]::GetFileNameWithoutExtension(($rel -split '\\')[0])
+            if ($SessionId) { if ($sid -ne $SessionId) { continue } }
+            elseif (-not $All -and $g.Time -lt $cutoff) { continue }
+            $target = Join-Path $localDir $rel
+            if (Test-Path -LiteralPath $target) {
+                $t = Get-Item -LiteralPath $target
+                if ($t.LastWriteTimeUtc -gt $g.Time.AddSeconds(2)) { $res.KeptLocal++; continue }
+                if ($t.LastWriteTimeUtc -ge $g.Time.AddSeconds(-2)) { continue }
             }
+            # Listeden gelen kayıt hub'da yoksa (elle silinmiş) atla.
+            if ($g.FromList -and -not (Test-Path -LiteralPath $g.Path)) { continue }
+            Copy-Compressed -Source $g.Path -Target $target -Decompress
+            $manifest[$target] = (Get-Item -LiteralPath $target).LastWriteTimeUtc.Ticks
+            $res.Received++
         }
     }
-    if ($res.Received) { Save-ImportManifest $StateDir $manifest; Write-EsitleLog "Oturum alindi: $RepoName $($res.Received) dosya" }
+    }
+    finally {
+        # Bütçe aşımında da alınanlar kaydedilsin: sonraki koşu aynı dosyaları baştan açmasın.
+        if ($res.Received) { Save-ImportManifest $StateDir $manifest; Write-EsitleLog "Oturum alindi: $RepoName $($res.Received) dosya" }
+    }
+    Write-EsitleLog ("Oturum alma bitti: {0} {1} ms" -f $RepoName, $swAll.ElapsedMilliseconds)
     return $res
 }
 
@@ -866,17 +1000,32 @@ function Invoke-EsitleMain {
     # Oturum geçmişi (Faz 2): Sync'te ve Sessions modunda, hub erişilebilirse.
     $sessOn = ($config.PSObject.Properties.Name -contains 'sessions') -and [bool]$config.sessions.enabled
     if ($hubOk -and (($Mode -eq 'Sync' -and $sessOn) -or $Mode -eq 'Sessions')) {
+        $budget = Get-SessionBudgetMinutes $config
+        $script:SessionDeadline = if ($budget -gt 0) { (Get-Date).AddMinutes($budget) } else { $null }
+        $timedOut = $false
         foreach ($t in $targets) {
+            if ($timedOut) {
+                $summary += [pscustomobject]@{ Repo = $t.name; Status = 'OturumAtlandi'; Detail = "sure butcesi ($budget dk) doldu" }
+                continue
+            }
             $path = Get-RepoPathFor $config $Machine $t
             try {
+                Write-EsitleLog "Oturum gonderim basladi: $($t.name)"
                 $ex = Export-EsitleSessions -RepoPath $path -RepoName $t.name -Machine $Machine -Config $config
                 $imArgs = @{ RepoPath = $path; RepoName = $t.name; Machine = $Machine; Config = $config }
                 if ($SessionId) { $imArgs.SessionId = $SessionId }
                 if ($AllSessions) { $imArgs.All = $true }
+                Write-EsitleLog "Oturum alma basladi: $($t.name)"
                 $im = Import-EsitleSessions @imArgs
                 if ($ex.Sent -or $im.Received -or $im.KeptLocal) {
                     $summary += [pscustomobject]@{ Repo = $t.name; Status = 'Oturum'; Detail = "gonderilen $($ex.Sent), alinan $($im.Received), yerelde daha yeni $($im.KeptLocal)" }
                 }
+            }
+            catch [TimeoutException] {
+                # Hata değil: kalan iş sonraki koşuya kalır, rapor yine yazılır.
+                $timedOut = $true
+                Write-EsitleLog "Oturum suresi ($budget dk) doldu, kalan repolar atlandi. Son adim: $($_.Exception.Message)" 'WARN'
+                $summary += [pscustomobject]@{ Repo = $t.name; Status = 'OturumSureAsimi'; Detail = $_.Exception.Message }
             }
             catch {
                 $exit = 1
@@ -884,6 +1033,7 @@ function Invoke-EsitleMain {
                 $summary += [pscustomobject]@{ Repo = $t.name; Status = 'OturumHata'; Detail = $_.Exception.Message }
             }
         }
+        $script:SessionDeadline = $null
     }
 
     if (-not (Test-Path $script:LogDir)) { New-Item -ItemType Directory -Force $script:LogDir | Out-Null }

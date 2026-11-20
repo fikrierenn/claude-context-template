@@ -577,3 +577,112 @@ Describe 'Oturum maskeleme' {
         $r2.Repaired | Should Be 0
     }
 }
+
+Describe 'Oturum adimi sinirlari (sure butcesi, satir siniri)' {
+    It 'cok uzun satiri okumadan atlar ve sonraki gercek istegi bulur' {
+        $s = New-SessionSandbox
+        $dir = Join-Path $s.ProjA (ConvertTo-ClaudeProjectName $s.RepoA)
+        New-Item -ItemType Directory -Force $dir | Out-Null
+        $f = Join-Path $dir 'uzun-1.jsonl'
+        $big = '{"type":"user","message":{"role":"user","content":"' + ('x' * 200000) + '"}}'
+        $lines = @($big, '{"type":"user","message":{"role":"user","content":"Kisa istek"}}')
+        [IO.File]::WriteAllText($f, (($lines -join "`r`n") + "`r`n"), (New-Object Text.UTF8Encoding $false))
+        (Get-FirstPrompt $f) | Should Be 'Kisa istek'
+        $r = @(Read-BoundedLines -Path $f)
+        $r.Count | Should Be 1
+        $r[0].EndsWith("`r") | Should Be $false
+    }
+
+    It 'satir sonu olmayan dev dosyada toplam sinirda durur' {
+        $s = New-SessionSandbox
+        $f = Join-Path $s.Root 'dev.jsonl'
+        [IO.File]::WriteAllText($f, ('y' * 3000000), (New-Object Text.UTF8Encoding $false))
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        (Get-FirstPrompt $f) | Should Be ''
+        $sw.Elapsed.TotalSeconds | Should BeLessThan 10
+        @(Read-BoundedLines -Path $f -MaxTotalChars 100000).Count | Should Be 0
+        $f2 = Join-Path $s.Root 'cok-satir.jsonl'
+        [IO.File]::WriteAllText($f2, ((1..1000 | ForEach-Object { "satir $_" }) -join "`n"), (New-Object Text.UTF8Encoding $false))
+        @(Read-BoundedLines -Path $f2 -MaxLines 50).Count | Should Be 50
+        @(Read-BoundedLines -Path $f2).Count | Should Be 400
+        $last = @(Read-BoundedLines -Path $f2 -MaxLines 5000)
+        $last.Count | Should Be 1000
+        $last[999] | Should Be 'satir 1000'
+    }
+
+    It 'sure butcesi dolunca gonderim ve alma TimeoutException atar; butce yoksa calisir' {
+        $s = New-SessionSandbox
+        New-FakeSession $s.ProjA $s.RepoA 'bbbb-1' 'Butce testi' | Out-Null
+        Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA | Out-Null
+        New-FakeSession $s.ProjA $s.RepoA 'bbbb-2' 'Ikinci' | Out-Null
+        try {
+            $script:SessionDeadline = (Get-Date).AddMinutes(-1)
+            $err = $null
+            try { Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA | Out-Null }
+            catch { $err = $_.Exception }
+            ($err -is [TimeoutException]) | Should Be $true
+            $err.Message | Should Match 'proj gonderim'
+            $err = $null
+            try { Import-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB | Out-Null }
+            catch { $err = $_.Exception }
+            ($err -is [TimeoutException]) | Should Be $true
+            $err.Message | Should Match 'proj alma'
+        }
+        finally { $script:SessionDeadline = $null }
+        $r = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r.Sent | Should Be 1
+        $im = Import-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB
+        $im.Received | Should Be 2
+    }
+
+    It 'butce ayardan okunur; yoksa 10 dakika' {
+        (Get-SessionBudgetMinutes ([pscustomobject]@{ sessions = [pscustomobject]@{ enabled = $true } })) | Should Be 10
+        (Get-SessionBudgetMinutes ([pscustomobject]@{ sessions = [pscustomobject]@{ budgetMinutes = 3 } })) | Should Be 3
+    }
+}
+
+Describe 'Oturum hub erisimini azaltma (gonderim kaydi, liste.json)' {
+    It 'degismeyen dosya icin hub''a sormaz; degisince gonderir' {
+        $s = New-SessionSandbox
+        $file = New-FakeSession $s.ProjA $s.RepoA 'cccc-1' 'Kayit testi'
+        $r1 = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r1.Sent | Should Be 1
+        (Test-Path (Join-Path $s.StateA 'gonderilen.json')) | Should Be $true
+        # Hub kopyası silinse de kayıt aynıysa hub'a bakılmaz, yeniden gönderilmez.
+        $gz = Join-Path $s.Hub '_oturumlar\A\proj\_kok\cccc-1.jsonl.gz'
+        Remove-Item -LiteralPath $gz
+        $r2 = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r2.Sent | Should Be 0
+        (Test-Path -LiteralPath $gz) | Should Be $false
+        Add-Content -LiteralPath $file -Value '{"type":"user","message":{"role":"user","content":"devam"}}'
+        (Get-Item $file).LastWriteTime = (Get-Date).AddMinutes(1)
+        $r3 = Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA
+        $r3.Sent | Should Be 1
+        (Test-Path -LiteralPath $gz) | Should Be $true
+    }
+
+    It 'alma liste.json''dan okur; liste yoksa ya da -All ile hub taranir' {
+        $s = New-SessionSandbox
+        New-FakeSession $s.ProjA $s.RepoA 'dddd-1' 'Liste bir' | Out-Null
+        New-FakeSession $s.ProjA $s.RepoA 'dddd-2' 'Liste iki' -Suffix '--claude-worktrees-x' | Out-Null
+        Export-EsitleSessions -RepoPath $s.RepoA -RepoName 'proj' -Machine 'A' -Config $s.Config -ProjectsRoot $s.ProjA -StateDir $s.StateA | Out-Null
+        $src = Join-Path $s.Hub '_oturumlar\A\proj'
+        $list = @((Get-Content (Join-Path $src 'liste.json') -Raw -Encoding UTF8 | ConvertFrom-Json))
+        $list.Count | Should Be 2
+        # Listede olmayan hub dosyası: listeyle alınmaz.
+        Copy-Item (Join-Path $src '_kok\dddd-1.jsonl.gz') (Join-Path $src '_kok\dddd-9.jsonl.gz')
+        $im = Import-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB
+        $im.Received | Should Be 2
+        $dirB = Join-Path $s.ProjB (ConvertTo-ClaudeProjectName $s.RepoB)
+        (Test-Path (Join-Path $dirB 'dddd-1.jsonl')) | Should Be $true
+        (Test-Path (Join-Path ($dirB + '--claude-worktrees-x') 'dddd-2.jsonl')) | Should Be $true
+        (Test-Path (Join-Path $dirB 'dddd-9.jsonl')) | Should Be $false
+        $all = Import-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB -All
+        $all.Received | Should Be 1
+        Remove-Item (Join-Path $dirB 'dddd-9.jsonl')
+        Remove-Item (Join-Path $src 'liste.json')
+        $scan = Import-EsitleSessions -RepoPath $s.RepoB -RepoName 'proj' -Machine 'B' -Config $s.Config -ProjectsRoot $s.ProjB -StateDir $s.StateB
+        $scan.Received | Should Be 1
+        (Test-Path (Join-Path $dirB 'dddd-9.jsonl')) | Should Be $true
+    }
+}
