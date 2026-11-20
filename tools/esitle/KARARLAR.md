@@ -22,3 +22,10 @@ gönderimde dosya başına ~130 ms SMB kontrolü (pusula 695 dosya = 97 sn), alm
 - Alma: karşı makinenin hub'a yazdığı `liste.json` okunur; liste yoksa ya da `-SessionId`/`-All`
   verilmişse eski özyinelemeli tarama.
 - Sınır: tek bir takılan SMB çağrısı bütçeyle kesilemez; son emniyet yine görevin 1 saatlik sınırı.
+
+## 20.11.2026 — Kendini güncelleme kaynağı main
+
+**Karar:** `selfUpdate.branch` `feat/esitle` → `main`. esitle main'e birleşti (PR #1); çalışan kopya
+artık main'den güncellenir. Kullanıcı: "güncelleme kaynağını main'e çevir".
+- Kopya yerel `refs/heads/main`'i okur: main, `C:\dev\claude-context-template`'te ileri sarılmadıkça
+  yeni sürüm gelmez.
